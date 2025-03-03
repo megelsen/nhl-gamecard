@@ -133,7 +133,7 @@ def home():
 
     max_width_medium_screen = 2*min_width_team_summary + min_width_previous_games + 2*outer_margin + 4*card_gap
     max_width_small_screen = 2*min_width_team_summary + 2*outer_margin
-
+    max_width_smallest_screen = min_width_team_summary + 2*outer_margin
 
     # Combine them into one HTML page with CSS grid layout
     html_content = f"""
@@ -340,9 +340,9 @@ def home():
                 }}
             }}
 
-            @media screen and (max-width: 768px) {{
+            @media screen and (max-width: {max_width_smallest_screen}px) {{
                 body {{
-                    transform: scale(0.8); 
+                    transform: scale(0.75); 
                     transform-origin: top;
                 }}
             }}
