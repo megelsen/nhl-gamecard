@@ -339,6 +339,13 @@ def home():
                     grid-column: span 2;
                 }}
             }}
+
+            @media screen and (max-width: 768px) {{
+                body {{
+                    transform: scale(0.8); 
+                    transform-origin: top;
+                }}
+            }}
         </style>
         <script>
             // JavaScript function to automatically submit the form when the dropdown changes
