@@ -1,0 +1,718 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Tables</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #71AFE5;
+            color: #333;
+            font-size: 18px;
+            margin: 12px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: minmax(515px, 1fr) minmax(515px, 1fr) minmax(300px, 1fr);
+            grid-auto-rows: 300px;
+            grid-auto-flow: row;
+            grid-template-rows: auto auto;
+            gap: 12px;
+            padding: 12px;
+            column-gap: 24px;
+            justify-self: anchor-center;
+        }
+
+        
+
+        .container_title {
+          display: grid;
+          grid-template-columns: 150px 1fr;
+          width: fit-content
+          align-items: center;
+          margin: 12px;
+          > img{width: 150px}
+        }
+
+        .top_row_element {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            white-space: nowrap;
+            gap: 4px;
+            align-items: center;
+            text-align: left;        
+            justify-items: center;
+            
+        }
+
+            .top_card_header{
+                grid-row: 1;
+                grid-column: 2;
+            }
+
+            .top-scorer-label {
+                grid-row: 2;
+                font-weight: bold;
+            }
+
+            .top-scorer-info { 
+                grid-row: 2;
+                grid-column: 2;
+                align-items: center;
+            }
+            .headshot-img {
+                grid-row: 1 / span 2;  
+                grid-column: 3;
+                align-self: end;
+                justify-self: end;
+                }
+
+            /* Team summary spans full width in row 4 */
+            .team-summary {
+                grid-row: 3;
+                grid-column: 1 / span 3;
+                width: fit-content;                
+                align-self: self-end;
+                justify-self: center;
+            }
+
+            .upcoming_game{
+                grid-row: 2;
+                grid-column: 1 / span 3
+            }
+
+            .previous_game{
+                grid-column: 3;
+                justify-items: center;
+            }
+
+        .game_display {
+          display: grid;
+          grid-template-columns: min-content 70px 1fr;
+          align-items: center;
+          gap: 4px;
+          align-self: stretch;
+        }
+
+        .card_display {
+            background: #fefefe;  
+            border-radius: 12px;          
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+            padding: 12px;            
+            width: -webkit-fill-available;
+            justify-items: anchor-center;
+            min-width: max-content;
+            
+        }
+
+        /* Ensure logo is properly displayed */
+        h1 {
+            align-items: center;
+            gap: 100px; /* Space between text and image */
+            width: 100%; /* Ensure h1 uses the full available width */
+            max-width: 100%; /* Ensure it doesn't overflow */
+        }
+
+
+        /* Table styling */
+        table {
+            justify-items: center
+            border-collapse: collapse; /* Removes unnecessary borders */
+            width: 100%; /* Ensure full width */
+            border: none;
+            width: fit-content
+            place-self: center;
+        }
+
+        th {
+            background-color: #ffffff;
+            color: black;
+            text-align: center;
+            border: none;
+            font-size: 18px;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f2f2f2;
+            text-align: center;
+            border: none;
+            font-size: 18px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+            text-align: center;
+            border: none;
+            font-size: 18px;
+        }
+
+        @media (max-width: 1474px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .previous_game {
+                 grid-column: 1 / span 2;
+                justify-items: center;
+            }
+        }
+
+        @media (max-width: 1054px) { 
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .previous_game {
+                 grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container_title card_display">
+      <img src="https://assets.nhle.com/logos/nhl/svg/UTA_light.svg">
+      <h1>
+        Utah Hockey Club
+      </h1>
+    </div>
+    <div class="container">
+        <div class="top_row_element card_display">
+            <h2 class="top_card_header">Stats</h2>
+
+
+            <p class="top-scorer-label">Top scorer:</p>
+            <div class ="top-scorer-info">
+                <p style="  margin-block-end: 0">Clayton Keller</p>            
+                <p style="  margin-block: 0">(22G-47A-69P)</p>
+            </div>
+
+            <div class="headshot-img">
+                <img src=https://assets.nhle.com/mugs/nhl/20242025/UTA/8479343.png style="max-width: 150px;">
+            </div>
+
+            <div class="team-summary">
+                <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>NHL Rank</th>
+      <th>GP</th>
+      <th>W</th>
+      <th>L</th>
+      <th>OTL</th>
+      <th>PTS</th>
+      <th>P%</th>
+      <th>L10</th>
+      <th>Streak</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>23</td>
+      <td>61</td>
+      <td>27</td>
+      <td>25</td>
+      <td>9</td>
+      <td>63</td>
+      <td><b>0.52</b></td>
+      <td>6-4-0</td>
+      <td>L1</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        <div class="top_row_element card_display">
+            <h2  class="top_card_header">Next game</h2>
+            <div class="game_display upcoming_game">
+                @
+    <img src="https://assets.nhle.com/logos/nhl/svg/DET_light.svg">
+    on Thu, Mar 06 at 7:00pm EST 
+            </div>
+            <div class="team-summary">
+                <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>NHL Rank</th>
+      <th>GP</th>
+      <th>W</th>
+      <th>L</th>
+      <th>OTL</th>
+      <th>PTS</th>
+      <th>P%</th>
+      <th>L10</th>
+      <th>Streak</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>15</td>
+      <td>60</td>
+      <td>30</td>
+      <td>24</td>
+      <td>6</td>
+      <td>66</td>
+      <td><b>0.55</b></td>
+      <td>6-3-1</td>
+      <td>L2</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+          
+        </div>
+        <div class="previous_game card_display">
+          <h2>Last games</h2>
+          <p class="game_display previous_game">
+                vs
+                <img src="https://assets.nhle.com/logos/nhl/svg/NJD_light.svg">
+                1 -  3 (L) <br>
+                </p>
+          <p class="game_display previous_game">
+                vs
+                <img src="https://assets.nhle.com/logos/nhl/svg/MIN_light.svg">
+                6 -  1 (W) <br>
+                </p>
+          <p class="game_display previous_game">
+                vs
+                <img src="https://assets.nhle.com/logos/nhl/svg/CHI_light.svg">
+                2 -  1 (W) <br>
+                </p>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="table card_display">
+            <h2>
+              Standings
+            </h2>
+            <p><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Rank</th>
+      <th>Team</th>
+      <th>GP</th>
+      <th>W</th>
+      <th>L</th>
+      <th>OTL</th>
+      <th>PTS</th>
+      <th>P%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>C1</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/WPG_light.svg" width="30"></td>
+      <td><b>61</b></td>
+      <td><b>42</b></td>
+      <td><b>15</b></td>
+      <td><b>4</b></td>
+      <td><b>88</b></td>
+      <td><b>0.72</b></td>
+    </tr>
+    <tr>
+      <td><b>C2</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/DAL_light.svg" width="30"></td>
+      <td><b>60</b></td>
+      <td><b>39</b></td>
+      <td><b>19</b></td>
+      <td><b>2</b></td>
+      <td><b>80</b></td>
+      <td><b>0.67</b></td>
+    </tr>
+    <tr>
+      <td><b>P1</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/VGK_light.svg" width="30"></td>
+      <td><b>60</b></td>
+      <td><b>36</b></td>
+      <td><b>18</b></td>
+      <td><b>6</b></td>
+      <td><b>78</b></td>
+      <td><b>0.65</b></td>
+    </tr>
+    <tr>
+      <td><b>P2</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/EDM_light.svg" width="30"></td>
+      <td><b>60</b></td>
+      <td><b>35</b></td>
+      <td><b>21</b></td>
+      <td><b>4</b></td>
+      <td><b>74</b></td>
+      <td><b>0.62</b></td>
+    </tr>
+    <tr>
+      <td><b>C3</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/MIN_light.svg" width="30"></td>
+      <td><b>61</b></td>
+      <td><b>35</b></td>
+      <td><b>22</b></td>
+      <td><b>4</b></td>
+      <td><b>74</b></td>
+      <td><b>0.61</b></td>
+    </tr>
+    <tr>
+      <td><b> WC1 </b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/COL_light.svg" width="30"></td>
+      <td><b>61</b></td>
+      <td><b>35</b></td>
+      <td><b>24</b></td>
+      <td><b>2</b></td>
+      <td><b>72</b></td>
+      <td><b>0.59</b></td>
+    </tr>
+    <tr>
+      <td><b>P3</b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/LAK_light.svg" width="30"></td>
+      <td><b>58</b></td>
+      <td><b>31</b></td>
+      <td><b>19</b></td>
+      <td><b>8</b></td>
+      <td><b>70</b></td>
+      <td><b>0.6</b></td>
+    </tr>
+    <tr>
+      <td><b> WC2 </b></td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CGY_light.svg" width="30"></td>
+      <td><b>60</b></td>
+      <td><b>28</b></td>
+      <td><b>23</b></td>
+      <td><b>9</b></td>
+      <td><b>65</b></td>
+      <td><b>0.54</b></td>
+    </tr>
+    <tr>
+      <td>P5</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/VAN_light.svg" width="30"></td>
+      <td>60</td>
+      <td>27</td>
+      <td>22</td>
+      <td>11</td>
+      <td>65</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <td>C5</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/STL_light.svg" width="30"></td>
+      <td>62</td>
+      <td>29</td>
+      <td>27</td>
+      <td>6</td>
+      <td>64</td>
+      <td>0.52</td>
+    </tr>
+    <tr>
+      <td>C6</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/UTA_light.svg" width="30"></td>
+      <td>61</td>
+      <td>27</td>
+      <td>25</td>
+      <td>9</td>
+      <td>63</td>
+      <td>0.52</td>
+    </tr>
+    <tr>
+      <td>P6</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/ANA_light.svg" width="30"></td>
+      <td>59</td>
+      <td>26</td>
+      <td>26</td>
+      <td>7</td>
+      <td>59</td>
+      <td>0.5</td>
+    </tr>
+    <tr>
+      <td>P7</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/SEA_light.svg" width="30"></td>
+      <td>61</td>
+      <td>26</td>
+      <td>31</td>
+      <td>4</td>
+      <td>56</td>
+      <td>0.46</td>
+    </tr>
+    <tr>
+      <td>C7</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/NSH_light.svg" width="30"></td>
+      <td>60</td>
+      <td>21</td>
+      <td>32</td>
+      <td>7</td>
+      <td>49</td>
+      <td>0.41</td>
+    </tr>
+    <tr>
+      <td>C8</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CHI_light.svg" width="30"></td>
+      <td>60</td>
+      <td>18</td>
+      <td>35</td>
+      <td>7</td>
+      <td>43</td>
+      <td>0.36</td>
+    </tr>
+    <tr>
+      <td>P8</td>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/SJS_light.svg" width="30"></td>
+      <td>61</td>
+      <td>15</td>
+      <td>37</td>
+      <td>9</td>
+      <td>39</td>
+      <td>0.32</td>
+    </tr>
+  </tbody>
+</table></p>
+        </div>
+        <div class="card_display">
+            <h2> Record vs Western </h2>
+            
+<style>
+    table {
+        border-collapse: collapse;
+        width: auto;  /* Set width to auto to minimize space */
+        font-size: 12px;  /* Smaller font size */
+        img {
+          max-width: 30px;  /* Smaller logo images */
+          height: auto;
+        }}
+    td, th {
+        padding: 4px 6px;
+        margin: 0;
+        text-align: center;  
+        border: none;  /* No borders */
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Opponent</th>
+      <th>Game 1</th>
+      <th>Game 2</th>
+      <th>Game 3</th>
+      <th>Game 4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/COL_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 2 - 1 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 5 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 1 - 4 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 4 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CHI_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 5 - 2 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 2 - 1 </span></td>
+      <td><span> 03-07-25</td>
+      <td><span> 03-30-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/WPG_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 3 - 0 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 5 - 2 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 5 - 2 </span></td>
+      <td><span> 04-05-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/STL_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 2 - 4 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 4 - 2 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 2 </span></td>
+      <td><span> 04-15-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/DAL_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 2 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 2 - 3 </span></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">@ 3 - 2 </span></td>
+      <td><span> 04-12-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/MIN_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 4 - 5 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 1 - 2 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 0 - 4 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 6 - 1 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/ANA_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">@ 5 - 4 </span></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 4 - 5 </span></td>
+      <td><span> 03-12-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/LAK_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 3 - 2 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 5 - 3 </span></td>
+      <td><span> 04-03-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/SJS_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 4 - 5 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 3 - 4 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 2 - 1 </span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CGY_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 5 - 1 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 3 - 5 </span></td>
+      <td><span> 04-01-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/VGK_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">@ 4 - 3 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 2 - 4 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 0 - 6 </span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/NSH_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 4 - 0 </span></td>
+      <td><span> 04-10-25</td>
+      <td><span> 04-14-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/EDM_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 3 - 4 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 4 - 1 </span></td>
+      <td><span> 03-18-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/VAN_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 3 - 2 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 2 - 1 </span></td>
+      <td><span> 03-16-25</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/SEA_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 5 - 2 </span></td>
+      <td><span> 03-14-25</td>
+      <td><span> 04-08-25</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+        </div>
+        <div class="card_display">
+            <h2>  Record vs Eastern </h2>
+            
+<style>
+    table {
+        border-collapse: collapse;
+        width: auto;  /* Set width to auto to minimize space */
+        font-size: 12px;  /* Smaller font size */
+        img {
+          max-width: 30px;  /* Smaller logo images */
+          height: auto;
+        }}
+    td, th {
+        padding: 4px 6px;
+        margin: 0;
+        text-align: center;  
+        border: none;  /* No borders */
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Opponent</th>
+      <th>Game 1</th>
+      <th>Game 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/NYI_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 4 - 5 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 2 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/NYR_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 5 - 6 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 3 - 5 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/NJD_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 3 - 0 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 3 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/BOS_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 2 - 1 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 1 - 0 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/OTT_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 0 - 4 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 3 - 1 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CAR_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 4 - 1 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 7 - 3 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/WSH_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 2 - 6 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 4 - 5 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/PIT_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 1 - 6 </span></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 2 - 3 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/TOR_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">@ 3 - 2 </span></td>
+      <td><span> 03-10-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/MTL_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 2 - 3 </span></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 3 - 5 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/BUF_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 2 - 5 </span></td>
+      <td><span> 03-20-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/PHI_light.svg" width="50"></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 2 - 4 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">vs 3 - 2 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/FLA_light.svg" width="50"></td>
+      <td><span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">vs 1 - 4 </span></td>
+      <td><span> 03-28-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/CBJ_light.svg" width="50"></td>
+      <td><span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">vs 2 - 3 </span></td>
+      <td><span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">@ 2 - 3 </span></td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/DET_light.svg" width="50"></td>
+      <td><span> 03-06-25</td>
+      <td><span> 03-24-25</td>
+    </tr>
+    <tr>
+      <td><img src="https://assets.nhle.com/logos/nhl/svg/TBL_light.svg" width="50"></td>
+      <td><span> 03-22-25</td>
+      <td><span> 03-27-25</td>
+    </tr>
+  </tbody>
+</table>
+        </div>
+    </div>
+</body>
+</html>
