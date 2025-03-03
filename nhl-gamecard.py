@@ -21,8 +21,8 @@ team_abbr_list = [
 @app.route("/", methods=["GET", "POST"])
 def home():
     # For design purposes:
-    RUN_HTML_ONLY = True
-    STORE_OUTPUT = True
+    RUN_HTML_ONLY = False
+    STORE_OUTPUT = False
     
     # Select Team (Make INPUT in future)
     team_abbr= "UTA"
