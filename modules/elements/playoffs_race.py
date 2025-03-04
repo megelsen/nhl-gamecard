@@ -66,9 +66,9 @@ def format_team_standings(standings,playoffs):
 
     # Apply label change condition
     if playoffs == 2:
-        standings["Rank"] = "WC2"  # Change label
+        standings["Rank"] = f"<b>WC2</b>"  # Change label
     if playoffs == 1:
-        standings["Rank"] = "WC2"  # Change label
+        standings["Rank"] = f"<b>WC1</b>"  # Change label
 
 
     return standings
