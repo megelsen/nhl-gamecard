@@ -34,10 +34,10 @@ def team_summary(team_abbr,standings_data):
             "NHL Rank": nhl_rank,
             #"Team":  team_logo_html,
             "GP":  games_played,
+            "PTS":  points,
             "W":  wins,
             "L": losses,
             "OTL":  ot_losses,
-            "PTS":  points,
             "P%":  f"<b>{round(points_pct,2)}</b>",  # Regular-time wins
             "L10": l10,
             "Streak": streak,
@@ -47,7 +47,7 @@ def team_summary(team_abbr,standings_data):
   df_team_summary = pd.DataFrame(team_summary_list)
 
   # Extract only the first 8 columns
-  columns_to_display = ["NHL Rank", "GP", "W", "L", "OTL", "PTS", "P%","L10","Streak"]
+  columns_to_display = ["NHL Rank", "GP", "PTS","W", "L", "OTL", "P%","L10","Streak"]
 
   # Filter the DataFrame to only include those columns
   df_team_summary = df_team_summary[columns_to_display]
