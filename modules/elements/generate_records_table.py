@@ -40,7 +40,7 @@ def build_records_table(sorted_opponents):
         data.append(row)
 
     num_games = max(len(games) for _, games in sorted_opponents)
-    columns = ['Opponent'] + [f'Game {i}' for i in range(1, num_games + 1)]
+    columns = ['vs'] + [f'Game {i}' for i in range(1, num_games + 1)]
 
     # Create the DataFrame
     df_record_table = pd.DataFrame(data, columns=columns)
