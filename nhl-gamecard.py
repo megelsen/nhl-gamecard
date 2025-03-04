@@ -162,7 +162,7 @@ def home():
                 color: #333; 
                 cursor: pointer; 
                 width: 200px;  
-                transition: all 0.3s ease;  
+                transition: all 0.01s ease;  
                 margin: {outer_margin}px;
             }}
 
@@ -342,12 +342,78 @@ def home():
             }}
 
             @media screen and (max-width: {max_width_smallest_screen}px) {{
-                #content {{                
+                .content {{                
                     transform: scale(0.6);            
                     transform-origin: top;
                 }}
             }}
         </style>
+
+    </head>
+    <body>
+        <div class="content">
+            <div class="container_title widthTargetElement">
+                <div class="title_card card_display">
+                    <img src="{team_info['query_team_logo_big']}">
+                    <h1>
+                        {team_info['team_name']}
+                    </h1>
+                    <form class="dropdown_wrapper" id="team_form" method="POST">
+                        <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleDropdownChange()">
+                            {dropdown_html}
+                        </select>        
+                    </form>
+                </div>
+            </div>
+            <div class="container" id="widthSourceElement">
+                <div class="top_row_element card_display">
+                    <h2 class="top_card_header">Stats</h2>
+                    <p class="top-scorer-label">Top scorer:</p>
+                    <div class ="top-scorer-info">
+                        <p style="  margin-block-end: 0">{top_scorer['name']}</p>            
+                        <p style="  margin-block: 0">({ top_scorer['goals']}G-{ top_scorer['assists']}A-{ top_scorer['points']}P)</p>
+                    </div>
+                    <div class="headshot-img">
+                        <img src={ top_scorer['headshot_url']} style="max-width: 150px;">
+                    </div>
+                    <div class="team-summary">
+                        { html_team_summary }
+                    </div>
+                </div>
+                <div class="top_row_element card_display">
+                    <h2  class="top_card_header">Next game</h2>
+                    <div class="game_display upcoming_game">
+                        {html_next_game} 
+                    </div>
+                    <div class="team-summary">
+                        {html_next_opponent_summary}
+                    </div>                
+                </div>
+                <div class="previous_game card_display">
+                <h2>Last games</h2>
+                <p class="game_display previous_game">{html_last_games[0]}</p>
+                <p class="game_display previous_game">{html_last_games[1]}</p>
+                <p class="game_display previous_game">{html_last_games[2]}</p>
+                </div>
+            </div>
+            <div class="container widthTargetElement">
+                <div class="table card_display">
+                    <h2>
+                    Standings
+                    </h2>
+                    <p>{html_standings_table}</p>
+                </div>
+                <div class="card_display">
+                    <h2> Record vs {team_info['team_conference']} </h2>
+                    {opponent_table_style + record_table.iloc[:len(record_table) // 2].to_html(escape=False,index=False)}
+                </div>
+                <div class="card_display">
+                    <h2>  Record vs {team_info['opposite_conference']} </h2>
+                    {opponent_table_style + record_table.iloc[len(record_table) // 2:,:3].to_html(escape=False,index=False)}
+                </div>
+            </div>  
+        </div>
+
         <script>
             
             // JavaScript function to automatically submit the form when the dropdown changes
@@ -364,106 +430,39 @@ def home():
                 targetElements.forEach(element => {{
                     element.style.width = `${{adjustedWidth}}px`;
                 }});
-            }}
-
-
+            }} 
 
             function applyScaling() {{
                 var deviceWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-                var max_width_smallest_screen = {max_width_smallest_screen }; 
-                var container = document.getElementById('content');  // Get the content element
+                var max_width_smallest_screen = {max_width_smallest_screen };                 
 
-                if (container) {{  // Only proceed if the container is found
-                    var max_width_smallest_screen = { max_width_smallest_screen }; // Get value dynamically from Python
-
-                    // Apply scaling only if the device width is <= max_width_smallest_screen
-                    if (deviceWidth <= max_width_smallest_screen) {{
-                        var scaleFactor = deviceWidth / max_width_smallest_screen;
+                // Apply scaling only if the device width is <= max_width_smallest_screen
+                if (deviceWidth <= max_width_smallest_screen) {{
+                    var containers = document.querySelectorAll('.content');  // Get the content element
+                    var scaleFactor = deviceWidth / max_width_smallest_screen;
+                    containers.forEach(function(container){{
                         container.style.transform = 'scale(' + scaleFactor + ')';
                         container.style.transformOrigin = 'top';
-                    }} else {{
+                    }})
+                }} else {{
+                    // Reset scaling if width is greater than the max width
+                    var containers = document.querySelectorAll('.content');
+                    containers.forEach(function(container) {{
                         container.style.transform = 'scale(1)';
-                    }}
+                    }});
                 }}
             }}
-
-
-            // Apply scaling on page load
-            applyScaling();
-
+            
             // Call the function initially and on window resize
             window.addEventListener('load', function() {{    
                 synchronizeWidths();
-                applyScaling();
             }});
             window.addEventListener('resize', function() {{    
                 synchronizeWidths();
-                applyScaling();
+                setTimeout(applyScaling, 500);
             }});
 
-        </script>
-    </head>
-    <body  id="content">
-        <div class="container_title widthTargetElement">
-            <div class="title_card card_display">
-                <img src="{team_info['query_team_logo_big']}">
-                <h1>
-                    {team_info['team_name']}
-                </h1>
-                <form class="dropdown_wrapper" id="team_form" method="POST">
-                    <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleDropdownChange()">
-                        {dropdown_html}
-                    </select>        
-                </form>
-            </div>
-        </div>
-        <div class="container" id="widthSourceElement">
-            <div class="top_row_element card_display">
-                <h2 class="top_card_header">Stats</h2>
-                <p class="top-scorer-label">Top scorer:</p>
-                <div class ="top-scorer-info">
-                    <p style="  margin-block-end: 0">{top_scorer['name']}</p>            
-                    <p style="  margin-block: 0">({ top_scorer['goals']}G-{ top_scorer['assists']}A-{ top_scorer['points']}P)</p>
-                </div>
-                <div class="headshot-img">
-                    <img src={ top_scorer['headshot_url']} style="max-width: 150px;">
-                </div>
-                <div class="team-summary">
-                    { html_team_summary }
-                </div>
-            </div>
-            <div class="top_row_element card_display">
-                <h2  class="top_card_header">Next game</h2>
-                <div class="game_display upcoming_game">
-                    {html_next_game} 
-                </div>
-                <div class="team-summary">
-                    {html_next_opponent_summary}
-                </div>                
-            </div>
-            <div class="previous_game card_display">
-            <h2>Last games</h2>
-            <p class="game_display previous_game">{html_last_games[0]}</p>
-            <p class="game_display previous_game">{html_last_games[1]}</p>
-            <p class="game_display previous_game">{html_last_games[2]}</p>
-            </div>
-        </div>
-        <div class="container widthTargetElement">
-            <div class="table card_display">
-                <h2>
-                Standings
-                </h2>
-                <p>{html_standings_table}</p>
-            </div>
-            <div class="card_display">
-                <h2> Record vs {team_info['team_conference']} </h2>
-                {opponent_table_style + record_table.iloc[:len(record_table) // 2].to_html(escape=False,index=False)}
-            </div>
-            <div class="card_display">
-                <h2>  Record vs {team_info['opposite_conference']} </h2>
-                {opponent_table_style + record_table.iloc[len(record_table) // 2:,:3].to_html(escape=False,index=False)}
-            </div>
-        </div>        
+        </script>      
     </body>
     </html>
     """
