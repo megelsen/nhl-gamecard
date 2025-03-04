@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 # List of NHL team abbreviations (you can expand this list as needed)
 team_abbr_list = [
-    "ANA", "ARI", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL",
+    "ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL",
     "DET", "EDM", "FLA", "LAK", "MIN", "MTL", "NJD", "NSH", "NYI", "NYR",
     "OTT", "PHI", "PIT", "SEA", "SJS", "STL", "TBL", "UTA", "TOR", "VAN", "VGK",
     "WPG", "WSH",
@@ -24,10 +24,10 @@ def home():
     RUN_HTML_ONLY = False
     STORE_OUTPUT = False
     
-    # Select Team (Make INPUT in future)
-    team_abbr= "UTA"
+    # Select Team 
+    team_abbr= "CAR"
     if request.method == "POST":
-        team_abbr = request.form.get("team_abbr", "UTA").upper()
+        team_abbr = request.form.get("team_abbr", "CAR").upper()
     # Build the dropdown HTML
     dropdown_html = ''.join([f'<option value="{abbr}" {"selected" if abbr == team_abbr else ""}>{abbr}</option>' for abbr in team_abbr_list])
     if not RUN_HTML_ONLY:
@@ -90,7 +90,9 @@ def home():
         html_standings_table = data["html_standings_table"]
         team_color = data["team_color"]
         light_color = data["light_color"]
-    # HTML styling for compact table
+
+
+    # HTML styling for opponent table
     opponent_table_style = """
     <style>
         table {
@@ -109,21 +111,6 @@ def home():
         }
     </style>
     """
-
-    # Define CSS for centering content
-    summary_style = """
-        <style>
-            table {
-                width: auto;
-                border-collapse: collapse;
-            }
-            th, td {
-                text-align: right;
-                border: 1px solid black;
-            }
-        </style>
-    """
-
     # Some styling variables:
     min_width_team_summary = 515
     min_width_previous_games = 300
@@ -259,6 +246,15 @@ def home():
             align-self: stretch;
             }}
 
+            .title_card_display {{
+                background: #fefefe;  
+                border-radius: 12px;          
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+                padding: {card_padding}px;            
+                width: -webkit-fill-available;
+                justify-items: anchor-center;
+                
+            }}
             .card_display {{
                 background: #fefefe;  
                 border-radius: 12px;          
@@ -311,6 +307,36 @@ def home():
                 font-size: 18px;
             }}
 
+            /* Loading wheel container */
+            #loading-wheel {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.8); 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999; 
+            }}
+
+            /* Spinner animation */
+            .spinner {{
+                width: 50px;
+                height: 50px;
+                border: 5px solid #ccc;
+                border-top: 5px solid #3498db; 
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }}
+
+            /* Keyframes for the spin effect */
+            @keyframes spin {{
+                0% {{ transform: rotate(0deg); }}
+                100% {{ transform: rotate(360deg); }}
+            }}
+
             @media (max-width: {max_width_medium_screen}px) {{
 
                 .title_card {{
@@ -351,9 +377,12 @@ def home():
 
     </head>
     <body>
+        <div id="loading-wheel">
+            <div class="spinner"></div>
+        </div>
         <div class="content">
             <div class="container_title widthTargetElement">
-                <div class="title_card card_display">
+                <div class="title_card title_card_display">
                     <img src="{team_info['query_team_logo_big']}">
                     <h1>
                         {team_info['team_name']}
@@ -418,7 +447,12 @@ def home():
             
             // JavaScript function to automatically submit the form when the dropdown changes
             function handleDropdownChange() {{
-                document.getElementById("team_form").submit();
+                // Show loading wheel immediately
+                document.getElementById("loading-wheel").style.display = "flex";
+                // Slight delay to ensure UI updates before form submission
+                setTimeout(function () {{
+                    document.getElementById("team_form").submit();
+                }}, 50); // Adjust delay if needed
             }}
 
             // Function to synchronize widths
@@ -460,6 +494,20 @@ def home():
             window.addEventListener('resize', function() {{    
                 synchronizeWidths();
                 setTimeout(applyScaling, 500);
+            }});
+
+            document.addEventListener("DOMContentLoaded", function () {{
+                // Show loading wheel
+                document.getElementById("loading-wheel").style.display = "flex";
+
+                setTimeout(function () {{
+                    // Hide loading wheel after content loads
+                    document.getElementById("loading-wheel").style.display = "none";
+
+                    // Run other functions after loading
+                    synchronizeWidths();
+                    applyScaling();
+                }}, 100); // Adjust timeout as needed
             }});
 
         </script>      

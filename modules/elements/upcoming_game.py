@@ -19,7 +19,7 @@ def get_upcoming_game(next_game):
     venue_timezone = next_game['venueTimezone']
     game_start = get_venue_start_time(utc_start_time, venue_timezone)
     display_next_game_info = f"""{next_game['game_venue']}
-    <img src="{next_opponent_logo}">
+    <img src="{next_opponent_logo}" style="width: -webkit-fill-available">
     on {next_game['game_date'].strftime('%a, %b %d')} at {game_start}"""
     return(display_next_game_info)
 
