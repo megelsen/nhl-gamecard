@@ -142,7 +142,7 @@ def home():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Data Tables</title>
+        <title>NHL Gamecard</title>
         <style>
             body {{                
                 font-family: Arial, sans-serif;
@@ -150,6 +150,7 @@ def home():
                 color: #333;
                 font-size: 18px;
                 margin: {outer_margin}px;
+                transition: all 0.3s ease;
             }}
 
             .team-dropdown {{
@@ -341,19 +342,20 @@ def home():
             }}
 
             @media screen and (max-width: {max_width_smallest_screen}px) {{
-                body {{
-                    transform: scale(0.75); 
+                #content {{                
+                    transform: scale(0.6);            
                     transform-origin: top;
                 }}
             }}
         </style>
         <script>
+            
             // JavaScript function to automatically submit the form when the dropdown changes
             function handleDropdownChange() {{
                 document.getElementById("team_form").submit();
             }}
 
-                    // Function to synchronize widths
+            // Function to synchronize widths
             function synchronizeWidths() {{
                 const sourceElement = document.getElementById('widthSourceElement');
                 const targetElements = document.querySelectorAll('.widthTargetElement');                
@@ -364,12 +366,44 @@ def home():
                 }});
             }}
 
+
+
+            function applyScaling() {{
+                var deviceWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+                var max_width_smallest_screen = {max_width_smallest_screen }; 
+                var container = document.getElementById('content');  // Get the content element
+
+                if (container) {{  // Only proceed if the container is found
+                    var max_width_smallest_screen = { max_width_smallest_screen }; // Get value dynamically from Python
+
+                    // Apply scaling only if the device width is <= max_width_smallest_screen
+                    if (deviceWidth <= max_width_smallest_screen) {{
+                        var scaleFactor = deviceWidth / max_width_smallest_screen;
+                        container.style.transform = 'scale(' + scaleFactor + ')';
+                        container.style.transformOrigin = 'top';
+                    }} else {{
+                        container.style.transform = 'scale(1)';
+                    }}
+                }}
+            }}
+
+
+            // Apply scaling on page load
+            applyScaling();
+
             // Call the function initially and on window resize
-            window.addEventListener('load', synchronizeWidths);
-            window.addEventListener('resize', synchronizeWidths);
+            window.addEventListener('load', function() {{    
+                synchronizeWidths();
+                applyScaling();
+            }});
+            window.addEventListener('resize', function() {{    
+                synchronizeWidths();
+                applyScaling();
+            }});
+
         </script>
     </head>
-    <body>
+    <body  id="content">
         <div class="container_title widthTargetElement">
             <div class="title_card card_display">
                 <img src="{team_info['query_team_logo_big']}">
