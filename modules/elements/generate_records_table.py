@@ -12,14 +12,16 @@ def colorize_result(game):
 
     # Formating the game detail string
     game_detail = f"{game_venue} {home_score} - {away_score}"
-
+    background_padding_width = 9
+    background_padding_height = 2
+    background_padding_style = f"padding: {background_padding_height}px {background_padding_width}px"
     # Apply background color based on the result
     if result == 'W':
-        return f'<span style="background-color: green; color: white; padding: 2px 4px; border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: green; color: white; {background_padding_style}; border-radius: 2px;">{game_detail} </span>'
     elif result == 'OTL':
-        return f'<span style="background-color: #EDB120; color: black; padding: 2px 4px;border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: #EDB120; color: black; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
     elif result == 'L':
-        return f'<span style="background-color: #D95319; color: white; padding: 2px 4px;border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: #D95319; color: white; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
     else:
       return f'<span> {game_date}' # Default return if something else
     
