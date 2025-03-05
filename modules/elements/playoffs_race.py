@@ -61,7 +61,7 @@ def format_team_standings(standings,playoffs):
     """
     
     # Apply bold condition
-    if playoffs < 1:
+    if playoffs < 3:
         standings = {k: bold(v) if k != "points_rank" else v for k, v in standings.items()}  # Apply bold to all fields
 
     # Apply label change condition
