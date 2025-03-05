@@ -139,7 +139,7 @@ def home():
                 margin: {outer_margin}px;
                 transition: all 0.3s ease;
             }}
-
+            
             .team-dropdown {{
                 font-size: 16px;  
                 padding: 12px 20px;  
@@ -165,13 +165,16 @@ def home():
                     background-color: #f2f2f2;  /* Light background on focus */
                     outline: none;  /* Remove outline */
                 }}
-
+            .content {{
+                display: grid;
+            }}
             .container {{
                 display: grid;
-                grid-template-columns: minmax({min_width_team_summary}px, 1fr) minmax({min_width_team_summary}px, 1fr) minmax({min_width_previous_games}px, 1fr);            
+                grid-template-columns: {min_width_team_summary}px {min_width_team_summary}px minmax({min_width_previous_games}px, 1fr);  
                 gap: {card_gap}px;
                 justify-self: anchor-center;
                 margin-bottom: {card_gap}px;
+                justify-self: center;
             }}            
             
             .container_title {{
@@ -233,17 +236,23 @@ def home():
                 }}
 
                 .previous_game{{
+                    display: grid
                     grid-column: 3;
                     justify-items: center;
-                    width: -webkit-fill-available"
+                    /* width: -webkit-fill-available; */
+                    width: -moz-available;
+                    min-width: {min_width_previous_games};
+                    max-width: {min_width_team_summary};
+                    justify-content: center;
+                    display: grid;
                 }}
 
             .game_display {{
-            display: grid;
-            grid-template-columns: min-content 70px 1fr;
-            align-items: center;
-            gap: 4px;
-            align-self: stretch;
+                display: grid;
+                grid-template-columns: min-content 70px 1fr;
+                align-items: center;
+                gap: 4px;
+                align-self: stretch;
             }}
 
             .title_card_display {{
@@ -251,7 +260,8 @@ def home():
                 border-radius: 12px;          
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
                 padding: {card_padding}px;            
-                width: -webkit-fill-available;
+                width: -webkit-fill-available;                
+                width: -moz-available;
                 justify-items: anchor-center;
                 
             }}
@@ -261,8 +271,11 @@ def home():
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
                 padding: {card_padding}px;            
                 width: -webkit-fill-available;
+                width: -moz-available;
                 justify-items: anchor-center;
                 min-width: max-content;
+                display: grid;
+                justify-content: center;
                 
             }}
 
@@ -370,7 +383,7 @@ def home():
             @media screen and (max-width: {max_width_smallest_screen}px) {{
                 .content {{                
                     transform: scale(0.6);            
-                    transform-origin: top;
+                    transform-origin: top left;
                 }}
             }}
         </style>
@@ -419,10 +432,10 @@ def home():
                     </div>                
                 </div>
                 <div class="previous_game card_display">
-                <h2>Last games</h2>
-                <p class="game_display previous_game">{html_last_games[0]}</p>
-                <p class="game_display previous_game">{html_last_games[1]}</p>
-                <p class="game_display previous_game">{html_last_games[2]}</p>
+                    <h2>Last games</h2>
+                    <p class="game_display previous_game">{html_last_games[0]}</p>
+                    <p class="game_display previous_game">{html_last_games[1]}</p>
+                    <p class="game_display previous_game">{html_last_games[2]}</p>
                 </div>
             </div>
             <div class="container widthTargetElement">
@@ -473,10 +486,10 @@ def home():
                 // Apply scaling only if the device width is <= max_width_smallest_screen
                 if (deviceWidth <= max_width_smallest_screen) {{
                     var containers = document.querySelectorAll('.content');  // Get the content element
-                    var scaleFactor = deviceWidth / max_width_smallest_screen;
+                    var scaleFactor = deviceWidth / (max_width_smallest_screen + 10);
                     containers.forEach(function(container){{
                         container.style.transform = 'scale(' + scaleFactor + ')';
-                        container.style.transformOrigin = 'top';
+                        container.style.transformOrigin = 'top left';
                     }})
                 }} else {{
                     // Reset scaling if width is greater than the max width
