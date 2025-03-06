@@ -31,13 +31,17 @@ def build_records_table(sorted_opponents):
     game_detail = []
     for opponent, games in sorted_opponents:
         opponent_logo = get_logo(games[0]['opponent_abr'])  # Assuming all games in the list have the same opponent_abr
-        row = [f'<img src="{opponent_logo}" width="50">']
+        row = [f'<a href="javascript:void(0);" class="team-link"><img src="{opponent_logo}" width="50"></a>']
 
         # Add the game details with colored background for the result
         for i, game in enumerate(games, start=1):
             # Get the formatted game detail with background color
             game_detail = colorize_result(game)
-            row.append(game_detail)
+            if "video" in game["recap_URL"]:
+                game_detail_recap_link = f'<a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer" class="recap-link">{game_detail}</a>'
+            else:
+                game_detail_recap_link = game_detail
+            row.append(game_detail_recap_link)
         max_games = max(max_games, len(games))
         data.append(row)
 

@@ -55,9 +55,12 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             game_outcome = game.get("gameOutcome", {}).get("lastPeriodType")
             winning_goalie = game.get("winningGoalie", {}).get("lastName", {}).get("default")
             winning_goal_scorer = game.get("winningGoalScorer", {}).get("lastName", {}).get("default")
-            recap_link = game.get("threeMinRecap")
+            recap = game.get("condensedGame")
+            if recap == None:
+               recap = game.get("threeMinRecap")
             startTimeUTC = game.get("startTimeUTC")
             venueTimezone = game.get("venueTimezone")
+            recapURL = f'https://www.nhl.com{recap}'
 
             if away_team == query_team:
               game_venue = "@"
@@ -97,13 +100,14 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
               "game_outcome": game_outcome,
               "winning_goalie": winning_goalie,
               "winning_goal_scorer": winning_goal_scorer,
-              "recap_link": recap_link,
+              "recap_URL": recapURL,
               "game_venue": game_venue,
               "opponent": opponent,
               "opponent_abr": opponent_abr,
               "result": result,
               "startTimeUTC": startTimeUTC,
               "venueTimezone": venueTimezone,
+              "recapURL": recapURL
             }
             games_by_date.append(game_details)
             games_by_opponent.setdefault(opponent, []).append(game_details)

@@ -15,13 +15,12 @@ def get_upcoming_opponent(games_by_date):
 
 def get_upcoming_game(next_game):    
     next_opponent_logo = get_logo(next_game['opponent_abr'])
-    utc_start_time = next_game['startTimeUTC']
-    venue_timezone = next_game['venueTimezone']
-    game_start = get_venue_start_time(utc_start_time, venue_timezone)
+    utc_start_time = next_game['startTimeUTC']        
     display_next_game_info = f"""{next_game['game_venue']}
-    <img src="{next_opponent_logo}" style="width: -webkit-fill-available">
-    on {next_game['game_date'].strftime('%a, %b %d')} at {game_start}"""
-    return(display_next_game_info)
+    <a href="javascript:void(0);" class="team-link">
+    <img src="{next_opponent_logo}" style="width: 85px">
+    </a>on {next_game['game_date'].strftime('%a, %b %d')} at """
+    return display_next_game_info, utc_start_time
 
 def get_venue_start_time(utc_start_time, venue_timezone):
     # Parse the UTC start time into a datetime object

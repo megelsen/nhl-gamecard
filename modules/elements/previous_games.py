@@ -7,8 +7,14 @@ def display_game_result(game):
     opponent_logo = get_logo(game['opponent_abr'])
     game_disp = f"""
                 {game['game_venue']}
-                <img src="{opponent_logo}" style="width: -webkit-fill-available">
-                {game['home_score']} -  {game['away_score']} ({game['result']}) <br>
+                <a href="javascript:void(0);" class="team-link">
+                <img src="{opponent_logo}" style="width: 85px">
+                </a>
+                {game['home_score']} -  {game['away_score']} ({game['result']})
+                <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer">                
+                <span class="material-symbols-outlined">
+                open_in_new
+                </span></a> <br>
                 """
 
     return game_disp

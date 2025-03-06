@@ -36,7 +36,7 @@ def get_standings(team):
     :return: Dictionary with raw standings data.
     """
     team_logo = get_logo(team.get('teamAbbrev', {}).get("default"))
-    team_logo_html = f"""<img src="{team_logo}" width="30">"""
+    team_logo_html = f"""<a href="javascript:void(0);" class="team-link"><img src="{team_logo}" width="30"></a>"""
 
     return {
         "Rank": f"{team['divisionAbbrev']}{team['divisionSequence']}",

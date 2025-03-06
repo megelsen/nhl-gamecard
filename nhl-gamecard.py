@@ -57,8 +57,9 @@ def home():
         top_scorer = find_top_scorer(team_stats_data)
         # Next game
         next_game = get_upcoming_opponent(games_by_date)
-        html_next_game = get_upcoming_game(next_game)
+        html_next_game, utc_starttime = get_upcoming_game(next_game)
         html_next_opponent_summary = team_summary(next_game['opponent_abr'],standings_data)
+        
         # Previous games
         html_last_games = get_previous_games(games_by_date,nr_games=3)
         # Playoffs race standings
@@ -130,6 +131,8 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NHL Gamecard</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=open_in_new" />
+
         <style>
             body {{                
                 font-family: Arial, sans-serif;
@@ -239,17 +242,18 @@ def home():
                     display: grid
                     grid-column: 3;
                     justify-items: center;
-                    /* width: -webkit-fill-available; */
+                    width: -webkit-fill-available;
                     width: -moz-available;
                     min-width: {min_width_previous_games};
                     max-width: {min_width_team_summary};
                     justify-content: center;
                     display: grid;
+                    margin: 4px;
                 }}
 
             .game_display {{
                 display: grid;
-                grid-template-columns: min-content 70px 1fr;
+                grid-template-columns: min-content 90px 3fr 1fr;
                 align-items: center;
                 gap: 4px;
                 align-self: stretch;
@@ -318,6 +322,25 @@ def home():
                 text-align: center;
                 border: none;
                 font-size: 18px;
+            }}
+
+            .team-link {{
+                text-decoration: none; /* Remove any default text decoration */
+                display: inline-block;
+            }}
+            .recap-link {{                
+                text-decoration: none; 
+                color: inherit;                 
+                transition: background-color 0.2s ease-in-out, text-decoration 0.2s;
+            }}
+           
+            .recap-link:hover span {{
+                opacity: 0.85;
+            }}
+
+            /* Darkens more when clicked */
+            .recap-link:active span{{
+                opacity: 0.7;
             }}
 
             /* Loading wheel container */
@@ -401,7 +424,7 @@ def home():
                         {team_info['team_name']}
                     </h1>
                     <form class="dropdown_wrapper" id="team_form" method="POST">
-                        <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleDropdownChange()">
+                        <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleTeamChange()">
                             {dropdown_html}
                         </select>        
                     </form>
@@ -424,8 +447,10 @@ def home():
                 </div>
                 <div class="top_row_element card_display">
                     <h2  class="top_card_header">Next game</h2>
-                    <div class="game_display upcoming_game">
-                        {html_next_game} 
+                    <div class="upcoming_game">
+                         <span id="event-time" data-utc-time={utc_starttime}>
+                            {html_next_game}
+                        </span>
                     </div>
                     <div class="team-summary">
                         {html_next_opponent_summary}
@@ -459,7 +484,7 @@ def home():
         <script>
             
             // JavaScript function to automatically submit the form when the dropdown changes
-            function handleDropdownChange() {{
+            function handleTeamChange() {{
                 // Show loading wheel immediately
                 document.getElementById("loading-wheel").style.display = "flex";
                 // Slight delay to ensure UI updates before form submission
@@ -499,6 +524,30 @@ def home():
                     }});
                 }}
             }}
+
+            function formatEventTime(utcStartTime) {{
+                const utcDate = new Date(utcStartTime); // Convert UTC string to Date object
+                const options = {{
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                    timeZoneName: "short"
+                }};
+
+                // Get user's local timezone formatted time
+                const formatter = new Intl.DateTimeFormat(navigator.language, options);
+                const parts = formatter.formatToParts(utcDate);
+
+                let hour, minute, ampm, timezoneAbbr;
+                for (const part of parts) {{
+                    if (part.type === "hour") hour = part.value;
+                    if (part.type === "minute") minute = part.value;
+                    if (part.type === "dayPeriod") ampm = part.value.toLowerCase();
+                    if (part.type === "timeZoneName") timezoneAbbr = part.value;
+                }}
+
+                return `${{hour}}:${{minute}}${{ampm}} ${{timezoneAbbr}}`;
+            }}
             
             // Call the function initially and on window resize
             window.addEventListener('load', function() {{    
@@ -520,9 +569,54 @@ def home():
                     // Run other functions after loading
                     synchronizeWidths();
                     applyScaling();
-                }}, 100); // Adjust timeout as needed
+                }}, 500); // Adjust timeout as needed
             }});
 
+            // GET TIMEZONE OF USER
+            
+            // Get the event time from the HTML element
+            const eventElement = document.getElementById("event-time");
+            const utcStartTime = eventElement.getAttribute("data-utc-time"); 
+            
+            if (utcStartTime) {{
+                const formattedTime = formatEventTime(utcStartTime);
+                // const currentContent = eventElement.innerHTML.trim();
+               
+                eventElement.innerHTML = `${{eventElement.innerHTML}} ${{formattedTime}}`;
+            }} else {{
+                eventElement.innerHTML = "Time unavailable";
+            }}
+
+            // Function to extract team abbreviation from the image source or alt attribute
+            function extractTeamAbbr(imgElement) {{
+                // If the abbreviation is in the 'src' URL (e.g., https://assets.nhle.com/logos/nhl/svg/team_abbr_light.svg)
+                const src = imgElement.getAttribute('src');
+                const match = src.match(/\/([A-Z]{{3}})_light\.svg/); // Regex to match the 3-letter team abbreviation
+                
+                if (match) {{
+                    return match[1]; // Return the team abbreviation
+                }}
+                
+                return null; // If no abbreviation found
+            }}
+
+            // Add event listener for all team image links
+            const teamLinks = document.querySelectorAll('.team-link');
+            teamLinks.forEach(link => {{
+                link.addEventListener('click', function(event) {{
+                    const imgElement = link.querySelector('img'); // Get the image inside the clicked link
+                    const teamAbbr = extractTeamAbbr(imgElement); // Extract the abbreviation
+
+                    if (teamAbbr) {{
+                        // Reload the page with the new team_abbr in the query string
+                        // Set the team_abbr value in the hidden input field
+                        document.getElementById("team_abbr").value = teamAbbr;
+
+                        // Call the handleTeamChange function to submit the form
+                        handleTeamChange(); // Reusing your function to submit the form
+                    }}
+                }});
+            }});
         </script>      
     </body>
     </html>
