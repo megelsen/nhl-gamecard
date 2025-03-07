@@ -13,7 +13,7 @@ def display_game_result(game):
                 {game['home_score']} -  {game['away_score']} ({game['result']})
                 <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer">                
                 <span class="material-symbols-outlined">
-                open_in_new
+                    open_in_new
                 </span></a> <br>
                 """
 

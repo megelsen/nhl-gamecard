@@ -44,4 +44,3 @@ def get_venue_start_time(utc_start_time, venue_timezone):
     # Return formatted time as "7:30pm PST"
     return f"{hour}:{minute}{am_pm} {timezone_abbr}"
 
-    return formatted_time

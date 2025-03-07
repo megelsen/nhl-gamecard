@@ -25,7 +25,7 @@ def build_playoffs_race_table(team_info,standings_data):
     # Filter the DataFrame to only include those columns
     df_div_standings = df_div_standings[columns_to_display]
 
-    html_standings_table = df_div_standings.to_html(escape=False, index=False)
+    html_standings_table = df_div_standings.to_html(classes="teams-table", escape=False, index=False)
     return html_standings_table
     
 def get_standings(team):
@@ -36,7 +36,7 @@ def get_standings(team):
     :return: Dictionary with raw standings data.
     """
     team_logo = get_logo(team.get('teamAbbrev', {}).get("default"))
-    team_logo_html = f"""<a href="javascript:void(0);" class="team-link"><img src="{team_logo}" width="30"></a>"""
+    team_logo_html = f"""<a href="javascript:void(0);" class="team-link"><img src="{team_logo}" width="50px"></a>"""
 
     return {
         "Rank": f"{team['divisionAbbrev']}{team['divisionSequence']}",

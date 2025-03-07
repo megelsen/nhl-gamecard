@@ -55,6 +55,14 @@ def home():
         html_team_summary = team_summary(team_abbr,standings_data)
         # Find top scorer 
         top_scorer = find_top_scorer(team_stats_data)
+        nr_top = 5
+        point_leaders = find_pointleaders(team_stats_data,nr_top)
+        html_pts_leader_table = build_leaders_table(point_leaders,'P')
+        goal_leaders = find_goalleaders(team_stats_data,nr_top)
+        html_goals_leader_table = build_leaders_table(goal_leaders,'G')
+        assist_leaders = find_assistleaders(team_stats_data,nr_top)
+        html_assists_leader_table = build_leaders_table(assist_leaders,'A')
+
         # Next game
         next_game = get_upcoming_opponent(games_by_date)
         html_next_game, utc_starttime = get_upcoming_game(next_game)
@@ -71,6 +79,9 @@ def home():
                 "record_table": record_table,
                 "html_team_summary": html_team_summary,
                 "top_scorer": top_scorer,
+                "point_leaders": point_leaders,
+                "goal_leaders": goal_leaders,
+                "assist_leaders": assist_leaders,
                 "html_next_game": html_next_game,
                 "html_next_opponent_summary": html_next_opponent_summary,
                 "html_last_games": html_last_games,
@@ -85,6 +96,9 @@ def home():
         record_table = data["record_table"]
         html_team_summary = data["html_team_summary"]
         top_scorer = data["top_scorer"]
+        point_leaders = data["point_leaders"]
+        goal_leaders = data["goal_leaders"]
+        assist_leaders = data["assist_leaders"]
         html_next_game = data["html_next_game"]
         html_next_opponent_summary = data["html_next_opponent_summary"]
         html_last_games = data["html_last_games"]
@@ -96,19 +110,23 @@ def home():
     # HTML styling for opponent table
     opponent_table_style = """
     <style>
-        table {
+        .teams_table {
             border-collapse: collapse;
             width: auto;  /* Set width to auto to minimize space */
             font-size: 12px;  /* Smaller font size */
+            align-self: center;
+            justify-self: left;
             img {
-            max-width: 30px;  /* Smaller logo images */
-            height: auto;
+                max-width: 50px;  /* Smaller logo images */
+                height: auto;
+
             }}
         td, th {
             padding: 4px 6px;
             margin: 0;
             text-align: center;  
             border: none;  /* No borders */
+            border-collapse: collapse;
         }
     </style>
     """
@@ -131,8 +149,7 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NHL Gamecard</title>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=open_in_new" />
-
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
         <style>
             body {{                
                 font-family: Arial, sans-serif;
@@ -237,6 +254,10 @@ def home():
                     grid-row: 2;
                     grid-column: 1 / span 3
                 }}
+                    .upcoming_game span{{
+                        display: flex;
+                        align-items: center;
+                    }}
 
                 .previous_game{{
                     display: grid
@@ -254,7 +275,7 @@ def home():
             .game_display {{
                 display: grid;
                 grid-template-columns: min-content 90px 3fr 1fr;
-                align-items: center;
+                /* align-items: center; */
                 gap: 4px;
                 align-self: stretch;
             }}
@@ -291,8 +312,14 @@ def home():
                 max-width: 100%; /* Ensure it doesn't overflow */
             }}
 
-
+            h2 {{
+                align-self: baseline;
+                margin-block-start: 0.4em;
+            }}
             /* Table styling */
+            .dataframe{{
+                border-collapse: collapse;
+            }}
             table {{
                 justify-items: center
                 border-collapse: collapse; /* Removes unnecessary borders */
@@ -342,6 +369,104 @@ def home():
             .recap-link:active span{{
                 opacity: 0.7;
             }}
+
+            .more-stats {{
+                padding: 10px; 
+                grid-column: 3;
+                grid-row: 1;
+                align-self: start;
+                justify-self: end;
+                cursor: pointer;
+                transition: transform 0.2s;
+                z-index: 10;
+            }}
+
+                /* Hover effect on the icon */
+                .more-dots:hover {{
+                    transform: scale(1.2);
+                }}
+
+                /* stats popup */
+                .stats-popup {{
+                    display: none; /* Hidden by default */
+                    position: fixed;
+                    z-index: 1;
+                    left: 0;
+                    top: 0;
+                    width: 500px;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.4); /* Background overlay */
+                    padding-top: 60px;
+                    justify-content: center;
+                    align-items: center;
+                    transform: translateX(-100%);
+                }}
+
+                /* Modal Content */
+                .stats-popup-content {{
+                    align-self: baseline;
+                    background-color: white;
+                    padding: 4px;  
+                                      
+                }}
+                .leaders-table{{
+                    border-collapse: collapse;
+                    width: auto;  /* Set width to auto to minimize space */
+                    font-size: 16px;  /* Smaller font size */
+                    text-align: left;  
+                    img {{
+                        max-width: 120px;  
+                        height: auto;
+                    }}
+                    td, th {{
+                        padding: 4px 6px;
+                        margin: 0;
+                        text-align: left;  
+                        border: none;  /* No borders */
+                        border-collapse: collapse;
+                        background: #ffffff;
+                        font-size: larger;
+                    }}
+                }}
+
+                /* Close Button */
+                .close {{
+                    position:absolute;
+                    padding-right: 16px;
+                    padding-top: 8px;
+                    justify-self: right;
+                    color: #aaa;
+                    float: right;
+                    font-size: 28px;
+                    font-weight: bold;
+                }}
+
+                .close:hover,
+                .close:focus {{
+                    color: black;
+                    text-decoration: none;
+                    cursor: pointer;
+                }}
+
+                .modal-nav{{
+                    display: grid;
+                    grid-template-columns: 50px 100px 50px;
+                    white-space: nowrap;
+                    align-items: center;
+                    text-align: center;
+                }}
+                    .nav-button{{
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        cursor: pointer;
+                        padding: 4px;
+                        color: inherit; /* Matches text color */
+                    }}
+
+                    .nav-button:hover {{
+                        color: #007bff; /* Slight color change on hover */
+                    }}
 
             /* Loading wheel container */
             #loading-wheel {{
@@ -406,7 +531,7 @@ def home():
             @media screen and (max-width: {max_width_smallest_screen}px) {{
                 .content {{                
                     transform: scale(0.6);            
-                    transform-origin: top left;
+                    transform-origin: top ;
                 }}
             }}
         </style>
@@ -416,8 +541,8 @@ def home():
         <div id="loading-wheel">
             <div class="spinner"></div>
         </div>
-        <div class="content">
-            <div class="container_title widthTargetElement">
+        <div class="content"> 
+            <div class="container_title widthTargetElement ">
                 <div class="title_card title_card_display">
                     <img src="{team_info['query_team_logo_big']}">
                     <h1>
@@ -431,8 +556,13 @@ def home():
                 </div>
             </div>
             <div class="container" id="widthSourceElement">
-                <div class="top_row_element card_display">
-                    <h2 class="top_card_header">Stats</h2>
+                <div class="top_row_element card_display" id="statsCard">
+                    <h2 class="top_card_header">
+                        Stats
+                    </h2>                    
+                    <span class="material-symbols-outlined more-stats" id="moreStats">
+                        more_horiz
+                    </span>
                     <p class="top-scorer-label">Top scorer:</p>
                     <div class ="top-scorer-info">
                         <p style="  margin-block-end: 0">{top_scorer['name']}</p>            
@@ -443,6 +573,38 @@ def home():
                     </div>
                     <div class="team-summary">
                         { html_team_summary }
+                    </div>
+                </div>
+                <div id="statsPopUp" class="stats-popup">                    
+                    <!-- Modal Content -->
+                    <div class="stats-popup-content card_display">
+                        <!-- Closing Button -->
+                        <span class="close" id="closeBtn">&times;</span>
+                        <!-- Navigation Buttons -->
+                        <div class="modal-nav">
+                            <button id="prevButton" class="nav-button">
+                                <span class="material-symbols-outlined">
+                                    arrow_back_ios
+                                </span>
+                            </button>
+                            <h2 id="modal-title">Points</h2>
+                            <button id="nextButton" class="nav-button">
+                                <span class="material-symbols-outlined">
+                                    arrow_forward_ios
+                                </span>
+                            </button> 
+                        </div>
+                        <div id="modalContent">
+                            <div id="points-leaders-content">                                
+                                {html_pts_leader_table} 
+                            </div> 
+                            <div id="goal-leaders-content" style="display: none;">
+                                {html_goals_leader_table}
+                            </div>
+                            <div id="assist-leaders-content" style="display: none;">
+                                {html_assists_leader_table}
+                            </div>    
+                        </div>                      
                     </div>
                 </div>
                 <div class="top_row_element card_display">
@@ -463,6 +625,7 @@ def home():
                     <p class="game_display previous_game">{html_last_games[2]}</p>
                 </div>
             </div>
+
             <div class="container widthTargetElement">
                 <div class="table card_display">
                     <h2>
@@ -511,10 +674,10 @@ def home():
                 // Apply scaling only if the device width is <= max_width_smallest_screen
                 if (deviceWidth <= max_width_smallest_screen) {{
                     var containers = document.querySelectorAll('.content');  // Get the content element
-                    var scaleFactor = deviceWidth / (max_width_smallest_screen + 10);
+                    var scaleFactor = deviceWidth / (max_width_smallest_screen);
                     containers.forEach(function(container){{
                         container.style.transform = 'scale(' + scaleFactor + ')';
-                        container.style.transformOrigin = 'top left';
+                        container.style.transformOrigin = 'left top';
                     }})
                 }} else {{
                     // Reset scaling if width is greater than the max width
@@ -552,6 +715,7 @@ def home():
             // Call the function initially and on window resize
             window.addEventListener('load', function() {{    
                 synchronizeWidths();
+                // synchronizeWidthsStatsPopUp();
             }});
             window.addEventListener('resize', function() {{    
                 synchronizeWidths();
@@ -617,6 +781,77 @@ def home():
                     }}
                 }});
             }});
+
+        const sections = [
+            {{ id: "points-leaders-content", title: "Points" }},
+            {{ id: "goal-leaders-content", title: "Goals" }},
+            {{ id: "assist-leaders-content", title: "Assists" }}
+        ];
+
+        let currentIndex = 0;
+        const modalTitle = document.getElementById("modal-title");
+
+        document.getElementById("prevButton").addEventListener("click", () => switchContent(-1));
+        document.getElementById("nextButton").addEventListener("click", () => switchContent(1));
+
+        function switchContent(direction) {{
+            document.getElementById(sections[currentIndex].id).style.display = "none"; // Hide current
+            currentIndex = (currentIndex + direction + sections.length) % sections.length; // Cycle index
+            document.getElementById(sections[currentIndex].id).style.display = "block"; // Show new
+            modalTitle.textContent = sections[currentIndex].title; // Update header
+        }}
+
+
+        // Get the modal, the button, and the close button
+            const modal = document.getElementById("statsPopUp");
+            const moreDots = document.getElementById("moreStats");
+            const closeBtn = document.getElementById("closeBtn");
+
+            function positionModal() {{
+                modal.style.visibility = "hidden"; // Hide the modal but keep it in the layout to calculate size
+                modal.style.display = "flex"; // Temporarily display to calculate width/height
+                const rect = moreDots.getBoundingClientRect(); // Get position of the icon
+                const modalWidth = modal.offsetWidth;  // Get the modal's width
+                const modalHeight = modal.offsetHeight; // Get the modal's height
+                modal.style.visibility = "visible"; // Make sure the modal is visible after calculations
+
+                // Make sure the modal doesn't go off-screen
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const dotsBottom = rect.bottom
+               
+                // Position modal below the "more_horiz" icon by default
+                let modalRight = rect.left;
+                let modalTop = dotsBottom - 100;
+
+                console.log("Modal Width:", modalWidth);
+                console.log("Modal Height:", modalHeight);
+                console.log("Modal Right:", modalRight);
+                console.log("Modal Top:", modalTop);
+                console.log("Viewport Width:", viewportWidth);
+                console.log("Viewport Height:", viewportHeight);
+                // Check if the modal overflows the right edge of the viewport
+
+                // Set the modal's position
+                modal.style.left = `${{modalRight}}px`;
+                modal.style.top = `${{modalTop}}px`;
+                modal.style.display = "flex"; // Show the modal
+            }}
+
+            moreDots.onclick = function() {{
+                positionModal(); // Position the modal when "more_horiz" is clicked
+            }};
+            // When the user clicks on the close button, close the modal
+            closeBtn.onclick = function() {{    
+                modal.style.display = "none"; // Hide the modal
+            }}
+
+            // When the user clicks anywhere outside the modal, close it
+            window.onclick = function(event) {{
+                if (event.target === modal) {{
+                    modal.style.display = "none"; // Hide the modal
+                }}
+            }}
         </script>      
     </body>
     </html>

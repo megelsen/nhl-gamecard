@@ -52,5 +52,5 @@ def team_summary(team_abbr,standings_data):
   # Filter the DataFrame to only include those columns
   df_team_summary = df_team_summary[columns_to_display]
 
-  html_team_summary = df_team_summary.to_html(escape=False, index=False)
+  html_team_summary = df_team_summary.to_html(classes="teams-table", escape=False, index=False)
   return html_team_summary
