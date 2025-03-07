@@ -272,6 +272,11 @@ def home():
                     margin: 4px;
                 }}
 
+                    .previous_game span{{
+                        display: flex;
+                        align-items: center;
+                    }}
+
             .game_display {{
                 display: grid;
                 grid-template-columns: min-content 90px 3fr 1fr;
@@ -390,7 +395,7 @@ def home():
                 .stats-popup {{
                     display: none; /* Hidden by default */
                     position: fixed;
-                    z-index: 1;
+                    z-index: 100;
                     left: 0;
                     top: 0;
                     width: 500px;
@@ -411,8 +416,8 @@ def home():
                 }}
                 .leaders-table{{
                     border-collapse: collapse;
-                    width: auto;  /* Set width to auto to minimize space */
-                    font-size: 16px;  /* Smaller font size */
+                    width: 490px;  
+                    font-size: 16px;  
                     text-align: left;  
                     img {{
                         max-width: 120px;  
@@ -620,9 +625,9 @@ def home():
                 </div>
                 <div class="previous_game card_display">
                     <h2>Last games</h2>
-                    <p class="game_display previous_game">{html_last_games[0]}</p>
-                    <p class="game_display previous_game">{html_last_games[1]}</p>
-                    <p class="game_display previous_game">{html_last_games[2]}</p>
+                    <span class="game_display previous_game">{html_last_games[0]}</span>
+                    <span class="game_display previous_game">{html_last_games[1]}</span>
+                    <span class="game_display previous_game">{html_last_games[2]}</span>
                 </div>
             </div>
 
@@ -811,8 +816,8 @@ def home():
                 modal.style.visibility = "hidden"; // Hide the modal but keep it in the layout to calculate size
                 modal.style.display = "flex"; // Temporarily display to calculate width/height
                 const rect = moreDots.getBoundingClientRect(); // Get position of the icon
-                const modalWidth = modal.offsetWidth;  // Get the modal's width
-                const modalHeight = modal.offsetHeight; // Get the modal's height
+                const modalWidth = modal.clientWidth;  // Get the modal's width
+                const modalHeight = modal.clientHeight; // Get the modal's height
                 modal.style.visibility = "visible"; // Make sure the modal is visible after calculations
 
                 // Make sure the modal doesn't go off-screen
@@ -831,7 +836,9 @@ def home():
                 console.log("Viewport Width:", viewportWidth);
                 console.log("Viewport Height:", viewportHeight);
                 // Check if the modal overflows the right edge of the viewport
-
+                if (modalWidth > viewportWidth){{
+                    modalRight = 500;
+                }}
                 // Set the modal's position
                 modal.style.left = `${{modalRight}}px`;
                 modal.style.top = `${{modalTop}}px`;
