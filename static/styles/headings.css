@@ -1,0 +1,11 @@
+h1 {
+    align-items: center;
+    gap: 100px; /* Space between text and image */
+    width: 100%; /* Ensure h1 uses the full available width */
+    max-width: 100%; /* Ensure it doesn't overflow */
+}
+
+h2 {
+    align-self: baseline;
+    margin-block-start: 0.4em;
+}

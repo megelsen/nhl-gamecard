@@ -1,0 +1,37 @@
+
+@media (max-width: {{max_width_medium_screen}}px) {
+
+    .title_card {
+        grid-column: span 2;
+    }
+    .container {
+        grid-template-columns: 1fr 1fr;
+    }
+    .previous_game {
+        grid-column: 1 / span 2;
+        justify-items: center;
+    }
+}
+
+@media (max-width: {{max_width_small_screen}}px) {
+    
+    .container {
+        grid-template-columns: 1fr;
+    }
+    .previous_game {
+        grid-column: 1;
+    }
+    .title_card {
+        grid-template-columns: 150px 1fr;                                      
+        }
+    .dropdown_wrapper{
+        grid-column: span 2;
+    }
+}
+
+@media screen and (max-width: {{max_width_smallest_screen}}px) {
+    .content {              
+        transform: scale(0.6);            
+        transform-origin: top ;
+    }
+}

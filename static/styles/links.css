@@ -1,0 +1,18 @@
+.team-link {
+    text-decoration: none; /* Remove any default text decoration */
+    display: inline-block;
+}
+.recap-link {              
+    text-decoration: none; 
+    color: inherit;                 
+    transition: background-color 0.2s ease-in-out, text-decoration 0.2s;
+}
+
+.recap-link:hover span {
+    opacity: 0.85;
+}
+
+/* Darkens more when clicked */
+.recap-link:active span{
+    opacity: 0.7;
+}

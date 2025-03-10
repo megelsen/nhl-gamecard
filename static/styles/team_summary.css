@@ -1,0 +1,7 @@
+.team-summary {
+    grid-row: 3;
+    grid-column: 1 / span 3;
+    width: fit-content;                
+    align-self: self-end;
+    justify-self: center;
+}

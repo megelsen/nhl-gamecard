@@ -1,0 +1,14 @@
+.top_row_element {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    white-space: nowrap;
+    gap: 4px;
+    align-items: center;
+    text-align: left;        
+    justify-items: center;
+    
+}
+.top_card_header{
+    grid-row: 1;
+    grid-column: 2;
+}

@@ -11,7 +11,7 @@ def display_game_result(game):
                 <img src="{opponent_logo}" style="width: 85px">
                 </a>
                 {game['home_score']} -  {game['away_score']} ({game['result']})
-                <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer">                
+                <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
                 </span></a> <br>

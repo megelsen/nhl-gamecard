@@ -1,0 +1,18 @@
+.teams_table {
+    border-collapse: collapse;
+    width: auto;  /* Set width to auto to minimize space */
+    font-size: 12px;  /* Smaller font size */
+    align-self: center;
+    justify-self: left;
+    img {
+        max-width: 50px;  /* Smaller logo images */
+        height: auto;
+
+    }}
+td, th {
+    padding: 4px 6px;
+    margin: 0;
+    text-align: center;  
+    border: none;  /* No borders */
+    border-collapse: collapse;
+}

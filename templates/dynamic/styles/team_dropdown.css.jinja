@@ -1,0 +1,25 @@
+.team-dropdown {
+    font-size: 16px;  
+    padding: 12px 20px;  
+    border-radius: 8px;  
+    border: 2px solid #ccc;  
+    background-color: #fcfcfc;  
+    color: #333; 
+    cursor: pointer; 
+    width: 200px;  
+    transition: all 0.01s ease;  
+    margin: {{ outer_margin }} px;
+}
+
+    /* Style for the dropdown when hovered */
+    .team-dropdown:hover {
+        border-color: #f1f1f1;  /* Change border color on hover */
+        background-color: #f2f2f2;  /* Change background color on hover */
+    }
+
+    /* Style for the selected option */
+    .team-dropdown:focus {
+        border-color: {{ light_color }};  /* Highlight border when selected */
+        background-color: #f2f2f2;  /* Light background on focus */
+        outline: none;  /* Remove outline */
+    }
