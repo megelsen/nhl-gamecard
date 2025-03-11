@@ -59,7 +59,7 @@ updateActiveTab();
         const dotsBottom = rect.bottom
        
         // Position modal below the "more_horiz" icon by default
-        let modalLeft = rect.left + modalWidth - 15;
+        let modalLeft =modalWidth + 24;
         let modalTop = dotsBottom - 100;
 
         console.log("Modal Width:", modalWidth);
