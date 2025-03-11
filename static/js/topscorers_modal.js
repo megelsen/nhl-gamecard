@@ -7,17 +7,39 @@ const sections = [
 let currentIndex = 0;
 const modalTitle = document.getElementById("modal-title");
 
-document.getElementById("prevButton").addEventListener("click", () => switchContent(-1));
-document.getElementById("nextButton").addEventListener("click", () => switchContent(1));
+// Add event listeners to tabs
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        const index = parseInt(tab.getAttribute("data-index"));
+        switchContent(index);
+    });
+});
 
-function switchContent(direction) {
-    document.getElementById(sections[currentIndex].id).style.display = "none"; // Hide current
-    currentIndex = (currentIndex + direction + sections.length) % sections.length; // Cycle index
-    document.getElementById(sections[currentIndex].id).style.display = "block"; // Show new
-    modalTitle.textContent = sections[currentIndex].title; // Update header
+function switchContent(newIndex) {
+    // Hide current section
+    document.getElementById(sections[currentIndex].id).style.display = "none";
+    
+    // Update the current index to the new tab index
+    currentIndex = newIndex;
+
+    // Show the new section
+    document.getElementById(sections[currentIndex].id).style.display = "block";
+
+    // Update active tab
+    updateActiveTab();
 }
 
+function updateActiveTab() {
+    // Remove active class from all tabs
+    tabs.forEach(tab => tab.classList.remove("active"));
 
+    // Add active class to the current tab
+    tabs[currentIndex].classList.add("active");
+}
+
+// Initialize by setting the active tab
+updateActiveTab();
 // Get the modal, the button, and the close button
     const modal = document.getElementById("statsPopUp");
     const moreDots = document.getElementById("moreStats");
@@ -37,21 +59,21 @@ function switchContent(direction) {
         const dotsBottom = rect.bottom
        
         // Position modal below the "more_horiz" icon by default
-        let modalRight = rect.left;
+        let modalLeft = rect.left + modalWidth - 15;
         let modalTop = dotsBottom - 100;
 
         console.log("Modal Width:", modalWidth);
         console.log("Modal Height:", modalHeight);
-        console.log("Modal Right:", modalRight);
+        console.log("Modal Left:", modalLeft);
         console.log("Modal Top:", modalTop);
         console.log("Viewport Width:", viewportWidth);
         console.log("Viewport Height:", viewportHeight);
         // Check if the modal overflows the right edge of the viewport
         if (modalWidth > viewportWidth){
-            modalRight = 500;
+            modalLeft = 20;
         }
         // Set the modal's position
-        modal.style.left = `${modalRight}px`;
+        modal.style.left = `${modalLeft}px`;
         modal.style.top = `${modalTop}px`;
         modal.style.display = "flex"; // Show the modal
     }

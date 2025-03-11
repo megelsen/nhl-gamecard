@@ -1,5 +1,6 @@
 .more-stats {
-    padding: 10px; 
+    font-size: smaller;
+    padding: 0px; 
     grid-column: 3;
     grid-row: 1;
     align-self: start;
@@ -7,6 +8,10 @@
     cursor: pointer;
     transition: transform 0.2s;
     z-index: 10;
+    display: flex;
+    place-content: end;
+    place-items: center; 
+    width: min-content;
 }
 
     /* Hover effect on the icon */
@@ -53,7 +58,6 @@
             border: none;  /* No borders */
             border-collapse: collapse;
             background: #ffffff;
-            font-size: larger;
         }
     }
     .modal-nav{
@@ -75,3 +79,39 @@
         .nav-button:hover {
             color: #007bff; /* Slight color change on hover */
         }
+
+    #tabs {
+        display: flex;
+    }
+    
+.tabs-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    margin-bottom: 32px;
+}
+
+/* Styling for individual tabs */
+.tab {
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0; /* Rounded top corners like Chrome */
+    background: #e0e0e0;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s, box-shadow 0.3s;
+    border: 1px solid #ccc;
+    border-bottom: none;
+}
+
+/* Active tab style */
+.tab.active {
+    background: white;
+    color: black;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover effect on tabs */
+.tab:hover {
+    background: #d6d6d6;
+}
