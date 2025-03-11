@@ -20,7 +20,7 @@ def build_playoffs_race_table(team_info,standings_data):
     # Sort by division and points
     df_div_standings = df_div_standings.sort_values(by=['points_rank'], ascending=[ False])
     # Extract only the first 8 columns
-    columns_to_display = ["Rank", "Team", "GP", "PTS", "W", "L", "OTL", "P%"]
+    columns_to_display = ["Team", "Rank", "GP", "PTS", "W", "L", "OTL", "P%"]
 
     # Filter the DataFrame to only include those columns
     df_div_standings = df_div_standings[columns_to_display]
@@ -38,9 +38,9 @@ def get_standings(team):
     team_logo = get_logo(team.get('teamAbbrev', {}).get("default"))
     team_logo_html = f"""<a href="javascript:void(0);" class="team-link"><img src="{team_logo}" width="50px"></a>"""
 
-    return {
-        "Rank": f"{team['divisionAbbrev']}{team['divisionSequence']}",
+    return {        
         "Team": team_logo_html,
+        "Rank": f"{team['divisionAbbrev']}{team['divisionSequence']}",
         "GP": team["gamesPlayed"],        
         "PTS": team["points"],
         "W": team["wins"],
