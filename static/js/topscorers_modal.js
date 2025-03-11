@@ -59,7 +59,7 @@ updateActiveTab();
         const dotsBottom = rect.bottom
        
         // Position modal below the "more_horiz" icon by default
-        let modalLeft =modalWidth + 24;
+        let modalLeft = rect.right + modalWidth ;
         let modalTop = dotsBottom - 100;
 
         console.log("Modal Width:", modalWidth);
@@ -68,10 +68,17 @@ updateActiveTab();
         console.log("Modal Top:", modalTop);
         console.log("Viewport Width:", viewportWidth);
         console.log("Viewport Height:", viewportHeight);
-        // Check if the modal overflows the right edge of the viewport
-        if (modalWidth > viewportWidth){
-            modalLeft = 20;
+
+        // Prevent Left Overflow
+        if (modalLeft < 0) {
+            modalLeft = 10; // Keep modal within left boundary
         }
+
+        // Prevent Right Overflow
+        if (modalLeft + modalWidth > viewportWidth) {
+            modalLeft = modalWidth + 15; // Adjust to fit
+        }
+        console.log("Modal Left adjusted:", modalLeft);
         // Set the modal's position
         modal.style.left = `${modalLeft}px`;
         modal.style.top = `${modalTop}px`;

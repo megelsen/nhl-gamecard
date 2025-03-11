@@ -19,5 +19,5 @@ document.addEventListener("DOMContentLoaded", function () {
         // Run other functions after loading
         synchronizeWidths();
         applyScaling();
-    }, 500); // Adjust timeout as needed
+    }, 700); // Adjust timeout as needed
 });
