@@ -52,17 +52,23 @@
             <div class="top_row_element card_display" id="statsCard">
                 <h2 class="top_card_header">
                     Stats
-                </h2>                    
-                <span class="material-symbols-outlined more-stats" id="moreStats">
-                    more_horiz
-                </span>
-                <p class="top-scorer-label">Top scorer:</p>
+                </h2>      
+                <div class="top-scorer-label">
+                    <b>Top Scorer:</b>
+                    <div class="more-stats" id="moreStats">
+                        <p style="margin: 0px">Show Top 5</p> 
+                        <span class="material-symbols-outlined" >
+                            arrow_drop_down
+                        </span>
+                    </div>
+                </div>
                 <div class ="top-scorer-info">
-                    <p style="  margin-block-end: 0">{{top_scorer['name']}}</p>            
+                    <p style="  margin-block-end: 0"><b>{{top_scorer['name']}}</b> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}} </p>            
                     <p style="  margin-block: 0">({{ top_scorer['goals']}}G-{{ top_scorer['assists']}}A-{{ top_scorer['points']}}P)</p>
                 </div>
                 <div class="headshot-img">
                     <img src={{ top_scorer['headshot_url'] }} style="max-width: 150px;">
+
                 </div>
                 <div class="team-summary">
                     {{ html_team_summary | safe }}
@@ -74,18 +80,12 @@
                     <!-- Closing Button -->
                     <span class="close" id="closeBtn">&times;</span>
                     <!-- Navigation Buttons -->
-                    <div class="modal-nav">
-                        <button id="prevButton" class="nav-button">
-                            <span class="material-symbols-outlined">
-                                arrow_back_ios
-                            </span>
-                        </button>
-                        <h2 id="modal-title">Points</h2>
-                        <button id="nextButton" class="nav-button">
-                            <span class="material-symbols-outlined">
-                                arrow_forward_ios
-                            </span>
-                        </button> 
+                    <div class="tabs-container">
+                        <div id="tabs">
+                            <div class="tab active" data-index="0">Points</div>
+                            <div class="tab" data-index="1">Goals</div>
+                            <div class="tab" data-index="2">Assists</div>
+                        </div>
                     </div>
                     <div id="modalContent">
                         <div id="points-leaders-content">                                
@@ -120,30 +120,32 @@
         </div>
 
         <div class="container widthTargetElement">
-            <div class="table card_display">
-                <h2>
+            <div class="table card_display table_card">
+                <h2  class="top_card_header">
                 Standings
                 </h2>
                 <p>{{html_standings_table | safe }}</p>
             </div>
-            <div class="card_display">
-                <h2> Record vs {{team_info['team_conference']}} </h2>
+            <div class="card_display table_card">
+                <h2  class="top_card_header"> Record vs {{team_info['team_conference']}} </h2>
                 {{ record_table_1 | safe }}
             </div>
-            <div class="card_display">
-                <h2>  Record vs {{team_info['opposite_conference']}} </h2>
+            <div class="card_display table_card">
+                <h2  class="top_card_header">  Record vs {{team_info['opposite_conference']}} </h2>
                 {{ record_table_2 | safe }}
             </div>
         </div>  
     </div>     
 
     <!-- 🔹 Static JavaScript -->
+    <script src="{{ url_for('static', filename='js/timezoneMap.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/eventListeners.js') }}"></script>
     <script src="{{ url_for('static', filename='js/formatEventTime.js') }}"></script>
     <script src="{{ url_for('static', filename='js/link_team_logos.js') }}"></script>
     <script src="{{ url_for('static', filename='js/synchronizeWidths.js') }}"></script>
     <script src="{{ url_for('static', filename='js/team_dropdown.js') }}"></script>
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
+    
     <!-- 🔹 Dynamic JavaScript -->
     <script>
         var max_width_smallest_screen = {{ max_width_smallest_screen }};
