@@ -19,7 +19,7 @@ def get_upcoming_game(next_game):
     display_next_game_info = f"""{next_game['game_venue']}
     <a href="javascript:void(0);" class="team-link">
     <img src="{next_opponent_logo}" style="width: 85px">
-    </a>on {next_game['game_date'].strftime('%a, %b %d')} at """
+    </a>on """
     return display_next_game_info, utc_start_time
 
 def get_venue_start_time(utc_start_time, venue_timezone):
