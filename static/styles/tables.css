@@ -8,6 +8,7 @@ table {
     border: none;
     /* width: fit-content; */
     place-self: center;
+    white-space: nowrap
 }
 
 th {
@@ -30,4 +31,9 @@ tr:nth-child(even) {
     text-align: center;
     border: none;
     font-size: 18px;
+}
+
+.table_records{
+    place-self: start;
+    width: fit-content;
 }

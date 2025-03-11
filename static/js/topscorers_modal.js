@@ -46,48 +46,14 @@ updateActiveTab();
     const closeBtn = document.getElementById("closeBtn");
 
     function positionModal() {
-        modal.style.visibility = "hidden"; // Hide the modal but keep it in the layout to calculate size
-        modal.style.display = "flex"; // Temporarily display to calculate width/height
-        const rect = moreDots.getBoundingClientRect(); // Get position of the icon
-        const modalWidth = modal.clientWidth;  // Get the modal's width
-        const modalHeight = modal.clientHeight; // Get the modal's height
-        modal.style.visibility = "visible"; // Make sure the modal is visible after calculations
-
-        // Make sure the modal doesn't go off-screen
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const dotsBottom = rect.bottom
-       
-        // Position modal below the "more_horiz" icon by default
-        let modalLeft = rect.right + modalWidth ;
-        let modalTop = dotsBottom - 100;
-
-        console.log("Modal Width:", modalWidth);
-        console.log("Modal Height:", modalHeight);
-        console.log("Modal Left:", modalLeft);
-        console.log("Modal Top:", modalTop);
-        console.log("Viewport Width:", viewportWidth);
-        console.log("Viewport Height:", viewportHeight);
-
-        // Prevent Left Overflow
-        if (modalLeft < 0) {
-            modalLeft = 10; // Keep modal within left boundary
-        }
-
-        // Prevent Right Overflow
-        if (modalLeft + modalWidth > viewportWidth) {
-            modalLeft = modalWidth + 15; // Adjust to fit
-        }
-        console.log("Modal Left adjusted:", modalLeft);
-        // Set the modal's position
-        modal.style.left = `${modalLeft}px`;
-        modal.style.top = `${modalTop}px`;
+      
         modal.style.display = "flex"; // Show the modal
     }
 
     moreDots.onclick = function() {
         positionModal(); // Position the modal when "more_horiz" is clicked
     };
+
     // When the user clicks on the close button, close the modal
     closeBtn.onclick = function() {    
         modal.style.display = "none"; // Hide the modal

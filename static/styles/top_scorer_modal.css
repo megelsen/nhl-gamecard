@@ -1,24 +1,3 @@
-.more-stats {
-    font-size: smaller;
-    padding: 0px; 
-    grid-column: 3;
-    grid-row: 1;
-    align-self: start;
-    justify-self: end;
-    cursor: pointer;
-    transition: transform 0.2s;
-    z-index: 10;
-    display: flex;
-    place-content: end;
-    place-items: center; 
-    width: min-content;
-}
-
-    /* Hover effect on the icon */
-    .more-dots:hover {
-        transform: scale(1.2);
-    }
-
     /* stats popup */
     .stats-popup {
         display: none; /* Hidden by default */
@@ -26,13 +5,12 @@
         z-index: 100;
         left: 0;
         top: 0;
-        width: 500px;
+        width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.4); /* Background overlay */
         padding-top: 60px;
         justify-content: center;
         align-items: center;
-        transform: translateX(-100%);
     }
 
     /* Modal Content */
@@ -60,25 +38,6 @@
             background: #ffffff;
         }
     }
-    .modal-nav{
-        display: grid;
-        grid-template-columns: 50px 100px 50px;
-        white-space: nowrap;
-        align-items: center;
-        text-align: center;
-    }
-        .nav-button{
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 4px;
-            color: inherit; /* Matches text color */
-        }
-
-        .nav-button:hover {
-            color: #007bff; /* Slight color change on hover */
-        }
 
     #tabs {
         display: flex;
@@ -89,13 +48,15 @@
     justify-content: center;
     align-items: center;    
     margin-bottom: 32px;
+    border-bottom: 1px solid lightgrey;
+    width: 100%;
 }
 
 /* Styling for individual tabs */
 .tab {
     padding: 10px 20px;
     border-radius: 8px 8px 0 0; /* Rounded top corners like Chrome */
-    background: #e0e0e0;
+    background: #f3f3f3;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
@@ -108,7 +69,7 @@
 .tab.active {
     background: white;
     color: black;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    margin-bottom: -1px;
 }
 
 /* Hover effect on tabs */

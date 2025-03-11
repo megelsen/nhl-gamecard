@@ -7,9 +7,11 @@
     .container {
         grid-template-columns: 1fr 1fr;
     }
-    .previous_game {
+    .previous_game_card {
         grid-column: 1 / span 2;
         justify-items: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
     }
 }
 
@@ -18,8 +20,13 @@
     .container {
         grid-template-columns: 1fr;
     }
-    .previous_game {
+    .previous_game_card {
         grid-column: 1;
+        grid-template-columns: 1fr
+    }
+
+    .previous_game {
+        grid-column: 1 / span 3;
     }
     .title_card {
         grid-template-columns: 150px 1fr;                                      

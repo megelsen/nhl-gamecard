@@ -3,7 +3,6 @@
 function formatEventTime(utcStartTime) {
     const utcDate = new Date(utcStartTime); // Convert UTC string to Date object
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;    // Get the local date-time in the user's timezone
-    const localDate = new Date(utcDate.toLocaleString(navigator.language, { timeZone: userTimeZone }));
 
     const options = {
         month: "short",  // Get abbreviated month (e.g., "Mar")
@@ -18,10 +17,10 @@ function formatEventTime(utcStartTime) {
 
     // Format the local date-time
     const formatter = new Intl.DateTimeFormat(navigator.language, options);
-    const parts = formatter.formatToParts(localDate);
+    const formattedParts = formatter.formatToParts(utcDate);
 
     let eventMonth, eventDate, eventDay, hour, minute, ampm, timezoneAbbr;
-    for (const part of parts) {
+    for (const part of formattedParts) {
         if (part.type === "month") eventMonth = part.value;
         if (part.type === "day") eventDate = part.value;
         if (part.type === "weekday") eventDay = part.value;
@@ -31,15 +30,15 @@ function formatEventTime(utcStartTime) {
         if (part.type === "timeZoneName") timezoneAbbr = part.value;
     }
 
-    // Check if the day changed (next day adjustment)
-    const isNextDay = localDate.getDate() !== utcDate.getDate();
-    if (isNextDay) {
-        // Increment the day and adjust the time for the next day
-        eventDate = parseInt(eventDate) + 1;
-        const nextDay = new Date(localDate);
-        nextDay.setDate(nextDay.getDate() + 1); // Move to the next day for formatting
-        eventMonth = nextDay.toLocaleString(navigator.language, { month: "short" });
-        eventDay = nextDay.toLocaleString(navigator.language, { weekday: "short" });
+    // If the time is between midnight and 10 AM, adjust to next day
+    if ((ampm === "am" && hour < 10)) {
+        eventDate = parseInt(eventDate) + 1; // Move to the next day
+
+        // Get the next day's formatted month & weekday
+        const nextDay = new Date(utcDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        eventMonth = new Intl.DateTimeFormat(navigator.language, { month: "short", timeZone: userTimeZone }).format(nextDay);
+        eventDay = new Intl.DateTimeFormat(navigator.language, { weekday: "short", timeZone: userTimeZone }).format(nextDay);
     }
 
     console.log("userTimeZone:", userTimeZone);
