@@ -130,7 +130,8 @@ def dynamic_body_css():
 @app.route('/cards.css')
 def dynamic_card_css():
     card_padding = session.get("card_padding","8px")
-    return Response(render_template("dynamic/styles/cards.css.jinja", card_padding=card_padding,), mimetype="text/css")
+    min_width_team_summary = session.get("min_width_team_summary","515px")
+    return Response(render_template("dynamic/styles/cards.css.jinja", card_padding=card_padding,min_width_team_summary=min_width_team_summary), mimetype="text/css")
 
 @app.route('/container.css')
 def dynamic_container_css():
