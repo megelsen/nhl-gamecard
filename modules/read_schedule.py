@@ -46,7 +46,7 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
         game_date = datetime.strptime(game.get("gameDate"), "%Y-%m-%d")  # Convert string to datetime object
 
         # Filter games after the cutoff date
-        if start_date < game_date < end_date:
+        if start_date < game_date < end_date and game.get("gameType") > 1:
             game_id = game.get("id")
             home_team = game.get("homeTeam", {}).get("commonName", {}).get("default")
             away_team = game.get("awayTeam", {}).get("commonName", {}).get("default")

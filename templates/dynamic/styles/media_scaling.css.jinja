@@ -22,7 +22,7 @@
     }
     .previous_game_card {
         grid-column: 1;
-        grid-template-columns: 1fr
+        grid-template-columns: 1fr;
     }
 
     .previous_game {
@@ -31,14 +31,79 @@
     .title_card {
         grid-template-columns: 150px 1fr;                                      
         }
-    .dropdown_wrapper{
+    .dropdown_wrapper {
         grid-column: span 2;
     }
 }
 
 @media screen and (max-width: {{max_width_smallest_screen}}px) {
-    .content {              
-        transform: scale(0.6);            
-        transform-origin: top ;
+    .container {
+        grid-template-columns: 90vw;
+    }
+    .content {
+        overflow: auto;
+        white-space: wrap;
+    }
+    .title_card { 
+        grid-template-columns: 1fr;
+        justify-content: center;
+        text-align: center;
+    }
+    .dropdown_wrapper {
+        grid-column: span 1;
+    }
+    .card_display{
+        min-width: 50vw;
+
+    }
+
+    .top_row_element {
+        display: grid;
+        grid-template-columns: 1fr 1fr;    
+        gap: 2px;
+        white-space: wrap;
+    }
+
+    .top-scorer-label {
+        grid-row: 1;  
+        align-self: end;
+        grid-column: 1;
+    }
+    
+    .top-scorer-info {
+        grid-row: 2;
+        grid-column: 1;
+        align-items: center;
+        text-align: center;
+        align-self: baseline;
+        margin-top: -10px;
+    
+    }
+    .headshot-img {
+        grid-row: 1 / span 2;  
+        grid-column: 2;
+        align-self: end;
+        justify-self: end;
+        }
+    .show-top5-btn{
+        grid-row: 3;
+        grid-column: 1;
+        margin-top: unset;
+    }
+    .team-summary{
+        grid-row: 4;
+        grid-column: 1 / span 2;
+        width: 100%;       
+    }
+    table{
+        place-self: unset;
+    }
+    .table_card{
+        justify-items: unset;
+        text-align: center;
+    }
+    .content_modal{
+        justify-items: unset;
     }
 }
+

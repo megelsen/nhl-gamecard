@@ -25,10 +25,10 @@
     <link rel="stylesheet" type="text/css" href="/body.css">
     <link rel="stylesheet" type="text/css" href="/cards.css">
     <link rel="stylesheet" type="text/css" href="/container.css">
-    <link rel="stylesheet" type="text/css" href="/media_scaling.css">
     <link rel="stylesheet" type="text/css" href="/previous_games.css">
     <link rel="stylesheet" type="text/css" href="/team_dropdown.css">
-    <link rel="stylesheet" type="text/css" href="/title_card.css">
+    <link rel="stylesheet" type="text/css" href="/title_card.css">    
+    <link rel="stylesheet" type="text/css" href="/media_scaling.css">
 
 </head>
 <body>
@@ -36,9 +36,9 @@
         <div class="spinner"></div>
     </div>
 
-    <div id="statsPopUp" class="stats-popup">                    
+    <div id="statsPopUp" class="stats-popup ">                    
         <!-- Modal Content -->
-        <div class="stats-popup-content card_display content_modal">
+        <div class="stats-popup-content card_display ">
             <!-- Closing Button -->
             <span class="close" id="closeBtn">&times;</span>
             <!-- Navigation Buttons -->
@@ -49,7 +49,7 @@
                     <div class="tab" data-index="2">Assists</div>
                 </div>
             </div>
-            <div id="modalContent">
+            <div id="modalContent" class="content_modal">
                 <div id="points-leaders-content">                                
                     {{html_pts_leader_table | safe }} 
                 </div> 
@@ -83,11 +83,11 @@
                     Stats
                 </h2>      
                 <div class="top-scorer-label">
-                    <b>Top Scorer:</b>
-                    <button class="primary_button" id="moreStats">
-                        Show Top 5        
-                    </button>
+                    <b>Top Scorer:</b>                    
                 </div>
+                <button class="primary_button show-top5-btn" id="moreStats">
+                    Show Top 5        
+                </button>
                 <div class ="top-scorer-info">
                     <p style="margin-block-end: 0"><b>{{top_scorer['name']}}</b> </p>    
                     <p style="margin-block: 0"> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}}</p>        

@@ -51,9 +51,15 @@ def home():
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
-    record_table = build_records_table(sorted_opponents)
-    record_table_html_1 = record_table.iloc[:len(record_table) // 2].to_html(classes="table_records",escape=False, index=False)
-    record_table_html_2 = record_table.iloc[len(record_table) // 2:, :3].to_html(classes="table_records",escape=False, index=False)
+    record_table_eastern, record_table_western = build_records_table(sorted_opponents)
+
+    if team_info["team_conference"] == "Eastern":
+        record_table_html_1 = record_table_eastern.to_html(classes="table_records",escape=False, index=False)
+        record_table_html_2 = record_table_western.to_html(classes="table_records",escape=False, index=False)
+    else:
+        record_table_html_2 = record_table_eastern.to_html(classes="table_records",escape=False, index=False)
+        record_table_html_1 = record_table_western.to_html(classes="table_records",escape=False, index=False)
+
 
     # Summary of team:
     html_team_summary = team_summary(team_abbr,standings_data)
@@ -78,7 +84,7 @@ def home():
     html_standings_table = build_playoffs_race_table(team_info,standings_data)
 
     # Some styling variables:
-    min_width_team_summary = 525
+    min_width_team_summary = 515
     min_width_previous_games = 300
     outer_margin = 12
     card_gap = 24

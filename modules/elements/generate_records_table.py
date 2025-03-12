@@ -26,13 +26,15 @@ def colorize_result(game):
       return f'<span> {game_date}' # Default return if something else
     
 def build_records_table(sorted_opponents):
-    max_games = 0
-    data = []
+    max_games_E = 0
+    max_games_W = 0
+    data_eastern = []
+    data_western = []
     game_detail = []
     for opponent, games in sorted_opponents:
         opponent_logo = get_logo(games[0]['opponent_abr'])  # Assuming all games in the list have the same opponent_abr
         row = [f'<a href="javascript:void(0);" class="team-link"><img src="{opponent_logo}" width="50"></a>']
-
+        opponent_conference = get_conference_abbreviation(games[0]['opponent_abr'])
         # Add the game details with colored background for the result
         for i, game in enumerate(games, start=1):
             # Get the formatted game detail with background color
@@ -41,18 +43,69 @@ def build_records_table(sorted_opponents):
                 game_detail_recap_link = f'<a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer" class="recap-link">{game_detail}</a>'
             else:
                 game_detail_recap_link = game_detail
-            row.append(game_detail_recap_link)
-        max_games = max(max_games, len(games))
-        data.append(row)
+            row.append(game_detail_recap_link)            
 
-    num_games = max(len(games) for _, games in sorted_opponents)
-    columns = ['vs'] + [f'Game {i}' for i in range(1, num_games + 1)]
+            # Split Eastern and Western
+            if opponent_conference == "E":
+                max_games_E = max(max_games_E, len(games))               
+            elif opponent_conference == "W":
+                max_games_W = max(max_games_W, len(games))
+                    # Split Eastern and Western
+        if opponent_conference == "E":            
+            data_eastern.append(row)
+        elif opponent_conference == "W":            
+            data_western.append(row)
+    
+    columns_E = ['vs'] + [f'Game {i}' for i in range(1, max_games_E + 1)]
+    columns_W = ['vs'] + [f'Game {i}' for i in range(1, max_games_W + 1)]
 
+    
     # Create the DataFrame
-    df_record_table = pd.DataFrame(data, columns=columns)
-    record_table = df_record_table.applymap(lambda x: " " if x is None else x)
+    df_record_table_eastern = pd.DataFrame(data_eastern, columns=columns_E)
+    record_table_eastern = df_record_table_eastern.applymap(lambda x: " " if x is None else x)
+
+    df_record_table_western = pd.DataFrame(data_western, columns=columns_W)
+    record_table_western = df_record_table_western.applymap(lambda x: " " if x is None else x)
     # convert to html element the logos as a row of images
     #record_table_html = df_record_table.to_html(escape=False,index=False)
-    return record_table
+    return record_table_eastern, record_table_western
     
+def get_conference_abbreviation(team_abbr):
+    
+    nhl_team_conferences = {
+        "ANA": "W",
+        "BOS": "E",
+        "BUF": "E",
+        "CAR": "E",
+        "CBJ": "E",
+        "CGY": "W",
+        "CHI": "W",
+        "COL": "W",
+        "DAL": "W",
+        "DET": "E",
+        "EDM": "W",
+        "FLA": "E",
+        "LAK": "W",
+        "MIN": "W",
+        "MTL": "E",
+        "NSH": "W",
+        "NJD": "E",
+        "NYI": "E",
+        "NYR": "E",
+        "OTT": "E",
+        "PHI": "E",
+        "PIT": "E",
+        "SEA": "W",
+        "SJS": "W",
+        "STL": "W",
+        "TBL": "E",
+        "TOR": "E",
+        "UTA": "W",
+        "VAN": "W",
+        "VGK": "W",
+        "WPG": "W",
+        "WSH": "E"
+    }
 
+    conference = nhl_team_conferences[team_abbr]
+    return conference
