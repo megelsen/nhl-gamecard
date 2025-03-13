@@ -8,7 +8,7 @@ function applyScaling() {
   
         modal_contents.forEach(function(modal_content) {
             modal_content.style.transform = 'scale(' + scaleFactor +')';
-            modal_content.style.transformOrigin = 'right top';   
+            modal_content.style.transformOrigin = 'left top';   
         } )
     } else {
         // Reset scaling if width is greater than the max width

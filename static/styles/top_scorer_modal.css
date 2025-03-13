@@ -23,7 +23,9 @@
     .leaders-table{
         border-collapse: collapse;
         width: 490px;    
+        max-width: 100vw;
         text-align: left;  
+        white-space: wrap;
         img {
             max-width: 120px;  
             height: auto;
