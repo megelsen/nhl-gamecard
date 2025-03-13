@@ -34,6 +34,10 @@
     .dropdown_wrapper {
         grid-column: span 2;
     }
+    .tab:hover {
+        background: unset;  /* Disables hover state on mobile */
+        margin-bottom: -1px;
+    }
 }
 
 @media screen and (max-width: {{max_width_smallest_screen}}px) {
@@ -115,6 +119,11 @@
     }
     .tabs-container{
         justify-content: left;
+    }
+
+    .tab:hover {
+        background: unset;  /* Disables hover state on mobile */
+        margin-bottom: -1px;
     }
 }
 

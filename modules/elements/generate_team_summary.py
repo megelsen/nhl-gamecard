@@ -23,10 +23,13 @@ def team_summary(team_abbr,standings_data):
         l10OTL = team['l10OtLosses']
 
         l10 = f"{l10Wins}-{l10Loss}-{l10OTL}"
+        l10_html = f"""<div class="spoiler-wrapper"><button class="toggle-spoiler"><span class="material-symbols-outlined">visibility</span></button><span class="hide-spoiler">{l10}</span></div>"""
+
         streak_cnt = team['streakCount']
         streak_type = team['streakCode']
 
-        streak = f"{streak_type}{streak_cnt}"
+        streak = f"{streak_type}{streak_cnt}"        
+        streak_html = f"""<div class="spoiler-wrapper"><button class="toggle-spoiler"><span class="material-symbols-outlined">visibility</span></button><span class="hide-spoiler">{streak}</span></div>"""
 
         nhl_rank = team['leagueSequence']
 
@@ -40,7 +43,7 @@ def team_summary(team_abbr,standings_data):
             "OTL":  ot_losses,
             "P%":  f"<b>{round(points_pct,2)}</b>",  # Regular-time wins
             "L10": l10,
-            "Streak": streak,
+            "Streak": streak_html,
         })
         # Append the extracted data into a list
         # Convert to DataFrame

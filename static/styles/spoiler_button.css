@@ -6,6 +6,7 @@
 .toggle-spoiler {
     position: absolute;
     width: 100%;
+    min-width: fit-content;
     background: rgba(80, 80, 80, 1);
     color: white;
     border: none;
