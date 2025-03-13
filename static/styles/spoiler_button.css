@@ -1,0 +1,21 @@
+.spoiler-wrapper {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+.toggle-spoiler {
+    position: absolute;
+    width: 100%;
+    background: rgba(80, 80, 80, 1);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 12px;
+    transform: translateY(-25%);
+    z-index: 10;
+}
+.hide-spoiler {
+    display: inline-block;
+    position: relative;
+}

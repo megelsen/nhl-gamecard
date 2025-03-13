@@ -1,6 +1,6 @@
 /* Close Button */
 .close {
-    position:absolute;
+    /*position:absolute;*/
     padding-right: 8px;
     justify-self: right;
     color: #aaa;

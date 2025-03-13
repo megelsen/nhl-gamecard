@@ -58,7 +58,7 @@ def build_leaders_table(leaders,category):
 
     for skater in leaders:            
         leader_info = {            
-            " ": skater['headshot_html'],
+            " ": skater['headshot_scalable_html'],
             "Player": f"<b>{skater['name']}</b> #{skater['sweaterNumber']} {skater['position']}",
             category_header: skater[category_key],
             "GP": skater['games_played'],
@@ -84,6 +84,7 @@ def get_skater_info(skater):
             "games_played": skater['gamesPlayed'],
             "headshot_url": skater['headshot'],
             "headshot_html": f"""<img src="{skater['headshot']}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater['headshot']}">""",
             "position": position_code,
             "playerID": skater['playerId'],
     }

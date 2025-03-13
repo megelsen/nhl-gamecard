@@ -6,7 +6,7 @@
     <title>NHL Gamecard</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
      <!-- Static CSS -->
-     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/primary_button.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/primary_button.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/close_button.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/game_display.css') }}">
@@ -20,6 +20,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_scorer_modal.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_scorer.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_game.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/spoiler_button.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -49,7 +50,7 @@
                     <div class="tab" data-index="2">Assists</div>
                 </div>
             </div>
-            <div id="modalContent" class="content_modal">
+            <div id="modalContent">
                 <div id="points-leaders-content">                                
                     {{html_pts_leader_table | safe }} 
                 </div> 
@@ -114,7 +115,7 @@
                 </div>                
             </div>
             <div class="previous_game_card card_display">
-                <h2  class="top_card_header">Last games</h2>
+                <h2  class="top_card_header">Last games</h2>        
                 <span class="game_display previous_game">{{html_last_games[0] | safe }}</span>
                 <span class="game_display previous_game">{{html_last_games[1] | safe }}</span>
                 <span class="game_display previous_game">{{html_last_games[2] | safe }}</span>
@@ -147,7 +148,7 @@
     <script src="{{ url_for('static', filename='js/synchronizeWidths.js') }}"></script>
     <script src="{{ url_for('static', filename='js/team_dropdown.js') }}"></script>
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
-    
+    <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <!-- 🔹 Dynamic JavaScript -->
     <script>
         var max_width_smallest_screen = {{ max_width_smallest_screen }};

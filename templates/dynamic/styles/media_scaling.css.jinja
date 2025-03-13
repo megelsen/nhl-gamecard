@@ -37,6 +37,10 @@
 }
 
 @media screen and (max-width: {{max_width_smallest_screen}}px) {
+    html {
+        font-size: 85%; 
+    }
+
     .container {
         grid-template-columns: 90vw;
     }
@@ -97,6 +101,7 @@
     }
     table{
         place-self: unset;
+        white-space: nowrap;
     }
     .table_card{
         justify-items: unset;
@@ -104,6 +109,9 @@
     }
     .content_modal{
         justify-items: unset;
+    }
+    .leaders-table{
+        width: 100vw;
     }
 }
 
