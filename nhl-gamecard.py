@@ -3,7 +3,7 @@ from datetime import datetime
 from collections import defaultdict
 from IPython.display import SVG, display, HTML
 import pandas as pd
-from flask import Flask, render_template_string, request, render_template, Response, session, send_from_directory
+from flask import Flask, render_template_string, request, render_template, Response, session, send_from_directory, redirect, url_for
 import os
 
 
@@ -20,15 +20,17 @@ team_abbr_list = [
 "OTT", "PHI", "PIT", "SEA", "SJS", "STL", "TBL", "UTA", "TOR", "VAN", "VGK",
 "WPG", "WSH",
 ]
+@app.route("/", methods=["GET"])
+def home():
+    return redirect(url_for("team_page", team_abbr="MIN"))  # Default to MIN
 
-@app.route("/", methods=["GET", "POST"])
-def home():     
-    # List of NHL team abbreviations (you can expand this list as needed)
-
-    # Select Team 
-    team_abbr= "CAR"    
+@app.route("/<team_abbr>", methods=["GET", "POST"])
+def team_page(team_abbr):
     if request.method == "POST":
-        team_abbr = request.form.get("team_abbr", "CAR").upper()
+        team_abbr = request.form.get("team_abbr", "MIN").upper()
+        return redirect(url_for("team_page", team_abbr=team_abbr))  # Redirect on selection
+
+
     # Build the dropdown HTML
     dropdown_html = ''.join([f'<option value="{abbr}" {"selected" if abbr == team_abbr else ""}>{abbr}</option>' for abbr in team_abbr_list])
 

@@ -1,0 +1,5 @@
+.player-card{
+    display: grid;
+    max-width: 515px;
+    grid-column: 1;
+}

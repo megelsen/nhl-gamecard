@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NHL Gamecard</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='stick-64x64.ico') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
      <!-- Static CSS -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/primary_button.css') }}">
@@ -21,6 +22,8 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_scorer.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_game.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/spoiler_button.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_card.css') }}">    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/records_legend.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -132,12 +135,48 @@
             <div class="card_display table_card">
                 <h2  class="top_card_header"> Record vs {{team_info['team_conference']}} </h2>
                 {{ record_table_1 | safe }}
+                <div class="legend">
+                   <span>  </span>
+                   <span style="background-color: green; color: white"> Win </span>
+                   <span style="background-color: #EDB120; color: black"> OTL </span>
+                   <span style="background-color: #D95319; color: white "> Loss </span>
+                </div>
             </div>
             <div class="card_display table_card">
                 <h2  class="top_card_header">  Record vs {{team_info['opposite_conference']}} </h2>
                 {{ record_table_2 | safe }}
             </div>
         </div>  
+
+        <div  style="display: none" class="container">
+            <div class="card_display player-card"
+                <h2  class="top_card_header">{{ top_scorer['name'] }}</h2>
+                <div>
+                    <img src={{ top_scorer['heroImage_url'] }} style="max-width: 250px;">
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><b>Nationality:</b></td> <td> {{top_scorer["birth_country"]}} </td>
+                        </tr>
+                            <td><b>Born:</b></td> <td> {{top_scorer["birthdate"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Height:</b></td> <td> {{top_scorer["height_in"]}}in/{{top_scorer["height_cm"]}}cm </td>
+                        </tr>
+                        <tr>  
+                            <td><b>Nr:</b></td> <td> #{{top_scorer["sweaterNumber"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Position:</b></td> <td> {{top_scorer["position"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Shoots:</b></td> <td> {{top_scorer["shoots"]}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>     
 
     <!-- 🔹 Static JavaScript -->
@@ -147,6 +186,7 @@
     <script src="{{ url_for('static', filename='js/link_team_logos.js') }}"></script>
     <script src="{{ url_for('static', filename='js/synchronizeWidths.js') }}"></script>
     <script src="{{ url_for('static', filename='js/team_dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/updateUrl.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <!-- 🔹 Dynamic JavaScript -->

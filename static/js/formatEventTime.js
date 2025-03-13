@@ -2,8 +2,8 @@
 
 function formatEventTime(utcStartTime) {
     const utcDate = new Date(utcStartTime); // Convert UTC string to Date object
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;    // Get the local date-time in the user's timezone
-
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;   
+    
     const options = {
         month: "short",  // Get abbreviated month (e.g., "Mar")
         day: "numeric",  // Get day number (e.g., "12")
@@ -29,17 +29,17 @@ function formatEventTime(utcStartTime) {
         if (part.type === "dayPeriod") ampm = part.value.toLowerCase();
         if (part.type === "timeZoneName") timezoneAbbr = part.value;
     }
-
-    // If the time is between midnight and 10 AM, adjust to next day
-    if ((ampm === "am" && hour < 10)) {
+    /*// If the time is between midnight and 10 AM, adjust to next day
+    if (ampm === "am") {
         eventDate = parseInt(eventDate) + 1; // Move to the next day
-
+        console.log("Event Day after date +1 :", eventDay);
         // Get the next day's formatted month & weekday
         const nextDay = new Date(utcDate);
+        console.log("Event Day (UTC):", nextDay);
         nextDay.setDate(nextDay.getDate() + 1);
         eventMonth = new Intl.DateTimeFormat(navigator.language, { month: "short", timeZone: userTimeZone }).format(nextDay);
         eventDay = new Intl.DateTimeFormat(navigator.language, { weekday: "short", timeZone: userTimeZone }).format(nextDay);
-    }
+    }*/
 
     console.log("userTimeZone:", userTimeZone);
     console.log("timezoneAbbr:", timezoneAbbr);
@@ -153,7 +153,7 @@ function formatEventTime(utcStartTime) {
     if (/^GMT[\+\-]\d+$/.test(timezoneAbbr)) {
         const timezoneOffset = timezoneAbbr;
         timezoneAbbr = timezoneMap[userTimeZone] || timezoneOffset;
-        console.log('Processed timezoneAbbr:', timezoneAbbr);
+        
     }
 
     return `${eventDay}, ${eventMonth} ${eventDate}, at ${hour}:${minute}${ampm} ${timezoneAbbr}`;

@@ -103,3 +103,5 @@ def get_skater_info(skater):
     skater_info = {**player_basic_stats, **player_advanced_stats}
     return skater_info
 
+
+    

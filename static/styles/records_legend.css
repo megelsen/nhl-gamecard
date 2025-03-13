@@ -1,0 +1,14 @@
+.legend{
+    
+    display: grid;
+    grid-template-columns: 54px 76px 76px 76px;
+    width: 100%;
+    gap: 12px;
+    margin-top: 8px;
+    text-align: center;
+
+    span {
+        border-radius: 2px;
+        padding: 2px 9px;
+    }
+}      
