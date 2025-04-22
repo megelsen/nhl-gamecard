@@ -4,22 +4,26 @@ from modules.fetch_nhl_api import get_logo
 
 __all__ = ['get_upcoming_game','get_upcoming_opponent','get_venue_start_time']
 
-def get_upcoming_opponent(games_by_date):
+def get_upcoming_opponent(games_by_date,n=1):
     current_date = datetime.now()
     current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
     # Filter and get the first upcoming game
     upcoming_games = sorted([game for game in games_by_date if game['game_date'] >= current_date], key=lambda x: x['game_date'])
     print(upcoming_games)
-    next_game = upcoming_games[0] if upcoming_games else None
-    return next_game
+    next_games = upcoming_games[:n] if upcoming_games else None
+    return next_games
 
-def get_upcoming_game(next_game):    
-    next_opponent_logo = get_logo(next_game['opponent_abr'])
-    utc_start_time = next_game['startTimeUTC']        
-    display_next_game_info = f"""{next_game['game_venue']}
-    <a href="javascript:void(0);" class="team-link">
-    <img src="{next_opponent_logo}" style="width: 85px">
-    </a>on """
+def get_upcoming_game(next_game):   
+    if next_game != None: 
+        next_opponent_logo = get_logo(next_game['opponent_abr'])
+        utc_start_time = next_game['startTimeUTC']        
+        display_next_game_info = f"""{next_game['game_venue']}
+        <a href="javascript:void(0);" class="team-link">
+        <img src="{next_opponent_logo}" style="width: 85px">
+        </a>on """
+    else:
+        display_next_game_info = f""" No games scheduled """
+        utc_start_time = None
     return display_next_game_info, utc_start_time
 
 def get_venue_start_time(utc_start_time, venue_timezone):

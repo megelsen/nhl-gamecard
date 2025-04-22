@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_series']
 
 def get_logo(team_abr):
 # # Download the SVG file
@@ -38,3 +38,9 @@ def get_player_stats(playerID):
     player_stats = requests.get(player_stats_url)
     player_stats_data = player_stats.json()
     return player_stats_data
+
+def get_playoff_series(seasonID):
+    playoff_series_url = f"https://api-web.nhle.com/v1/playoff-series/carousel/{seasonID}/"
+    playoff_series = requests.get(playoff_series_url)
+    playoff_series_data = playoff_series.json()
+    return playoff_series_data

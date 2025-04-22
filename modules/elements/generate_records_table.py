@@ -32,6 +32,9 @@ def build_records_table(sorted_opponents):
     data_western = []
     game_detail = []
     for opponent, games in sorted_opponents:
+        games = [game for game in games if game.get('game_type') == 2]
+        if not games:
+            continue
         opponent_logo = get_logo(games[0]['opponent_abr'])  # Assuming all games in the list have the same opponent_abr
         row = [f'<a href="javascript:void(0);" class="team-link"><img src="{opponent_logo}" width="50"></a>']
         opponent_conference = get_conference_abbreviation(games[0]['opponent_abr'])

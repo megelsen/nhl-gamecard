@@ -11,4 +11,5 @@
 .top_card_header{
     grid-row: 1;
     grid-column: 1 / span 3;
+    text-align: center;
 }

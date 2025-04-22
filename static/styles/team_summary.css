@@ -5,3 +5,7 @@
     align-self: self-end;
     justify-self: center;
 }
+
+.team-summary_upcoming {
+    grid-row: 4;
+}

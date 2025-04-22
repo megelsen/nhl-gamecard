@@ -15,3 +15,8 @@
     background: #d6d6d6;
 }
 
+.upcoming_games_button{
+    margin-top: -16px;
+    grid-row: 2;
+    grid-column: 1;
+}

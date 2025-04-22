@@ -43,6 +43,8 @@ function formatEventTime(utcStartTime) {
 
     console.log("userTimeZone:", userTimeZone);
     console.log("timezoneAbbr:", timezoneAbbr);
+    console.log("Date:", eventDate);
+   
     // 🔥 Full timezone map (Northern Hemisphere)
     const timezoneMap = {
         "America/New_York": "EST",
@@ -160,14 +162,16 @@ function formatEventTime(utcStartTime) {
 }
 
 // Get the event time from the HTML element
-const eventElement = document.getElementById("event-time");
-const utcStartTime = eventElement.getAttribute("data-utc-time"); 
-
-if (utcStartTime) {
-    const formattedTime = formatEventTime(utcStartTime);
-    // const currentContent = eventElement.innerHTML.trim();
-    
-    eventElement.innerHTML = `${eventElement.innerHTML} ${formattedTime}`;
-} else {
-    eventElement.innerHTML = "Time unavailable";
+const eventElements = document.querySelectorAll(".event-time");
+for (let eventElement of eventElements) {
+    const utcStartTime = eventElement.getAttribute("data-utc-time");
+    if (utcStartTime) {
+        const formattedTime = formatEventTime(utcStartTime);
+        // const currentContent = eventElement.innerHTML.trim();
+        
+        eventElement.innerHTML = `${eventElement.innerHTML} ${formattedTime}`;
+    } else {
+        eventElement.innerHTML = "Time unavailable";
+    }
 }
+

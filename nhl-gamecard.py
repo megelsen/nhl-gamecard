@@ -37,9 +37,17 @@ def team_page(team_abbr):
     # Fetch data from API
     schedule_data = get_schedule(team_abbr)
     current_date = datetime.now().strftime("%Y-%m-%d")
+    season_data = get_season_data()
+    # Check whether current date is past last game of regular season:
+    current_date_format = datetime.strptime(current_date, "%Y-%m-%d").date()
+    last_reg_season_format = datetime.strptime(season_data['currentDate'], "%Y-%m-%d").date()
+    if current_date_format > last_reg_season_format:
+        current_date = last_reg_season_format
+        post_season = 1
+    else: 
+        post_season = 0
     standings_data = get_current_standings(current_date)    
     team_stats_data = get_team_stats(team_abbr)
-    season_data = get_season_data()
 
     # Load Team info
     team_info = get_team_info(standings_data, team_abbr)
@@ -75,10 +83,29 @@ def team_page(team_abbr):
     assist_leaders = find_assistleaders(team_stats_data,nr_top)
     html_assists_leader_table = build_leaders_table(assist_leaders,'A')
 
+    
     # Next game
-    next_game = get_upcoming_opponent(games_by_date)
+    next_games = get_upcoming_opponent(games_by_date,5)  or []      
+    next_game = next_games[0] if next_games and next_games[0] is not None else None
+    next_opponent = next_games[0]['opponent_abr'] if next_games and next_games[0] is not None else None
     html_next_game, utc_starttime = get_upcoming_game(next_game)
-    html_next_opponent_summary = team_summary(next_game['opponent_abr'],standings_data)
+    html_next_opponent_summary = team_summary(next_opponent,standings_data)
+    # Generate html for next 5 games    
+    next_games_data = []
+
+    for i in range(1, 5):  # Adjust range based on the number of games you want
+        if i < len(next_games) and next_games[i] is not None:
+            html_game, utc_starttime_upcoming = get_upcoming_game(next_games[i])
+            next_games_data.append((html_game, utc_starttime_upcoming))
+            # Access results like this:
+            # next_game_data[0][0] -> html_next_game_2
+            # next_game_data[0][1] -> utc_starttime_2
+        else:
+            next_games_data.append(("", ""))
+
+
+
+
 
     # Previous games
     html_last_games = get_previous_games(games_by_date,nr_games=3)
@@ -119,6 +146,7 @@ def team_page(team_abbr):
         "html_assists_leader_table": html_assists_leader_table,
         "html_standings_table": html_standings_table,
         "html_next_game": html_next_game,
+        "next_games_data": next_games_data,
         "html_next_opponent_summary": html_next_opponent_summary,
         "html_last_games": html_last_games,
         "record_table_1": record_table_html_1,

@@ -1,7 +1,7 @@
 from modules.fetch_nhl_api import get_logo
 import pandas as pd
 
-__all__ =['build_playoffs_race_table','get_standings','format_team_standings','bold']
+__all__ =['build_playoffs_race_table','get_standings','format_team_standings','bold','playoff_bracket','number_to_letter']
 def build_playoffs_race_table(team_info,standings_data):
     # Extract standings by division
     standings_list = []
@@ -75,3 +75,24 @@ def format_team_standings(standings,playoffs):
 
 def bold(text):
     return f"<b>{text}</b>"  # Change formatting as needed (Markdown, HTML, etc.)
+
+def playoff_bracket(playoff_data):
+    eastern_matchups = []
+    western_matchups = []
+    current_round = playoff_data['currentRound'] - 1
+    # First round: 0-3 in East, 4-7 in West
+    current_round_matchups = playoff_data['rounds'][current_round]
+    # Eastern Rounds:
+    for series_nr in range(8):
+        if series_nr < 4:
+            eastern_matchups.append = series_nr
+        elif series_nr >= 4:
+            western_matchups.append = series_nr
+
+    return current_round_matchups
+
+def number_to_letter(n):
+    if 0 <= n <= 25:
+        return chr(ord('A') + n)
+    else:
+        return "Invalid input"

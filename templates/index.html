@@ -24,6 +24,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/spoiler_button.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_card.css') }}">    
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/records_legend.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_games_card.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -107,16 +108,51 @@
             </div>
             
             <div class="top_row_element card_display">
-                <h2  class="top_card_header">Next game</h2>
+                <h2  class="top_card_header">Upcoming games</h2>
                 <div class="upcoming_game">
-                     <span id="event-time" data-utc-time={{utc_starttime}}>
+                     <span class="event-time" data-utc-time={{utc_starttime}}>
                         {{html_next_game | safe }}
                     </span>
                 </div>
-                <div class="team-summary">
+                <div class="team-summary team-summary_upcoming">
                     {{html_next_opponent_summary | safe  }}
-                </div>                
+                </div>      
+                <button class="primary_button upcoming_games_button"  id="moreGames">
+                    Show Next 5        
+                </button>          
             </div>
+            <div id="UpcomingGamesPopUp" class="stats-popup ">                    
+                <!-- Modal Content -->
+                <div class="stats-popup-content card_display ">
+                    <!-- Closing Button -->
+                    <span class="close" id="closeBtnUpcoming">&times;</span>
+                    <!-- Navigation Buttons -->
+                
+                    <div id="modalUpcomingGames" class="upcoming_games_card">
+                        <div>   
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{utc_starttime}}>{{html_next_game | safe }}</span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[0][1]}}>{{next_games_data[0][0] | safe }}</span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[1][1]}}>{{next_games_data[1][0] | safe }} </span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[2][1]}}>{{next_games_data[2][0] | safe }} </span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[3][1]}}>{{next_games_data[3][0] | safe }} </span>
+                            </div>
+                          <!--  # Access results like this:
+                            # next_game_data[0][0] -> html_next_game_2
+                            # next_game_data[0][1] -> utc_starttime_2-->
+                        </div>    
+                    </div>                    
+                </div>
+            </div>
+
             <div class="previous_game_card card_display">
                 <h2  class="top_card_header">Last games</h2>        
                 <span class="game_display previous_game">{{html_last_games[0] | safe }}</span>
@@ -188,6 +224,7 @@
     <script src="{{ url_for('static', filename='js/team_dropdown.js') }}"></script>
     <script src="{{ url_for('static', filename='js/updateUrl.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <!-- 🔹 Dynamic JavaScript -->
     <script>
