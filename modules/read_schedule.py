@@ -28,7 +28,7 @@ def get_season_start(season_data,current_season_id):
 
 def get_season_end(current_season_id):
     end_year = str(current_season_id)[-4:]
-    season_end =  end_year + "-05-01"
+    season_end =  end_year + "-08-01"
     season_end = datetime.strptime(season_end, "%Y-%m-%d")
     return season_end
     
