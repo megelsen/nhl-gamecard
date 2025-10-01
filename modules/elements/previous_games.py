@@ -49,7 +49,9 @@ def get_previous_games(games_by_date,nr_games=3):
     previous_games = sorted([game for game in games_by_date if game['game_date'] < current_date], key= lambda x: x['game_date'])
     last_games = previous_games[-nr_games:] if len(previous_games) >= nr_games else previous_games
     if last_games == []:
-        last_game_disp = f""" <span> No games played yet </span> """
+        last_game_disp = [f"""
+                            <span> No games played yet </span>
+                            """]
     else:
         last_game_disp = [display_latest_game_result(last_games[-1])]  # First game uses different function
         last_game_disp += [display_game_result(game) for game in reversed(last_games[:-1])]  # The rest use the normal function

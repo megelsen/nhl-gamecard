@@ -1,7 +1,7 @@
 from modules.fetch_nhl_api import get_logo
 import pandas as pd
 
-__all__ =['build_playoffs_race_table','get_standings','format_team_standings','bold','playoff_bracket','number_to_letter']
+__all__ =['build_playoffs_race_table','get_standings','format_team_standings','bold','playoff_bracket','current_round_matchups']
 def build_playoffs_race_table(team_info,standings_data):
     # Extract standings by division
     standings_list = []
@@ -77,22 +77,41 @@ def bold(text):
     return f"<b>{text}</b>"  # Change formatting as needed (Markdown, HTML, etc.)
 
 def playoff_bracket(playoff_data):
+
+    current_round = playoff_data['currentRound']
+    bracket_dict = {}
+
+    for i in range(current_round):
+        round_data = playoff_data['rounds'][i]
+        round_label = f"Round {i + 1}"
+        western, eastern, finals = current_round_matchups(round_data)
+
+        if finals:
+            bracket_dict[round_label] = {"Finals": finals}
+        else:
+            bracket_dict[round_label] = {
+                "Eastern": eastern,
+                "Western": western
+            }
+
+    return bracket_dict
+
+def current_round_matchups(current_round_data):
     eastern_matchups = []
     western_matchups = []
-    current_round = playoff_data['currentRound'] - 1
-    # First round: 0-3 in East, 4-7 in West
-    current_round_matchups = playoff_data['rounds'][current_round]
-    # Eastern Rounds:
-    for series_nr in range(8):
-        if series_nr < 4:
-            eastern_matchups.append = series_nr
-        elif series_nr >= 4:
-            western_matchups.append = series_nr
+    finals_matchup = []
+    # Find round number & number of matchups:
+    # Max 4 rounds, nr of mathcups is given by: 2^3, 2^2, 2^1, 2^1
+    nr_matchups = len(current_round_data['series'])
+    for series_nr in range(nr_matchups):
+        top_seed = current_round_data['series'][series_nr]['topSeed']
+        bottom_seed = current_round_data['series'][series_nr]['bottomSeed']
 
-    return current_round_matchups
-
-def number_to_letter(n):
-    if 0 <= n <= 25:
-        return chr(ord('A') + n)
-    else:
-        return "Invalid input"
+        if nr_matchups == 1:
+            finals_matchup.append([top_seed, bottom_seed])
+        elif series_nr < nr_matchups/2:           
+            eastern_matchups.append([top_seed, bottom_seed])
+        else:
+            western_matchups.append([top_seed, bottom_seed])
+    
+    return [western_matchups, eastern_matchups, finals_matchup]

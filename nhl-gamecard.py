@@ -27,14 +27,13 @@ def home():
 @app.route("/<team_abbr>", methods=["GET", "POST"])
 def team_page(team_abbr):
     if request.method == "POST":
-        team_abbr = request.form.get("team_abbr", "MIN").upper()
+        team_abbr = request.form.get("team_abbr", "UTA").upper()
         return redirect(url_for("team_page", team_abbr=team_abbr))  # Redirect on selection
 
 
     # Build the dropdown HTML
     dropdown_html = ''.join([f'<option value="{abbr}" {"selected" if abbr == team_abbr else ""}>{abbr}</option>' for abbr in team_abbr_list])
 
-    # Fetch data from API
     schedule_data = get_schedule(team_abbr)
     current_date = datetime.now().strftime("%Y-%m-%d")
     season_data = get_season_data()
@@ -49,6 +48,7 @@ def team_page(team_abbr):
     standings_data = get_current_standings(current_date)    
     team_stats_data = get_team_stats(team_abbr)
 
+
     # Load Team info
     team_info = get_team_info(standings_data, team_abbr)
     team_color = get_team_color(team_abbr)  
@@ -58,6 +58,9 @@ def team_page(team_abbr):
     season_start = get_season_start(season_data,current_season_id)
     season_end = get_season_end(current_season_id)
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
+    # Playoff Data
+    # playoff_series_data = get_playoff_series(current_season_id)
+    playoff_series_data = get_playoff_series('20232024')
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
@@ -83,7 +86,6 @@ def team_page(team_abbr):
     assist_leaders = find_assistleaders(team_stats_data,nr_top)
     html_assists_leader_table = build_leaders_table(assist_leaders,'A')
 
-    
     # Next game
     next_games = get_upcoming_opponent(games_by_date,5)  or []      
     next_game = next_games[0] if next_games and next_games[0] is not None else None
@@ -104,13 +106,12 @@ def team_page(team_abbr):
             next_games_data.append(("", ""))
 
 
-
-
-
     # Previous games
     html_last_games = get_previous_games(games_by_date,nr_games=3)
     # Playoffs race standings
     html_standings_table = build_playoffs_race_table(team_info,standings_data)
+    # Playoff Bracket
+    playoff_data = playoff_bracket(playoff_series_data)
 
     # Some styling variables:
     min_width_team_summary = 515

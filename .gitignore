@@ -13,3 +13,4 @@ modules/elements/__pycache__/playoffs_race.cpython-310.pyc
 modules/elements/__pycache__/topscorer.cpython-310.pyc
 modules/elements/__pycache__/previous_games.cpython-310.pyc
 modules/elements/__pycache__/upcoming_game.cpython-310.pyc
+*.pyc

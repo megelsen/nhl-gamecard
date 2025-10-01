@@ -6,6 +6,7 @@ __all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assist
 def find_top_scorer(team_stats_data):
     # Initialize a variable to track the player with the most points
     top_scorer_info = {}
+    # Check if summary is from playoffs (gameType 3) or regular season (gameType 2)
     #Sort skaters by points in descending order
     sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['points'], reverse=True)
     # Iterate through the list of players to find the one with the most points
@@ -89,7 +90,7 @@ def get_skater_info(skater):
             "playerID": skater['playerId'],
     }
     player_stats_data = get_player_stats(player_basic_stats["playerID"])
-    player_advanced_stats = {
+    player_advanced_stats = {       
         "sweaterNumber": player_stats_data['sweaterNumber'],
         "heroImage_url": player_stats_data['heroImage'],
         "birth_country": player_stats_data['birthCountry'],
