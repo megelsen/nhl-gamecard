@@ -17,7 +17,7 @@ def team_summary(team_abbr,standings_data):
           losses = team['losses']
           ot_losses = team['otLosses']
           points = team['points']
-          points_pct = team['pointPctg']
+          points_pct =  team.get('pointPctg') or "-"
 
           l10Wins = team['l10Wins']  # Last 10 Wins
           l10Loss = team['l10Losses']
