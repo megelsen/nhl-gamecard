@@ -17,7 +17,7 @@ def team_summary(team_abbr,standings_data):
           losses = team['losses']
           ot_losses = team['otLosses']
           points = team['points']
-          points_pct =  team.get('pointPctg') or "-"
+          points_pct =  team.get('pointPctg') or 0
 
           l10Wins = team['l10Wins']  # Last 10 Wins
           l10Loss = team['l10Losses']
@@ -26,8 +26,8 @@ def team_summary(team_abbr,standings_data):
           l10 = f"{l10Wins}-{l10Loss}-{l10OTL}"
           l10_html = f"""<div class="spoiler-wrapper"><button class="toggle-spoiler"><span class="material-symbols-outlined">visibility</span></button><span class="hide-spoiler">{l10}</span></div>"""
 
-          streak_cnt = team['streakCount']
-          streak_type = team['streakCode']
+          streak_cnt = team.get('streakCount') or "-"
+          streak_type =  team.get('streakCode') or "-"
 
           streak = f"{streak_type}{streak_cnt}"        
           streak_html = f"""<div class="spoiler-wrapper"><button class="toggle-spoiler"><span class="material-symbols-outlined">visibility</span></button><span class="hide-spoiler">{streak}</span></div>"""

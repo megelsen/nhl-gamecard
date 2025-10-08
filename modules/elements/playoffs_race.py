@@ -46,7 +46,7 @@ def get_standings(team):
         "W": team["wins"],
         "L": team["losses"],
         "OTL": team["otLosses"],
-        "P%": round(team["pointPctg"], 2),
+        "P%": round(team.get('pointPctg') or 0, 2),
         "points_rank": team["points"],
     }
 

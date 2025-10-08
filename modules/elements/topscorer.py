@@ -10,8 +10,8 @@ def find_top_scorer(team_stats_data):
     #Sort skaters by points in descending order
     sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['points'], reverse=True)
     # Iterate through the list of players to find the one with the most points
-    top_scorer = sorted_skaters[0]
-    top_scorer_info = get_skater_info(top_scorer)    
+    top_scorer = sorted_skaters[0] if len(sorted_skaters) is not 0 else None
+    top_scorer_info = get_skater_info(top_scorer) if top_scorer is not None else None
     return top_scorer_info
 
 def find_pointleaders(team_stats_data,n):
@@ -57,18 +57,23 @@ def build_leaders_table(leaders,category):
         category_header = "Points"
         category_key = 'points'    
 
-    for skater in leaders:            
-        leader_info = {            
-            " ": skater['headshot_scalable_html'],
-            "Player": f"<b>{skater['name']}</b> #{skater['sweaterNumber']} {skater['position']}",
-            category_header: skater[category_key],
-            "GP": skater['games_played'],
-        }
-        leaders_list.append(leader_info)
+    if leaders is not None:
+        for skater in leaders:            
+            leader_info = {            
+                " ": skater['headshot_scalable_html'],
+                "Player": f"<b>{skater['name']}</b> #{skater['sweaterNumber']} {skater['position']}",
+                category_header: skater[category_key],
+                "GP": skater['games_played'],
+            }
+            leaders_list.append(leader_info)
 
-    # Convert to DataFrame
-    df_leaders = pd.DataFrame(leaders_list)
-    html_leaders_table = df_leaders.to_html(classes="leaders-table", escape=False, index=False)
+        # Convert to DataFrame
+        df_leaders = pd.DataFrame(leaders_list)
+        html_leaders_table = df_leaders.to_html(classes="leaders-table", escape=False, index=False)
+    else:
+        html_leaders_table = [f"""
+                            <span> No player info available </span>
+                            """]
     return html_leaders_table
 
 def get_skater_info(skater):
