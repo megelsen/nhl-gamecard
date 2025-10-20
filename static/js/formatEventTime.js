@@ -158,7 +158,7 @@ function formatEventTime(utcStartTime) {
         
     }
 
-    return `${eventDay}, ${eventMonth} ${eventDate}, at ${hour}:${minute}${ampm} ${timezoneAbbr}`;
+    return `${eventDay}, ${eventMonth} ${eventDate},<br> at  ${hour}:${minute}${ampm} ${timezoneAbbr}`;
 }
 
 // Get the event time from the HTML element

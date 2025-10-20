@@ -4,11 +4,17 @@ import pandas as pd
 __all__ = ['colorize_result', 'build_records_table',]
 # Function to apply background color and return formatted game detail
 def colorize_result(game):
+    colors = {
+        "green": 'green',
+        "yellow": "#EDB120",
+        "red": "#D95319",
+    }
+
     result = game['result']
     game_venue = game['game_venue']
     home_score = game['home_score']
     away_score = game['away_score']
-    game_date = game['game_date'].strftime('%m-%d-%y')
+    game_date = game['game_date'].strftime('%m/%d/%y')
 
     # Formating the game detail string
     game_detail = f"{game_venue} {home_score} - {away_score}"
@@ -17,11 +23,11 @@ def colorize_result(game):
     background_padding_style = f"padding: {background_padding_height}px {background_padding_width}px"
     # Apply background color based on the result
     if result == 'W':
-        return f'<span style="background-color: green; color: white; {background_padding_style}; border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: {colors["green"]}; color: white; {background_padding_style}; border-radius: 2px;">{game_detail} </span>'
     elif result == 'OTL':
-        return f'<span style="background-color: #EDB120; color: black; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: {colors["yellow"]}; color: black; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
     elif result == 'L':
-        return f'<span style="background-color: #D95319; color: white; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
+        return f'<span style="background-color: {colors["red"]}; color: white; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
     else:
       return f'<span> {game_date}' # Default return if something else
     

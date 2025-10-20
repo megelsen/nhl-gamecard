@@ -1,67 +1,94 @@
-const sections = [
-    { id: "points-leaders-content", title: "Points" },
-    { id: "goal-leaders-content", title: "Goals" },
-    { id: "assist-leaders-content", title: "Assists" },
-];
+document.addEventListener("DOMContentLoaded", function() {
+    const sections = [
+        { id: "points-leaders-content", title: "Points" },
+        { id: "goal-leaders-content", title: "Goals" },
+        { id: "assist-leaders-content", title: "Assists" },
+    ];
 
-let currentIndex = 0;
-const modalTitle = document.getElementById("modal-title");
+    let currentIndex = 0;
+    const modalTitle = document.getElementById("modal-title");
 
-// Add event listeners to tabs
-const tabs = document.querySelectorAll(".tab");
-tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-        const index = parseInt(tab.getAttribute("data-index"));
-        switchContent(index);
+    // Add event listeners to tabs
+    const tabs = document.querySelectorAll(".tab");
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const index = parseInt(tab.getAttribute("data-index"));
+            switchContent(index);
+        });
     });
-});
 
-function switchContent(newIndex) {
-    // Hide current section
-    document.getElementById(sections[currentIndex].id).style.display = "none";
-    
-    // Update the current index to the new tab index
-    currentIndex = newIndex;
+    function switchContent(newIndex) {
+        document.getElementById(sections[currentIndex].id).style.display = "none";
+        currentIndex = newIndex;
+        document.getElementById(sections[currentIndex].id).style.display = "block";
+        updateActiveTab();
+    }
 
-    // Show the new section
-    document.getElementById(sections[currentIndex].id).style.display = "block";
+    function updateActiveTab() {
+        tabs.forEach(tab => tab.classList.remove("active"));
+        tabs[currentIndex].classList.add("active");
+    }
 
-    // Update active tab
     updateActiveTab();
-}
 
-function updateActiveTab() {
-    // Remove active class from all tabs
-    tabs.forEach(tab => tab.classList.remove("active"));
-
-    // Add active class to the current tab
-    tabs[currentIndex].classList.add("active");
-}
-
-// Initialize by setting the active tab
-updateActiveTab();
-// Get the modal, the button, and the close button
+    // --- Modal controls ---
     const modal = document.getElementById("statsPopUp");
     const moreDots = document.getElementById("moreStats");
     const closeBtn = document.getElementById("closeBtn");
 
     function positionModal() {
-      
-        modal.style.display = "flex"; // Show the modal
+        modal.style.display = "flex";
+    }
+
+    // --- Hidden content sources ---
+    const teamData = {
+        points: document.getElementById("team-points")?.innerHTML || "",
+        goals: document.getElementById("team-goals")?.innerHTML || "",
+        assists: document.getElementById("team-assists")?.innerHTML || ""
+    };
+
+    const oppData = {
+        points: document.getElementById("opp-points")?.innerHTML || "",
+        goals: document.getElementById("opp-goals")?.innerHTML || "",
+        assists: document.getElementById("opp-assists")?.innerHTML || ""
+    };
+
+    let currentMode = "team"; // "team" or "opponent"
+
+    function loadModalContent(mode) {
+        const data = mode === "opponent" ? oppData : teamData;
+        document.getElementById("points-leaders-content").innerHTML = data.points;
+        document.getElementById("goal-leaders-content").innerHTML = data.goals;
+        document.getElementById("assist-leaders-content").innerHTML = data.assists;
+
+        if (modalTitle) {
+            modalTitle.textContent = mode === "opponent" ? "Top 5 – Opponent" : "Top 5 – Team";
+        }
     }
 
     moreDots.onclick = function() {
-        positionModal(); // Position the modal when "more_horiz" is clicked
+        currentMode = "team";
+        loadModalContent(currentMode);
+        positionModal();
     };
 
-    // When the user clicks on the close button, close the modal
-    closeBtn.onclick = function() {    
-        modal.style.display = "none"; // Hide the modal
+    // Opponent button
+    const moreDotsOpponent = document.getElementById("moreStatsOpponent");
+    if (moreDotsOpponent) {
+        moreDotsOpponent.onclick = function() {
+            currentMode = "opponent";
+            loadModalContent(currentMode);
+            positionModal();
+        };
     }
 
-    // When the user clicks anywhere outside the modal, close it
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    };
+
     window.onclick = function(event) {
         if (event.target === modal) {
-            modal.style.display = "none"; // Hide the modal
+            modal.style.display = "none";
         }
-    }
+    };
+});

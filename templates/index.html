@@ -41,12 +41,11 @@
         <div class="spinner"></div>
     </div>
 
-    <div id="statsPopUp" class="stats-popup ">                    
-        <!-- Modal Content -->
-        <div class="stats-popup-content card_display ">
-            <!-- Closing Button -->
+    <!-- UNIVERSAL LEADERS MODAL -->
+    <div id="statsPopUp" class="stats-popup">                    
+        <div class="stats-popup-content card_display">
             <span class="close" id="closeBtn">&times;</span>
-            <!-- Navigation Buttons -->
+
             <div class="tabs-container">
                 <div id="tabs">
                     <div class="tab active" data-index="0">Points</div>
@@ -54,20 +53,27 @@
                     <div class="tab" data-index="2">Assists</div>
                 </div>
             </div>
+
             <div id="modalContent">
-                <div id="points-leaders-content">                                
-                    {{html_pts_leader_table | safe }} 
-                </div> 
-                <div id="goal-leaders-content" style="display: none;">
-                    {{html_goals_leader_table | safe }}
-                </div>
-                <div id="assist-leaders-content" style="display: none;">
-                    {{html_assists_leader_table | safe }}
-                </div>    
+                <div id="points-leaders-content"></div>
+                <div id="goal-leaders-content" style="display: none;"></div>
+                <div id="assist-leaders-content" style="display: none;"></div>    
             </div>                      
         </div>
     </div>
+    <!-- Hidden data for modal population -->
+    <div id="team-tables" style="display: none;">
+        <div id="team-points">{{ html_pts_leader_table | safe }}</div>
+        <div id="team-goals">{{ html_goals_leader_table | safe }}</div>
+        <div id="team-assists">{{ html_assists_leader_table | safe }}</div>
+    </div>
 
+    <div id="opponent-tables" style="display: none;">
+        <div id="opp-points">{{ html_pts_leader_table_opponent | safe }}</div>
+        <div id="opp-goals">{{ html_goals_leader_table_opponent | safe }}</div>
+        <div id="opp-assists">{{ html_assists_leader_table_opponent | safe }}</div>
+    </div>
+  <!-- PAGE HEADER -------------------------------------------------------------------------->
     <div class="content"> 
         <div class="container_title widthTargetElement ">
             <div class="title_card title_card_display">
@@ -82,23 +88,24 @@
                 </form>
             </div>
         </div>
+  <!--  TEAM SUMMARY ------------------------------------------------------------------------>
         <div class="container" id="widthSourceElement">
             <div class="top_row_element card_display" id="statsCard">
                 <h2 class="top_card_header">
-                    Stats
+                    Summary
                 </h2>      
-                <div class="top-scorer-label">
+                <div class="top-scorer-label" >
                     <b>Top Scorer:</b>                    
                 </div>
-                <button class="primary_button show-top5-btn" id="moreStats">
+                <button class="primary_button show-top5-btn" id="moreStats" >
                     Show Top 5        
                 </button>
-                <div class ="top-scorer-info">
+                <div class ="top-scorer-info" >
                     <p style="margin-block-end: 0"><b>{{top_scorer['name']}}</b> </p>    
                     <p style="margin-block: 0"> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}}</p>        
                     <p style="margin-block: 0">{{ top_scorer['goals']}}G-{{ top_scorer['assists']}}A-{{ top_scorer['points']}}P</p>
                 </div>
-                <div class="headshot-img">
+                <div class="headshot-img" >
                     <img src={{ top_scorer['headshot_url'] }} style="max-width: 150px;">
 
                 </div>
@@ -106,12 +113,12 @@
                     {{ html_team_summary | safe }}
                 </div>
             </div>
-            
+  <!-- UPCOMING GAMES ------------------------------------------------------------------->           
             <div class="top_row_element card_display">
-                <h2  class="top_card_header">Upcoming games</h2>
-                <div class="upcoming_game">
+                <!--<h2  class="top_card_header">Upcoming games</h2>-->
+                <div class="upcoming_game" style="grid-column: 2; grid-row: 1">
                      <span class="event-time" data-utc-time={{utc_starttime}}>
-                        {{html_next_game | safe }}
+                         {{html_next_game | safe }}
                     </span>
                 </div>
                 <div class="team-summary team-summary_upcoming">
@@ -119,7 +126,23 @@
                 </div>      
                 <button class="primary_button upcoming_games_button"  id="moreGames">
                     Show Next 5        
-                </button>          
+                </button>
+                <!-- Opponent Topscorer 
+                <div class="top-scorer-label" style="grid-row: 2" style="grid-column: 1" >
+                    <b>Top Scorer:</b>                    
+                </div>-->
+                <button class="primary_button show-top5-btn" id="moreStatsOpponent" style="grid-row: 2; grid-column: 3">
+                    Show Top 5        
+                </button>
+                <div class ="top-scorer-info" style="grid-row: 2">
+                    <p style="margin-block-end: 0"><b>{{top_scorer_opponent['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{top_scorer_opponent['sweaterNumber']}} {{top_scorer_opponent['position']}}</p>        
+                    <p style="margin-block: 0">{{ top_scorer_opponent['goals']}}G-{{ top_scorer_opponent['assists']}}A-{{ top_scorer_opponent['points']}}P</p>
+                </div>
+                <div class="headshot-img" style="grid-row: 1 / span 2; grid-column: 1;">
+                    <img src={{ top_scorer_opponent['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
             </div>
             <div id="UpcomingGamesPopUp" class="stats-popup ">                    
                 <!-- Modal Content -->
@@ -160,7 +183,7 @@
                 <span class="game_display previous_game">{{html_last_games[2] | safe }}</span>
             </div>
         </div>
-
+  <!-- STANDINGS --------------------------------------------->
         <div class="container widthTargetElement">
             <div class="table card_display table_card">
                 <h2  class="top_card_header">

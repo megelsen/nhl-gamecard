@@ -22,7 +22,7 @@ team_abbr_list = [
 ]
 @app.route("/", methods=["GET"])
 def home():
-    return redirect(url_for("team_page", team_abbr="MIN"))  # Default to MIN
+    return redirect(url_for("team_page", team_abbr="NYR"))  # Default to MIN
 
 @app.route("/<team_abbr>", methods=["GET", "POST"])
 def team_page(team_abbr):
@@ -92,6 +92,16 @@ def team_page(team_abbr):
     next_opponent = next_games[0]['opponent_abr'] if next_games and next_games[0] is not None else None
     html_next_game, utc_starttime = get_upcoming_game(next_game)
     html_next_opponent_summary = team_summary(next_opponent,standings_data)
+    # Get next Opponent Top Scorer:
+    opponent_stats = get_team_stats(next_games[0]['opponent_abr'])
+    top_scorer_opponent = find_top_scorer(opponent_stats)
+    point_leaders_opponent = find_pointleaders(opponent_stats,nr_top)
+    html_pts_leader_table_opponent = build_leaders_table(point_leaders_opponent,'P')
+    goal_leaders_opponent = find_goalleaders(opponent_stats,nr_top)
+    html_goals_leader_table_opponent = build_leaders_table(goal_leaders_opponent,'G')
+    assist_leaders_opponent = find_assistleaders(opponent_stats,nr_top)
+    html_assists_leader_table_opponent = build_leaders_table(assist_leaders_opponent,'A')
+    
     # Generate html for next 5 games    
     next_games_data = []
 
@@ -149,6 +159,10 @@ def team_page(team_abbr):
         "html_next_game": html_next_game,
         "next_games_data": next_games_data,
         "html_next_opponent_summary": html_next_opponent_summary,
+        "top_scorer_opponent": top_scorer_opponent,
+        "html_pts_leader_table_opponent": html_pts_leader_table_opponent,
+        "html_goals_leader_table_opponent": html_goals_leader_table_opponent,
+        "html_assists_leader_table_opponent": html_assists_leader_table_opponent,
         "html_last_games": html_last_games,
         "record_table_1": record_table_html_1,
         "record_table_2": record_table_html_2,
@@ -200,6 +214,10 @@ def dynamic_dropdown_css():
 def dynamic_titleCard_css():
     card_gap = session.get("card_gap", "4px")
     return Response(render_template("dynamic/styles/title_card.css.jinja", card_gap=card_gap,), mimetype="text/css")
+
+@app.route('/health')
+def health():
+    return "OK", 200
 
 # Dynamic JS
 #@app.route('/applyScaling.js')
