@@ -7,4 +7,13 @@ function synchronizeWidths() {
     targetElements.forEach(element => {
         element.style.width = `${adjustedWidth}px`;
     });
+
+    const sourceElementCard = document.getElementById('card_target_width');
+    const targetElementsCard = document.querySelectorAll('.statsCard');                
+    const sourceWidthCard = sourceElementCard.offsetWidth;
+    const adjustedWidthCard = sourceWidthCard ;
+    targetElementsCard.forEach(element => {
+        element.style.width = `${adjustedWidthCard}px`;
+    });
+
 } 

@@ -20,20 +20,69 @@
     .container {
         grid-template-columns: 1fr;
     }
+
+    .top-scorer-label {
+        justify-self: baseline;
+        margin-left: 16px;
+  
+    }
+    .show-top5-btn{
+        grid-row: 2;
+        grid-column: 1;
+        align-self: center;
+        margin-top: 32px;
+        justify-self: baseline;
+        margin-left: 16px;
+    }
+
+    .top-scorer-label-opponent {
+        display: block;
+        align-self: baseline;
+    }
+    .top-scorer-info-opponent {
+        grid-row: 2;
+        grid-column: 2;
+        align-items: center;
+        text-align: center;
+        align-self: baseline;
+    }
+    .headshot-img-opponent {
+        grid-row: 1 / span 2;  
+        grid-column: 3;
+        align-self: end;
+        justify-self: end;
+    }
+
+    .show-top5-btn-opponent{
+        grid-row: 2;
+        grid-column: 1;
+        align-self: center;
+        margin-top: 32px;
+        justify-self: baseline;
+        margin-left: 16px;
+    }
+
+    .upcoming_games_button{
+        grid-column: 1;
+        justify-self: center;
+    }
+
     .previous_game_card {
         grid-column: 1;
         grid-template-columns: 1fr;
     }
-
     .previous_game {
         grid-column: 1 / span 3;
     }
+
     .title_card {
         grid-template-columns: 150px 1fr;                                      
         }
+
     .dropdown_wrapper {
         grid-column: span 2;
     }
+    
     .tab:hover {       
         margin-bottom: -1px;
     }
@@ -75,16 +124,14 @@
         grid-row: 2;  
         align-self: baseline;
         grid-column: 1;
-    }
-    
+    }    
     .top-scorer-info {
         grid-row: 2;
         grid-column: 1;
         align-items: center;
         text-align: center;
         align-self: center;
-        margin-top: 0px;
-    
+        margin-top: 0px;    
     }
     .headshot-img {
         grid-row: 2 / span 2;  
@@ -93,6 +140,31 @@
         justify-self: end;
         }
     .show-top5-btn{
+        grid-row: 3;
+        grid-column: 1;
+        margin-top: unset;
+    }
+
+    .top-scorer-label-opponent {
+        grid-row: 2;  
+        align-self: baseline;
+        grid-column: 1;
+    }    
+    .top-scorer-info-opponent {
+        grid-row: 2;
+        grid-column: 1;
+        align-items: center;
+        text-align: center;
+        align-self: center;
+        margin-top: 0px;    
+    }
+    .headshot-img-opponent {
+        grid-row: 2 / span 2;  
+        grid-column: 2;
+        align-self: end;
+        justify-self: end;
+        }  
+    .show-top5-btn-opponent{
         grid-row: 3;
         grid-column: 1;
         margin-top: unset;

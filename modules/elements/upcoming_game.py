@@ -19,7 +19,7 @@ def get_upcoming_game(next_game):
         utc_start_time = next_game['startTimeUTC']        
         display_next_game_info = f"""{next_game['game_venue']}
         <a href="javascript:void(0);" class="team-link">
-        <img src="{next_opponent_logo}" style="width: 85px">
+        <img src="{next_opponent_logo}" style="width: 100px">
         </a>on """
     else:
         display_next_game_info = f""" No games scheduled """

@@ -114,9 +114,9 @@
                 </div>
             </div>
   <!-- UPCOMING GAMES ------------------------------------------------------------------->           
-            <div class="top_row_element card_display">
+            <div class="top_row_element card_display" id="card_target_width">
                 <!--<h2  class="top_card_header">Upcoming games</h2>-->
-                <div class="upcoming_game" style="grid-column: 2; grid-row: 1">
+                <div class="upcoming_game">
                      <span class="event-time" data-utc-time={{utc_starttime}}>
                          {{html_next_game | safe }}
                     </span>
@@ -127,19 +127,19 @@
                 <button class="primary_button upcoming_games_button"  id="moreGames">
                     Show Next 5        
                 </button>
-                <!-- Opponent Topscorer 
-                <div class="top-scorer-label" style="grid-row: 2" style="grid-column: 1" >
+                <!-- Opponent Topscorer -->
+                <div class="top-scorer-label-opponent" >
                     <b>Top Scorer:</b>                    
-                </div>-->
-                <button class="primary_button show-top5-btn" id="moreStatsOpponent" style="grid-row: 2; grid-column: 3">
+                </div>
+                <button class="primary_button show-top5-btn-opponent" id="moreStatsOpponent" >
                     Show Top 5        
                 </button>
-                <div class ="top-scorer-info" style="grid-row: 2">
+                <div class ="top-scorer-info-opponent" >
                     <p style="margin-block-end: 0"><b>{{top_scorer_opponent['name']}}</b> </p>    
                     <p style="margin-block: 0"> #{{top_scorer_opponent['sweaterNumber']}} {{top_scorer_opponent['position']}}</p>        
                     <p style="margin-block: 0">{{ top_scorer_opponent['goals']}}G-{{ top_scorer_opponent['assists']}}A-{{ top_scorer_opponent['points']}}P</p>
                 </div>
-                <div class="headshot-img" style="grid-row: 1 / span 2; grid-column: 1;">
+                <div class="headshot-img-opponent">
                     <img src={{ top_scorer_opponent['headshot_url'] }} style="max-width: 150px;">
 
                 </div>
