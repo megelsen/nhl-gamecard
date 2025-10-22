@@ -22,7 +22,7 @@
     }
 
     .top-scorer-label {
-        justify-self: baseline;
+        justify-self: center;
         margin-left: 16px;
   
     }
@@ -31,13 +31,15 @@
         grid-column: 1;
         align-self: center;
         margin-top: 32px;
-        justify-self: baseline;
+        justify-self: center;
         margin-left: 16px;
     }
 
     .top-scorer-label-opponent {
         display: block;
+        justify-self: center;
         align-self: baseline;
+        margin-left: 16px;
     }
     .top-scorer-info-opponent {
         grid-row: 2;
@@ -52,19 +54,23 @@
         align-self: end;
         justify-self: end;
     }
-
     .show-top5-btn-opponent{
         grid-row: 2;
         grid-column: 1;
         align-self: center;
         margin-top: 32px;
-        justify-self: baseline;
+        justify-self: center;
         margin-left: 16px;
     }
 
+    .upcoming_game{
+        grid-row: 1;
+    }   
     .upcoming_games_button{
-        grid-column: 1;
+        grid-column: 2;
         justify-self: center;
+        align-self: end;
+        margin-left: 42px;
     }
 
     .previous_game_card {
@@ -124,6 +130,8 @@
         grid-row: 2;  
         align-self: baseline;
         grid-column: 1;
+        margin-left: 16px;
+        justify-self: center;
     }    
     .top-scorer-info {
         grid-row: 2;
@@ -131,7 +139,9 @@
         align-items: center;
         text-align: center;
         align-self: center;
+        justify-self: center;
         margin-top: 0px;    
+        margin-left: 16px;
     }
     .headshot-img {
         grid-row: 2 / span 2;  
@@ -143,12 +153,16 @@
         grid-row: 3;
         grid-column: 1;
         margin-top: unset;
+        align-self: baseline;
+        justify-self: center;
     }
 
     .top-scorer-label-opponent {
         grid-row: 2;  
         align-self: baseline;
         grid-column: 1;
+        justify-self: center;
+        margin-left: 16px;
     }    
     .top-scorer-info-opponent {
         grid-row: 2;
@@ -156,7 +170,9 @@
         align-items: center;
         text-align: center;
         align-self: center;
+        justify-self: center;
         margin-top: 0px;    
+        margin-left: 16px;
     }
     .headshot-img-opponent {
         grid-row: 2 / span 2;  
@@ -168,20 +184,36 @@
         grid-row: 3;
         grid-column: 1;
         margin-top: unset;
+        align-self: baseline;
+        justify-self: center;
+    }
+
+    .upcoming_game{
+        grid-row: 1;
+        grid-column: 1 / span 2;
+    }   
+    .upcoming_games_button{
+        grid-column: 2;
+        justify-self: baseline;
+        margin-left: 16px;
+        align-self: end;
     }
     .team-summary{
         grid-row: 4;
         grid-column: 1 / span 2;
         width: 100%;       
     }
+
     table{
         place-self: unset;
         white-space: nowrap;
     }
+
     .table_card{
         justify-items: unset;
         text-align: center;
     }
+
     .content_modal{
         justify-items: unset;
     }
