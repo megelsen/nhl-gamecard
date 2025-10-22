@@ -9,7 +9,7 @@ import os
 
 # Import custom functions
 from modules import *
-
+from scheduler import start_scheduler
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -215,6 +215,12 @@ def dynamic_titleCard_css():
     card_gap = session.get("card_gap", "4px")
     return Response(render_template("dynamic/styles/title_card.css.jinja", card_gap=card_gap,), mimetype="text/css")
 
+@app.route("/refresh")
+def manual_refresh():
+    from scheduler import update_daily_cache
+    update_daily_cache()
+    return "✅ Cache refreshed manually.", 200
+
 @app.route('/health')
 def health():
     return "OK", 200
@@ -225,5 +231,7 @@ def health():
  #   return Response(render_template("dynamic/scripts/applyScaling.js.jinja", max_width_smallest_screen=max_width_smallest_screen,), mimetype="application/javascript")
 # Run function
 if __name__ == "__main__":
+    # Start your background scheduler (runs at 6:00 and 10:00 UTC daily)
+    start_scheduler()
     #app.run(host='0.0.0.0', port=10000)# debug=True)  # Use `host="0.0.0.0", port=80` for production
-    app.run(debug=True)# )
+    app.run(debug=False)# )

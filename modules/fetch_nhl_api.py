@@ -1,7 +1,9 @@
 import requests
 from datetime import datetime
+from cache_utils import load_cache, save_cache, is_cache_fresh
 
 __all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_series']
+
 
 def get_logo(team_abr):
 # # Download the SVG file
@@ -10,37 +12,72 @@ def get_logo(team_abr):
   return url
 
 def get_schedule(team_abbr):
-    schedule_url = f"https://api-web.nhle.com/v1/club-schedule-season/{team_abbr}/now"
-    schedule = requests.get(schedule_url)
-    schedule_data = schedule.json()
-    return schedule_data
+    cache_name = f"schedule_{team_abbr}"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+    
+    url = f"https://api-web.nhle.com/v1/club-schedule-season/{team_abbr}/now"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
+
 
 def get_current_standings(current_date):    
-    standings_url = f"https://api-web.nhle.com/v1/standings/{current_date}"
-    standings = requests.get(standings_url)
-    standings_data = standings.json()
-    return standings_data
+    cache_name = f"standings_{current_date}"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+
+    url = f"https://api-web.nhle.com/v1/standings/{current_date}"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
+
 
 def get_team_stats(team_abbr):
-    team_stats_url = f"https://api-web.nhle.com/v1/club-stats/{team_abbr}/now"
-    team_stats = requests.get(team_stats_url)
-    team_stats_data = team_stats.json()
-    return team_stats_data
+    cache_name = f"team_stats_{team_abbr}"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+
+    url = f"https://api-web.nhle.com/v1/club-stats/{team_abbr}/now"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
+
 
 def get_season_data():
-    season_url = f"https://api-web.nhle.com/v1/standings-season"
-    season = requests.get(season_url)
-    season_data = season.json()
-    return season_data
+    cache_name = "season_data"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+
+    url = f"https://api-web.nhle.com/v1/standings-season"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
+
 
 def get_player_stats(playerID):
-    player_stats_url = f"https://api-web.nhle.com/v1/player/{playerID}/landing"
-    player_stats = requests.get(player_stats_url)
-    player_stats_data = player_stats.json()
-    return player_stats_data
+    cache_name = f"player_{playerID}"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+
+    url = f"https://api-web.nhle.com/v1/player/{playerID}/landing"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
+
 
 def get_playoff_series(seasonID):
-    playoff_series_url = f"https://api-web.nhle.com/v1/playoff-series/carousel/{seasonID}/"
-    playoff_series = requests.get(playoff_series_url)
-    playoff_series_data = playoff_series.json()
-    return playoff_series_data
+    cache_name = f"playoff_series_{seasonID}"
+    if is_cache_fresh(cache_name):
+        return load_cache(cache_name)
+
+    url = f"https://api-web.nhle.com/v1/playoff-series/carousel/{seasonID}/"
+    res = requests.get(url)
+    data = res.json()
+    save_cache(cache_name, data)
+    return data
