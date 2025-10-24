@@ -12,4 +12,4 @@ jobs:
       - name: Ping Render app
         run: |
           echo "Pinging Render app..."
-          curl -fsS https://nhl-gamecard.onrender.com/ > /dev/null || echo "App might be down"
+          curl -fsS https://nhl-gamecard.onrender.com/refresh > /dev/null || echo "App might be down"
