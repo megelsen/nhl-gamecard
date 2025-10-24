@@ -1,5 +1,7 @@
 # scheduler.py
+import os
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 import logging
 from modules import (
@@ -48,8 +50,23 @@ def update_daily_cache():
 
 
 def start_scheduler():
-    """Starts a background scheduler that runs every day at."""
     scheduler = BackgroundScheduler(timezone="UTC")
-    scheduler.add_job(update_daily_cache, "cron", hour="6,10", minute=0)  # 
+
+    # Schedule automatic refresh at 06:00 and 10:00 UTC
+    scheduler.add_job(update_daily_cache, CronTrigger(hour=4, minute=0))
+    scheduler.add_job(update_daily_cache, CronTrigger(hour=10, minute=0))
     scheduler.start()
-    logging.info("📅 Daily cache scheduler started")
+    logging.info("✅ Scheduler started (06:00 and 10:00 UTC).")
+
+    # 👇 Check cache folder at startup
+    cache_dir = "cache"
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+
+    files = [f for f in os.listdir(cache_dir) if f.endswith(".json")]
+    if not files:
+        logging.info("🟡 Cache empty on startup — refreshing now...")
+        update_daily_cache()
+        logging.info("✅ Cache built successfully.")
+    else:
+        logging.info("🟢 Cache already populated.")
