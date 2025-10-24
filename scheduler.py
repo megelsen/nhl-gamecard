@@ -1,10 +1,9 @@
 # scheduler.py
 import os
-import logging
-import time
-from datetime import datetime
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from datetime import datetime
+import logging
 from modules import (
     get_schedule,
     get_current_standings,
@@ -23,63 +22,51 @@ TEAM_LIST = [
     "WPG", "WSH",
 ]
 
-
 def update_daily_cache():
     """Fetch all critical data and save it to cache once per day."""
-    logging.info("🚀 Starting daily NHL data cache refresh...")
+    logging.info("Starting daily NHL data cache refresh...")
 
-    try:
-        current_date = datetime.utcnow().strftime("%Y-%m-%d")
+    # Example: use today's date for standings
+    current_date = datetime.now().strftime("%Y-%m-%d")
 
-        # Refresh general data
-        season_data = get_season_data()
-        save_cache("season_data", season_data)
+    # Refresh general data
+    season_data = get_season_data()
+    save_cache("season_data", season_data)
 
-        standings_data = get_current_standings(current_date)
-        save_cache(f"standings_{current_date}", standings_data)
+    standings_data = get_current_standings(current_date)
+    save_cache(f"standings_{current_date}", standings_data)
 
-        # Refresh each team's data
-        for team in TEAM_LIST:
-            logging.info(f"Updating cache for {team}")
-            try:
-                save_cache(f"schedule_{team}", get_schedule(team))
-                save_cache(f"team_stats_{team}", get_team_stats(team))
-                time.sleep(0.5)  # avoid API throttling
-            except Exception as e:
-                logging.error(f"Failed to update {team}: {e}")
+    # Refresh each team's data
+    for team in TEAM_LIST:
+        logging.info(f"Updating cache for {team}")
+        save_cache(f"schedule_{team}", get_schedule(team))
+        save_cache(f"team_stats_{team}", get_team_stats(team))
 
-        # Refresh playoff data
-        playoff_data = get_playoff_series("20232024")
-        save_cache("playoff_series_20232024", playoff_data)
+    # Refresh playoff data (use hardcoded or dynamically detected season)
+    playoff_data = get_playoff_series("20232024")
+    save_cache("playoff_series_20232024", playoff_data)
 
-        logging.info("✅ Daily cache refresh complete.")
-    except Exception as e:
-        logging.exception(f"❌ Cache update failed: {e}")
+    logging.info("✅ Daily cache refresh complete.")
 
 
 def start_scheduler():
-    """Run APScheduler continuously in a standalone worker process."""
-    cache_dir = "cache"
-    os.makedirs(cache_dir, exist_ok=True)
+    scheduler = BackgroundScheduler(timezone="UTC")
 
-    # Run once immediately on startup
-    files = [f for f in os.listdir(cache_dir) if f.endswith(".json")]
-    if not files:
-        logging.info("🟡 Cache empty on startup — performing initial build...")
-        update_daily_cache()
-
-    scheduler = BlockingScheduler(timezone="UTC")
-
-    # Schedule automatic refresh at 04:00 and 10:00 UTC
+    # Schedule automatic refresh at 06:00 and 10:00 UTC
     scheduler.add_job(update_daily_cache, CronTrigger(hour=4, minute=0))
     scheduler.add_job(update_daily_cache, CronTrigger(hour=10, minute=0))
+    scheduler.start()
+    logging.info("✅ Scheduler started (06:00 and 10:00 UTC).")
 
-    logging.info("✅ Scheduler running (04:00 and 10:00 UTC). Waiting for next job...")
-    try:
-        scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        logging.info("🛑 Scheduler stopped manually.")
+    # 👇 Check cache folder at startup
+    cache_dir = "cache"
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
 
-
-if __name__ == "__main__":
-    start_scheduler()
+    files = [f for f in os.listdir(cache_dir) if f.endswith(".json")]
+    if not files:
+        logging.info("🟡 Cache empty on startup — refreshing now...")
+        update_daily_cache()
+        logging.info("✅ Cache built successfully.")
+    else:
+        logging.info("🟢 Cache already populated.")
