@@ -6,11 +6,12 @@ import pandas as pd
 from flask import Flask, render_template_string, request, render_template, Response, session, send_from_directory, redirect, url_for
 import os
 from threading import Thread
-
+  
 
 # Import custom functions
 from modules import *
 from scheduler import start_scheduler
+from scheduler import update_daily_cache
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -218,16 +219,15 @@ def dynamic_titleCard_css():
 
 @app.route("/refresh")
 def manual_refresh():
-    from scheduler import update_daily_cache
-    def manual_refresh():
-        def run_refresh():
-            try:
-                update_daily_cache()
-            except Exception as e:
-                print(f"[ERROR] Manual refresh failed: {e}")
+  
+    def run_refresh():
+        try:
+            update_daily_cache()
+        except Exception as e:
+            print(f"[ERROR] Manual refresh failed: {e}")
 
-        Thread(target=run_refresh).start()
-        return "✅ Refresh started in background. Check logs for progress."
+    Thread(target=run_refresh).start()
+    return "✅ Refresh started in background. Check logs for progress."
 
 @app.route('/health')
 def health():
