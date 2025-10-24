@@ -5,6 +5,7 @@ from IPython.display import SVG, display, HTML
 import pandas as pd
 from flask import Flask, render_template_string, request, render_template, Response, session, send_from_directory, redirect, url_for
 import os
+from threading import Thread
 
 
 # Import custom functions
@@ -218,8 +219,15 @@ def dynamic_titleCard_css():
 @app.route("/refresh")
 def manual_refresh():
     from scheduler import update_daily_cache
-    update_daily_cache()
-    return "✅ Cache refreshed manually.", 200
+    def manual_refresh():
+        def run_refresh():
+            try:
+                update_daily_cache()
+            except Exception as e:
+                print(f"[ERROR] Manual refresh failed: {e}")
+
+        Thread(target=run_refresh).start()
+        return "✅ Refresh started in background. Check logs for progress."
 
 @app.route('/health')
 def health():
