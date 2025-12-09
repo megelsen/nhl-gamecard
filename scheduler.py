@@ -46,19 +46,18 @@ def update_daily_cache():
     playoff_data = get_playoff_series("20232024")
     save_cache("playoff_series_20232024", playoff_data)
 
-    logging.info("✅ Daily cache refresh complete.")
+    logging.info("Daily cache refresh complete.")
 
 
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone="UTC")
 
-    # Schedule automatic refresh at 06:00 and 10:00 UTC
-    scheduler.add_job(update_daily_cache, CronTrigger(hour=4, minute=0))
-    scheduler.add_job(update_daily_cache, CronTrigger(hour=10, minute=0))
+    scheduler.add_job(update_daily_cache, CronTrigger(hour=6, minute=0))
+    scheduler.add_job(update_daily_cache, CronTrigger(hour=12, minute=0))
     scheduler.start()
-    logging.info("✅ Scheduler started (06:00 and 10:00 UTC).")
+    logging.info(" Scheduler started (06:00 and 12:00 UTC).")
 
-    # 👇 Check cache folder at startup
+    # Check cache folder at startup
     cache_dir = "cache"
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
@@ -67,6 +66,6 @@ def start_scheduler():
     if not files:
         logging.info("🟡 Cache empty on startup — refreshing now...")
         update_daily_cache()
-        logging.info("✅ Cache built successfully.")
+        logging.info(" Cache built successfully.")
     else:
         logging.info("🟢 Cache already populated.")
