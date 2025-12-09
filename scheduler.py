@@ -11,7 +11,7 @@ from modules import (
     get_season_data,
     get_playoff_series,
 )
-from cache_utils import save_cache
+from cache_utils import save_cache, clear_chache
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -24,6 +24,8 @@ TEAM_LIST = [
 
 def update_daily_cache():
     """Fetch all critical data and save it to cache once per day."""
+
+    clear_cache()
     logging.info("Starting daily NHL data cache refresh...")
 
     # Example: use today's date for standings
