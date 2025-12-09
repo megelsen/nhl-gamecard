@@ -1,5 +1,8 @@
 import os, json
 from datetime import datetime, timedelta
+import shutil
+
+)
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -23,3 +26,9 @@ def save_cache(name, data):
 def is_cache_fresh(name):
     path = get_cache_path(name)
     return os.path.exists(path)
+
+
+def clear_cache():
+    if os.path.exists(CACHE_DIR):
+        shutil.rmtree(CACHE_DIR)
+    os.makedirs(CACHE_DIR, exist_ok=True
