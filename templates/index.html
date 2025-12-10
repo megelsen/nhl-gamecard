@@ -6,7 +6,10 @@
     <title>NHL Gamecard</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='stick-64x64.ico') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+
      <!-- Static CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styling.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/primary_button.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/close_button.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content.css') }}">
@@ -206,7 +209,45 @@
                 {{ record_table_2 | safe }}
             </div>
         </div>  
+<!--- BETA --------------------------------------------------------------->
+<!--- Goalie Card -------------------------------------------------------->
+        <div style="display: none">
+            <div class="top_row_element card_display" id="goalieCard_team">
+                <h2 class="top_card_header">
+                    Goalie
+                </h2>      
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{goalies[0]['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{goalies[0]['sweaterNumber']}}</p>        
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ goalies[0]['headshot_url'] }} style="max-width: 150px;">
 
+                </div>
+                <div class="team-summary">
+                    {{ html_goalie_table[0] | safe }}
+                </div>
+            </div>
+
+                <div class="top_row_element card_display" id="goalieCard_opponent">
+                <h2 class="top_card_header">
+                    Opponent's Goalie
+                </h2>      
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{goalies_opponent[0]['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{goalies_opponent[0]['sweaterNumber']}}</p>        
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ goalies_opponent[0]['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
+                <div class="team-summary">
+                    {{ html_goalie_table_opponent[0] | safe }}
+                </div>
+            </div>
+    </div> 
+
+<!---Player Cards --------------------------------------------------------->
         <div  style="display: none" class="container">
             <div class="card_display player-card"
                 <h2  class="top_card_header">{{ top_scorer['name'] }}</h2>
@@ -237,6 +278,14 @@
             </div>
         </div>
     </div>     
+
+    <footer class="disclaimer">
+        <p>
+            This site is an independent project and is not affiliated with, endorsed, or sponsored by 
+            the National Hockey League (NHL) or any of its teams. All logos and trademarks are the 
+            property of their respective owners.
+        </p>
+    </footer>
 
     <!-- 🔹 Static JavaScript -->
     <script src="{{ url_for('static', filename='js/timezoneMap.js') }}"></script>  
