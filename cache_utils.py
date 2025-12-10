@@ -3,9 +3,13 @@ from datetime import datetime, timedelta
 import shutil
 
 
-
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
+
+def clear_cache():
+    if os.path.exists(CACHE_DIR):
+        shutil.rmtree(CACHE_DIR)
+    os.makedirs(CACHE_DIR, exist_ok=True)
 
 def get_cache_path(name):
     today = datetime.now().strftime("%Y-%m-%d")
