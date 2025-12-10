@@ -53,8 +53,9 @@ def team_page(team_abbr):
 
     # Load Team info
     team_info = get_team_info(standings_data, team_abbr)
-    team_color = get_team_color(team_abbr)  
-    light_color = lighten_hex_color(team_color,0.25)
+    team_colors = get_team_color(team_info)  
+    light_color = lighten_hex_color(team_colors['primary'],0.25)
+
     # Read Schedule
     current_season_id = get_season_id()
     season_start = get_season_start(season_data,current_season_id)
@@ -87,7 +88,12 @@ def team_page(team_abbr):
     html_goals_leader_table = build_leaders_table(goal_leaders,'G')
     assist_leaders = find_assistleaders(team_stats_data,nr_top)
     html_assists_leader_table = build_leaders_table(assist_leaders,'A')
-
+    # Get Goalie Info:
+    goalies = get_goalies(team_stats_data)
+    html_goalie_table = []
+    for goalie in goalies:
+        html_goalie_table.append(build_goalie_table(goalie))
+      
     # Next game
     next_games = get_upcoming_opponent(games_by_date,5)  or []      
     next_game = next_games[0] if next_games and next_games[0] is not None else None
@@ -103,10 +109,14 @@ def team_page(team_abbr):
     html_goals_leader_table_opponent = build_leaders_table(goal_leaders_opponent,'G')
     assist_leaders_opponent = find_assistleaders(opponent_stats,nr_top)
     html_assists_leader_table_opponent = build_leaders_table(assist_leaders_opponent,'A')
-    
+    # Opponet Goalie   
+    goalies_opponent = get_goalies(opponent_stats)
+    html_goalie_table_opponent = []
+    for goalie in goalies_opponent:
+        html_goalie_table_opponent.append(build_goalie_table(goalie))
+
     # Generate html for next 5 games    
     next_games_data = []
-
     for i in range(1, 5):  # Adjust range based on the number of games you want
         if i < len(next_games) and next_games[i] is not None:
             html_game, utc_starttime_upcoming = get_upcoming_game(next_games[i])
@@ -137,7 +147,8 @@ def team_page(team_abbr):
     max_width_smallest_screen = min_width_team_summary + 2*outer_margin
 
     # Store variables in session
-    session["team_color"] = team_color
+    session["team_color"] = team_colors['primary']
+    session["secondary_color"] = team_colors['secondary']
     session["card_gap"] = card_gap
     session["light_color"] = light_color
     session["max_width_medium_screen"] = max_width_medium_screen
@@ -170,6 +181,11 @@ def team_page(team_abbr):
         "record_table_2": record_table_html_2,
         "utc_starttime": utc_starttime,
         "max_width_smallest_screen": max_width_smallest_screen,
+        "goalies": goalies,
+        "html_goalie_table": html_goalie_table,        
+        "goalies_opponent": goalies_opponent,
+        "html_goalie_table_opponent": html_goalie_table_opponent,
+
     }
     return render_template("index.html",**vars)
 
@@ -227,7 +243,7 @@ def manual_refresh():
             print(f"[ERROR] Manual refresh failed: {e}")
 
     Thread(target=run_refresh).start()
-    return "✅ Refresh started in background. Check logs for progress."
+    return " Refresh started in background. Check logs for progress."
 
 @app.route('/health')
 def health():
@@ -239,7 +255,6 @@ def health():
  #   return Response(render_template("dynamic/scripts/applyScaling.js.jinja", max_width_smallest_screen=max_width_smallest_screen,), mimetype="application/javascript")
 # Run function
 if __name__ == "__main__":
-    # Start your background scheduler (runs at 6:00 and 10:00 UTC daily)
+   
     start_scheduler()
-    #app.run(host='0.0.0.0', port=10000)# debug=True)  # Use `host="0.0.0.0", port=80` for production
     app.run(debug=False)# )
