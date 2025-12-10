@@ -64,7 +64,7 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             recapURL = f'https://www.nhl.com{recap}'
 
             if away_team == query_team:
-              game_venue = "@"
+              game_venue = "at"
               opponent = home_team
 
               opponent_abr = game.get("homeTeam", {}).get("abbrev")
