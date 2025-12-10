@@ -1,0 +1,218 @@
+[
+    {
+        "team": "Anaheim Ducks",
+        "primary": "#f95602",
+        "secondary": "#111111",
+        "accent": "#f95602"
+    },
+    {
+        "team": "Arizona Coyotes",
+        "primary": "#8c2633",
+        "secondary": "#E2D6B5",
+        "accent": "#8c2633"
+    },
+    {
+        "team": "Boston Bruins",
+        "primary": "#111111",
+        "secondary": "#FCB514",
+        "accent": "#111"
+    },
+    {
+        "team": "Buffalo Sabres",
+        "primary": "#002654",
+        "secondary": "#FCB514",
+        "accent": "#002654"
+    },
+    {
+        "team": "Calgary Flames",
+        "primary": "#b72b35",
+        "secondary": "#F1BE48",
+        "accent": "#b72b35"
+    },
+    {
+        "team": "Carolina Hurricanes",
+        "primary": "#b72b35",
+        "secondary": "#111111",
+        "accent": "#b72b35"
+    },
+    {
+        "team": "Chicago Blackhawks",
+        "primary": "#cf0a2c",
+        "secondary": "#111111",
+        "accent": "#cf0a2c"
+    },
+    {
+        "team": "Colorado Avalanche",
+        "primary": "#6f263d",
+        "secondary": "#236192",
+        "accent": "#6f263d"
+    },
+    {
+        "team": "Columbus Blue Jackets",
+        "primary": "#002654",
+        "secondary": "#CE1126",
+        "accent": "#002654"
+    },
+    {
+        "team": "Dallas Stars",
+        "primary": "#006847",
+        "secondary": "#8F8F8C",
+        "accent": "#006847"
+    },
+    {
+        "team": "Detroit Red Wings",
+        "primary": "#ce1126",
+        "secondary": "#CE1126",
+        "accent": "#ce1126"
+    },
+    {
+        "team": "Edmonton Oilers",
+        "primary": "#041e41",
+        "secondary": "#FF4C00",
+        "accent": "#041e41"
+    },
+    {
+        "team": "Florida Panthers",
+        "primary": "#041e42",
+        "secondary": "#C8102E",
+        "accent": "#041e42"
+    },
+    {
+        "team": "Los Angeles Kings",
+        "primary": "#111111",
+        "secondary": "#a2aaad",
+        "accent": "#111111"
+    },
+    {
+        "team": "Minnesota Wild",
+        "primary": "#004f30",
+        "secondary": "#C51230",
+        "accent": "#004f30"
+    },
+    {
+        "team": "Montreal Canadiens",
+        "primary": "#c51230",
+        "secondary": "#192168",
+        "accent": "#c51230"
+    },
+    {
+        "team": "Nashville Predators",
+        "primary": "#041e42",
+        "secondary": "#FFB81C",
+        "accent": "#041e42"
+    },
+    {
+        "team": "New Jersey Devils",
+        "primary": "#ce1126",
+        "secondary": "#111111",
+        "accent": "#ce1126"
+    },
+    {
+        "team": "New York Islanders",
+        "primary": "#00529b",
+        "secondary": "#F47920",
+        "accent": "#00529b"
+    },
+    {
+        "team": "New York Rangers",
+        "primary": "#0038a8",
+        "secondary": "#CE1126",
+        "accent": "#0038a8"
+    },
+    {
+        "team": "Ottawa Senators",
+        "primary": "#e31837",
+        "secondary": "#111111",
+        "accent": "#e31837"
+    },
+    {
+        "team": "Philadelphia Flyers",
+        "primary": "#f74902",
+        "secondary": "#000000",
+        "accent": "#f74902"
+    },
+    {
+        "team": "Pittsburgh Penguins",
+        "primary": "#000000",
+        "secondary": "#FCB514",
+        "accent": "#000"
+    },
+    {
+        "team": "St. Louis Blues",
+        "primary": "#002f87",
+        "secondary": "#FCB514",
+        "accent": "#002f87"
+    },
+    {
+        "team": "San Jose Sharks",
+        "primary": "#006d75",
+        "secondary": "#EA7200",
+        "accent": "#006d75"
+    },
+    {
+        "team": "Seattle Kraken",
+        "primary": "#001628",
+        "secondary": "#e9072b",
+        "accent": "#001628"
+    },
+    {
+        "team": "Tampa Bay Lightning",
+        "primary": "#002868",
+        "secondary": "#000000",
+        "accent": "#002868"
+    },
+    {
+        "team": "Toronto Maple Leafs",
+        "primary": "#003e7e",
+        "secondary": "#003E7E",
+        "accent": "#003e7e"
+    },
+    {
+        "team": "Vancouver Canucks",
+        "primary": "#001f5c",
+        "secondary": "#021B2C",
+        "accent": "#001f5c"
+    },
+    {
+        "team": "Vegas Golden Knights",
+        "primary": "#b4975a",
+        "secondary": "#333F42",
+        "accent": "#b4975a"
+    },
+    {
+        "team": "Washington Capitals",
+        "primary": "#041e41",
+        "secondary": "#CF0A2C",
+        "accent": "#041e41"
+    },
+    {
+        "team": "Winnipeg Jets",
+        "primary": "#041e41",
+        "secondary": "#AC162C",
+        "accent": "#041e41"
+    },
+    {
+        "team": "Atlanta Thrashers",
+        "primary": "#041e42",
+        "secondary": "#FFA300",
+        "accent": "#041e42"
+    },
+    {
+        "team": "Hartford Whalers",
+        "primary": "#0e7b3e",
+        "secondary": "#2a3489",
+        "accent": "#0e7b3e"
+    },
+    {
+        "team": "Minnesota North Stars",
+        "primary": "#009639",
+        "secondary": "#ffd100",
+        "accent": "#009639"
+    },
+    {
+        "team": "Quebec Nordiques",
+        "primary": "#c8102e",
+        "secondary": "#0072ce",
+        "accent": "#c8102e"
+    }
+]

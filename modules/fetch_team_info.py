@@ -1,4 +1,6 @@
 from modules.fetch_nhl_api import get_logo
+import os
+import json
 
 __all__ = ['get_team_info','get_team_color','lighten_hex_color']
 
@@ -17,44 +19,28 @@ def get_team_info(standings_data,team_abbr='CAR'):
                 }
     return team_info
 
-def get_team_color(team_abbr):
-    nhl_team_colors = {
-        'ANA': '#F47A38',  # Anaheim Ducks
-        'ARI': '#8C2633',  # Arizona Coyotes
-        'BOS': '#FFB81C',  # Boston Bruins
-        'BUF': '#002654',  # Buffalo Sabres
-        'CGY': '#C8102E',  # Calgary Flames
-        'CAR': '#CC0000',  # Carolina Hurricanes
-        'CHI': '#CF0A2C',  # Chicago Blackhawks
-        'COL': '#6F263D',  # Colorado Avalanche
-        'CBJ': '#041E42',  # Columbus Blue Jackets
-        'DAL': '#006847',  # Dallas Stars
-        'DET': '#CE1126',  # Detroit Red Wings
-        'EDM': '#041E42',  # Edmonton Oilers
-        'FLA': '#041E42',  # Florida Panthers
-        'LAK': '#111111',  # Los Angeles Kings
-        'MIN': '#154734',  # Minnesota Wild
-        'MTL': '#AF1E2D',  # Montreal Canadiens
-        'NSH': '#FFB81C',  # Nashville Predators
-        'NJD': '#CE1126',  # New Jersey Devils
-        'NYI': '#00539B',  # New York Islanders
-        'NYR': '#0038A8',  # New York Rangers
-        'OTT': '#C52032',  # Ottawa Senators
-        'PHI': '#F74902',  # Philadelphia Flyers
-        'PIT': '#CFC493',  # Pittsburgh Penguins
-        'SJS': '#006D75',  # San Jose Sharks
-        'SEA': '#001628',  # Seattle Kraken
-        'STL': '#002F87',  # St. Louis Blues
-        'TBL': '#002868',  # Tampa Bay Lightning
-        'TOR': '#00205B',  # Toronto Maple Leafs
-        'VAN': '#00205B',  # Vancouver Canucks
-        'VGK': '#B4975A',  # Vegas Golden Knights
-        'WSH': '#041E42',  # Washington Capitals
-        'WPG': '#041E42',  # Winnipeg Jets
-        'UTA': '#71AFE5',
-    }
+def get_team_color(team_info):
+    team_name = team_info['team_name']
+    # Make sure the JSON file exists
+    json_path = os.path.join(os.path.dirname(__file__), "nhl_team_colors.json")
+    if not os.path.exists(json_path):
+        raise FileNotFoundError("nhl_team_colors.json not found. Please run the scraper first.")
 
-    return nhl_team_colors.get(team_abbr)
+    # Load JSON data
+    with open(json_path, "r") as f:
+        team_data = json.load(f)
+
+    # Search for the matching team
+    for team in team_data:
+        if team["team"].lower() == team_name.lower():
+            return {
+                "primary": team.get("primary"),
+                "secondary": team.get("secondary"),
+                "accent": team.get("accent")
+            }
+
+    raise ValueError(f"Could not find colors for {team_name}")
+
 
 def lighten_hex_color(hex_color, factor):
     # Convert hex to RGB
