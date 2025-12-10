@@ -11,7 +11,7 @@ from modules import (
     get_season_data,
     get_playoff_series,
 )
-from cache_utils import save_cache, clear_chache
+from cache_utils import (save_cache, clear_cache)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -66,8 +66,8 @@ def start_scheduler():
 
     files = [f for f in os.listdir(cache_dir) if f.endswith(".json")]
     if not files:
-        logging.info("🟡 Cache empty on startup — refreshing now...")
+        logging.info("Cache empty on startup — refreshing now...")
         update_daily_cache()
         logging.info(" Cache built successfully.")
     else:
-        logging.info("🟢 Cache already populated.")
+        logging.info("Cache already populated.")
