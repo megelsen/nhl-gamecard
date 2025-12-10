@@ -1,0 +1,33 @@
+
+@font-face {
+    font-family: 'DINPro';
+    src: url('../fonts/dinpro.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINPro';
+    src: url('../fonts/dinpro_bold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+body {
+  font-family: 'DINPro', sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: 'DINPro', sans-serif;
+  font-weight: bold;
+}
+
+.disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            font-family: 'DINPro', sans-serif;
+        }
