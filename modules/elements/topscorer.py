@@ -1,7 +1,7 @@
 import pandas as pd
 from modules.fetch_nhl_api import get_player_stats
 
-__all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assistleaders','build_leaders_table','get_skater_info']
+__all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assistleaders','build_leaders_table','get_skater_info','get_goalies','build_goalie_table']
 
 def find_top_scorer(team_stats_data):
     # Initialize a variable to track the player with the most points
@@ -109,5 +109,63 @@ def get_skater_info(skater):
     skater_info = {**player_basic_stats, **player_advanced_stats}
     return skater_info
 
-
+def get_goalies(team_stats_data):
+    goalies = []
+    sorted_goalies = sorted(team_stats_data['goalies'], key=lambda goalie: goalie['wins'], reverse=True)
+    for goalie in sorted_goalies:
+       goalies.append(get_goalie_info(goalie))
+    return goalies
+def get_goalie_info(goalie):
+   
+    player_basic_stats = {
+            "name": goalie['firstName']['default'] + " " + goalie['lastName']['default'],
+            "points": goalie['points'],
+            "goals": goalie['goals'],
+            "assists": goalie['assists'],
+            "wins": goalie['wins'],
+            "goalsAgainstAverage": round(goalie['goalsAgainstAverage'],2),
+            "savePercentage": round(goalie['savePercentage'],2),           
+            "shutouts": goalie['shutouts'],
+            "games_played": goalie['gamesPlayed'],
+            "headshot_url": goalie['headshot'],
+            "headshot_html": f"""<img src="{goalie['headshot']}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie['headshot']}">""",
+            "position": 'G',
+            "playerID": goalie['playerId'],
+    }
+    player_stats_data = get_player_stats(player_basic_stats["playerID"])
+    player_advanced_stats = {       
+        "sweaterNumber": player_stats_data['sweaterNumber'],
+        "heroImage_url": player_stats_data['heroImage'],
+        "birth_country": player_stats_data['birthCountry'],
+        "shoots": player_stats_data['shootsCatches'],
+        "height_in": player_stats_data['heightInInches'],
+        "height_cm": player_stats_data['heightInCentimeters'],
+        "birthdate": player_stats_data['birthDate'],
+        "draft_details": player_stats_data.get('draftDetails', 'undrafted'),
+        "career_stats": player_stats_data['careerTotals']['regularSeason'],
+    }
+    goalie_info = {**player_basic_stats, **player_advanced_stats}
+    return goalie_info
     
+def build_goalie_table(goalie):
+    goalie_fields = []
+    goalie_fields.append({
+            "GP": goalie['games_played'],
+            "W": goalie['wins'],
+            "SO": goalie['shutouts'],
+            "S%": goalie['savePercentage'],
+            "GAA": goalie['goalsAgainstAverage'],
+          })
+          # Append the extracted data into a list
+          # Convert to DataFrame
+    df_goalie_fields = pd.DataFrame(goalie_fields)
+
+    # Extract only the first 8 columns
+    columns_to_display = ["GP", "W", "SO","S%", "GAA"]
+
+    # Filter the DataFrame to only include those columns
+    df_goalie_fields = df_goalie_fields[columns_to_display]
+
+    html_goalie_fields = df_goalie_fields.to_html(classes="teams-table", escape=False, index=False)
+    return html_goalie_fields
