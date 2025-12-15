@@ -13,6 +13,11 @@
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
     }
+    upcoming_games_button{
+        margin-left: 48px;
+        justify-self: baseline;
+    }
+
 }
 
 @media (max-width: {{max_width_small_screen}}px) {
@@ -67,10 +72,11 @@
         grid-row: 1;
     }   
     .upcoming_games_button{
-        grid-column: 2;
-        justify-self: end;
+        grid-column: 2;        
         align-self: end;
         margin-top: 16px;
+        margin-left: 82px;
+        justify-self: center;
     }
 
     .previous_game_card {
