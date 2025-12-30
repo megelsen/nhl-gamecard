@@ -1,0 +1,22 @@
+{% macro rank_circle(main_text, secondary_text=None, pct=0, color="#000") %}
+<svg class="special-teams-circle"
+     viewBox="0 0 100 100"
+     style="--pct: {{ pct }}; --ring-color: {{ color }};">
+    <!-- Background ring -->
+    <circle cx="50" cy="50" r="45" fill="none" stroke="#d1d1d1" stroke-width="6"/>
+    <!-- Progress ring -->
+    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--ring-color)" stroke-width="6"
+            stroke-linecap="round" pathLength="100"
+            stroke-dasharray="var(--pct) 100"
+            transform="rotate(-90 50 50)"/>
+    <!-- Main number -->
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="middle"
+          class="main-stat-text">{{ main_text }}</text>
+
+    {% if secondary_text %}
+    <!-- Secondary text -->
+    <text x="50" y="75" text-anchor="middle" dominant-baseline="middle"
+          class="secondary-stat-text">{{ secondary_text }}</text>
+    {% endif %}
+</svg>
+{% endmacro %}

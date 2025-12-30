@@ -168,6 +168,12 @@
         "accent": "#003e7e"
     },
     {
+        "team": "Utah Mammoth",
+        "primary": "#69B3E7",
+        "secondary": "#010101",
+        "accent": "#FFFFFF"
+    },
+    {
         "team": "Vancouver Canucks",
         "primary": "#001f5c",
         "secondary": "#021B2C",

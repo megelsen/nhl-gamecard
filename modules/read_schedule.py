@@ -54,19 +54,22 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             home_score = game.get("homeTeam", {}).get("score")
             away_score = game.get("awayTeam", {}).get("score")
             game_outcome = game.get("gameOutcome", {}).get("lastPeriodType")
-            winning_goalie = game.get("winningGoalie", {}).get("lastName", {}).get("default")
-            winning_goal_scorer = game.get("winningGoalScorer", {}).get("lastName", {}).get("default")
+            winning_goalie = game.get("winningGoalie", {})
+            winning_goal_scorer = game.get("winningGoalScorer")
+            gamecenter = game.get("gameCenterLink")
+            gamecenterURL = f'https://www.nhl.com{gamecenter}'
             recap = game.get("condensedGame")
             if recap == None:
                recap = game.get("threeMinRecap")
             startTimeUTC = game.get("startTimeUTC")
             venueTimezone = game.get("venueTimezone")
             recapURL = f'https://www.nhl.com{recap}'
-
+            
             if away_team == query_team:
-              game_venue = "at"
+              game_venue = f'<span class="alt-font">@</span>'
               opponent = home_team
-
+              opponent_place = game.get("homeTeam", {}).get("placeName", {}).get("default")
+              opponent_name = opponent_place + ' ' + opponent
               opponent_abr = game.get("homeTeam", {}).get("abbrev")
               opponent_score = home_score
               team_score = away_score
@@ -74,6 +77,8 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             else:
               game_venue = "vs"
               opponent = away_team
+              opponent_place = game.get("awayTeam", {}).get("placeName", {}).get("default")
+              opponent_name = opponent_place + ' ' + opponent
               opponent_abr = game.get("awayTeam", {}).get("abbrev")
               opponent_score = away_score
               team_score = home_score
@@ -92,7 +97,7 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
 
             # Store the game information as a dictionary
             game_details = {
-               "game_type": game_type,
+              "game_type": game_type,
               "game_id": game_id,
               "game_date": game_date,
               "home_team": home_team,
@@ -109,7 +114,10 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
               "result": result,
               "startTimeUTC": startTimeUTC,
               "venueTimezone": venueTimezone,
-              "recapURL": recapURL
+              "recapURL": recapURL,
+              "opponent_name": opponent_name, 
+              "gamecenterURL": gamecenterURL,
+
             }
             games_by_date.append(game_details)
             games_by_opponent.setdefault(opponent, []).append(game_details)

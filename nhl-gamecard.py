@@ -39,10 +39,13 @@ def team_page(team_abbr):
     schedule_data = get_schedule(team_abbr)
     current_date = datetime.now().strftime("%Y-%m-%d")
     season_data = get_season_data()
+    current_season_id = get_season_id()
+    season_start = get_season_start(season_data,current_season_id)
+    season_end = get_season_end(current_season_id)
     # Check whether current date is past last game of regular season:
-    current_date_format = datetime.strptime(current_date, "%Y-%m-%d").date()
-    last_reg_season_format = datetime.strptime(season_data['currentDate'], "%Y-%m-%d").date()
-    if current_date_format > last_reg_season_format:
+    current_date_format = datetime.strptime(current_date, "%Y-%m-%d")
+    last_reg_season_format = datetime.strptime(season_data['currentDate'], "%Y-%m-%d")
+    if current_date_format > season_end:
         current_date = last_reg_season_format
         post_season = 1
     else: 
@@ -50,16 +53,19 @@ def team_page(team_abbr):
     standings_data = get_current_standings(current_date)    
     team_stats_data = get_team_stats(team_abbr)
 
+    # Get Team overview
+    
+    all_teams_summary_data = get_team_summary(current_season_id,post_season) # get team summary of all teams
+
 
     # Load Team info
     team_info = get_team_info(standings_data, team_abbr)
-    team_colors = get_team_color(team_info)  
+    team_colors = get_team_color(team_info["team_name"])  
     light_color = lighten_hex_color(team_colors['primary'],0.25)
 
     # Read Schedule
-    current_season_id = get_season_id()
-    season_start = get_season_start(season_data,current_season_id)
-    season_end = get_season_end(current_season_id)
+
+
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
     # Playoff Data
     # playoff_series_data = get_playoff_series(current_season_id)
@@ -78,7 +84,13 @@ def team_page(team_abbr):
 
 
     # Summary of team:
-    html_team_summary = team_summary(team_abbr,standings_data)
+    team_summary_list = team_summary(team_abbr,standings_data)
+    html_team_summary = generate_team_summary_table(team_summary_list)
+    # Special Teams
+    special_teams = get_special_teams(all_teams_summary_data,team_info['team_name'])
+    # Team Stats:
+    
+
     # Find top scorer 
     top_scorer = find_top_scorer(team_stats_data)
     nr_top = 5
@@ -98,8 +110,21 @@ def team_page(team_abbr):
     next_games = get_upcoming_opponent(games_by_date,5)  or []      
     next_game = next_games[0] if next_games and next_games[0] is not None else None
     next_opponent = next_games[0]['opponent_abr'] if next_games and next_games[0] is not None else None
+    opponent_logo = get_logo(next_opponent)
+    previous_matchup = get_previous_matchup(team_abbr,team_info, next_opponent,sorted_opponents,season_data,current_season_id)
+    html_previous_matchup, previous_date = display_previous_matchup(previous_matchup)
+    previous_winning_goal_scorer_data = get_player_stats(previous_matchup['winning_goal_scorer']['playerId']) 
+    previous_winning_goal_scorer = get_stats_from_playerID(previous_winning_goal_scorer_data)
+
     html_next_game, utc_starttime = get_upcoming_game(next_game)
-    html_next_opponent_summary = team_summary(next_opponent,standings_data)
+    opponent_summary_list = team_summary(next_opponent,standings_data)
+    html_next_opponent_summary = generate_team_summary_table(opponent_summary_list)
+    
+    opponent_special_teams = get_special_teams(all_teams_summary_data,next_games[0]['opponent'])
+    # Opponent colors
+
+    opponent_colors = get_team_color(next_games[0]['opponent_name'])
+
     # Get next Opponent Top Scorer:
     opponent_stats = get_team_stats(next_games[0]['opponent_abr'])
     top_scorer_opponent = find_top_scorer(opponent_stats)
@@ -130,11 +155,12 @@ def team_page(team_abbr):
 
     # Previous games
     html_last_games = get_previous_games(games_by_date,nr_games=3)
+
     # Playoffs race standings
     html_standings_table = build_playoffs_race_table(team_info,standings_data)
     # Playoff Bracket
     playoff_data = playoff_bracket(playoff_series_data)
-
+    
     # Some styling variables:
     min_width_team_summary = 515
     min_width_previous_games = 300
@@ -149,6 +175,7 @@ def team_page(team_abbr):
     # Store variables in session
     session["team_color"] = team_colors['primary']
     session["secondary_color"] = team_colors['secondary']
+    session["opponent_color"] = opponent_colors['primary']
     session["card_gap"] = card_gap
     session["light_color"] = light_color
     session["max_width_medium_screen"] = max_width_medium_screen
@@ -185,6 +212,14 @@ def team_page(team_abbr):
         "html_goalie_table": html_goalie_table,        
         "goalies_opponent": goalies_opponent,
         "html_goalie_table_opponent": html_goalie_table_opponent,
+        "special_teams": special_teams,
+        "opponent_special_teams":opponent_special_teams,
+        "html_previous_matchup": html_previous_matchup,
+        "previous_date": previous_date,
+        "team_summary_list": team_summary_list[0],
+        "opponent_summary_list": opponent_summary_list[0],
+        "opponent_logo": opponent_logo,
+        "previous_winning_goal_scorer": previous_winning_goal_scorer,
 
     }
     return render_template("index.html",**vars)
@@ -257,4 +292,4 @@ def health():
 if __name__ == "__main__":
    
     start_scheduler()
-    app.run(debug=False)# )
+    app.run(debug=True)# )

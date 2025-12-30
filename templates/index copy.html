@@ -28,8 +28,6 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_card.css') }}">    
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/records_legend.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_games_card.css') }}">
-     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_compare.css') }}">
-     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/team_compare.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -42,9 +40,6 @@
 
 </head>
 <body>
-    {% import "macros/rank_circle.html" as circles %}
-    {% from "macros/player_comparison.html" import skater_compare %}    
-    {% from "macros/player_comparison.html" import goalie_compare %}
     <div id="loading-wheel">
         <div class="spinner"></div>
     </div>
@@ -102,19 +97,19 @@
                 <h2 class="top_card_header">
                     Summary
                 </h2>      
-                <div class="stats-circle">
-                    <span> Rank in {{team_summary_list["Conf Name"] }} </span>
-                    {{ circles.rank_circle(team_summary_list['Conf Rank'], pct=team_summary_list['Conf Rank Pct'], color=session['team_color']) }}
- 
+                <div class="top-scorer-label" >
+                    <b>Top Scorer:</b>                    
                 </div>
-                <div class="stats-circle">
-                    <span> Power Play </span>
-                    {{ circles.rank_circle(special_teams['PP%'], special_teams['PP Rank'], special_teams['PP Rank Pct'], session['team_color']) }}
-
-                </div>    
-                <div class="stats-circle">
-                    <span>Penalty Kill </span>
-                    {{ circles.rank_circle(special_teams['PK%'], special_teams['PK Rank'], special_teams['PK Rank Pct'], session['team_color']) }}
+                <button class="primary_button show-top5-btn" id="moreStats" >
+                    Show Top 5        
+                </button>
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{top_scorer['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}}</p>        
+                    <p style="margin-block: 0">{{ top_scorer['goals']}}G-{{ top_scorer['assists']}}A-{{ top_scorer['points']}}P</p>
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ top_scorer['headshot_url'] }} style="max-width: 150px;">
 
                 </div>
                 <div class="team-summary">
@@ -123,41 +118,35 @@
             </div>
   <!-- UPCOMING GAMES ------------------------------------------------------------------->           
             <div class="top_row_element card_display" id="card_target_width">
-                <h2  class="top_card_header">Next up</h2>
+                <!--<h2  class="top_card_header">Upcoming games</h2>-->
                 <div class="upcoming_game">
                      <span class="event-time" data-utc-time={{utc_starttime}}>
                          {{html_next_game | safe }}
                     </span>
                 </div>
-
-                <div class="stats-circle">
-                    <span> Rank in {{opponent_summary_list["Conf Name"] }} </span>
-                    {{ circles.rank_circle(opponent_summary_list['Conf Rank'], pct=opponent_summary_list['Conf Rank Pct'], color=session['opponent_color']) }}
- 
-                </div>
-                <div class="stats-circle">
-                    <span> Power Play </span>
-                    {{ circles.rank_circle(opponent_special_teams['PP%'], opponent_special_teams['PP Rank'], opponent_special_teams['PP Rank Pct'], session['opponent_color']) }}
-
-                </div>    
-                <div class="stats-circle">
-                    <span>Penalty Kill </span>
-                    {{ circles.rank_circle(opponent_special_teams['PK%'], opponent_special_teams['PK Rank'], opponent_special_teams['PK Rank Pct'], session['opponent_color']) }}
-
-                </div>
-
-                
-
                 <div class="team-summary team-summary_upcoming">
                     {{html_next_opponent_summary | safe  }}
                 </div>      
                 <button class="primary_button upcoming_games_button"  id="moreGames">
                     Next 5        
                 </button>
+                <!-- Opponent Topscorer -->
+                <div class="top-scorer-label-opponent" >
+                    <b>Top Scorer:</b>                    
+                </div>
+                <button class="primary_button show-top5-btn-opponent" id="moreStatsOpponent" >
+                    Show Top 5        
+                </button>
+                <div class ="top-scorer-info-opponent" >
+                    <p style="margin-block-end: 0"><b>{{top_scorer_opponent['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{top_scorer_opponent['sweaterNumber']}} {{top_scorer_opponent['position']}}</p>        
+                    <p style="margin-block: 0">{{ top_scorer_opponent['goals']}}G-{{ top_scorer_opponent['assists']}}A-{{ top_scorer_opponent['points']}}P</p>
+                </div>
+                <div class="headshot-img-opponent">
+                    <img src={{ top_scorer_opponent['headshot_url'] }} style="max-width: 150px;">
 
-                
+                </div>
             </div>
-
             <div id="UpcomingGamesPopUp" class="stats-popup ">                    
                 <!-- Modal Content -->
                 <div class="stats-popup-content card_display ">
@@ -197,78 +186,6 @@
                 <span class="game_display previous_game">{{html_last_games[2] | safe }}</span>
             </div>
         </div>
-
-  <!-- TOP SCORER COMPARISON -------------------------------->
-        <div  class="container widthTargetElement">
-            <div class="top_row_element card_display">
-                <h2  class="top_card_header">Top scorers</h2> 
-                <div class="headshot-img">
-                    <img src={{ top_scorer['headshot_url'] }} style="max-width: 150px;">
-                    <p style="margin-block-end: 0"><b>{{top_scorer['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}}</p>  
-
-                </div> 
-                <button class="primary_button show-top5-btn" id="moreStats" >
-                    Show Top 5        
-                </button> 
-
-                <div class ="top-scorer-info-opponent" >
-                            
-                    {{ skater_compare(top_scorer, top_scorer_opponent) }}
-                </div>
-                <div class="headshot-img-opponent">
-                    <img src={{ top_scorer_opponent['headshot_url'] }} style="max-width: 150px;">
-                    <p style="margin-block-end: 0"><b>{{top_scorer_opponent['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{top_scorer_opponent['sweaterNumber']}} {{top_scorer_opponent['position']}}</p>  
-
-                </div> 
-                <button class="primary_button show-top5-btn-opponent" id="moreStatsOpponent" >
-                    Show Top 5        
-                </button> 
-            </div>
-                
-          <!-- Goalie COMPARISON -------------------------------->
-            <div class="top_row_element card_display">
-                <h2  class="top_card_header">Goalies</h2> 
-                <div class="headshot-img">
-                    <img src={{ goalies[0]['headshot_url']}} style="max-width: 150px;">
-                    <p style="margin-block-end: 0"><b>{{goalies[0]['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{goalies[0]['sweaterNumber']}}</p>  
-
-                </div> 
-
-
-                <div class ="top-scorer-info-opponent" >
-                            
-                    {{ goalie_compare(goalies[0], goalies_opponent[0]) }}
-                 </div>
-                <div class="headshot-img-opponent">
-                    <img src={{goalies_opponent[0]['headshot_url'] }} style="max-width: 150px;">
-                    <p style="margin-block-end: 0"><b>{{goalies_opponent[0]['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{goalies_opponent[0]['sweaterNumber']}}</p>  
-
-                </div>                 
-            </div>
-        <!-- PREVIOUS MATCHUP AGAINST NEXT OPPONENT-->
-            <div class="previous_game_card card_display">
-                <h2  class="top_card_header">Last meeting</h2> 
-                <div>
-                    {{previous_date | safe }}
-                </div>
-                <div class="previous-matchup">
-                    {{html_previous_matchup | safe}}
-                </div>
-                <div class="headshot-img" style="display: none">
-                    <p style="margin-block-end: 0"><b>GWG:</b> </p> 
-                    <img src={{ previous_winning_goal_scorer['headshot_url']}} style="max-width: 113px;">
-                    <p style="margin-block-end: 0"><b>{{previous_winning_goal_scorer['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{previous_winning_goal_scorer['sweaterNumber']}} {{previous_winning_goal_scorer['position']}}</p>  
-                </div>
-            </div>
-        </div>
-
-
-                 
   <!-- STANDINGS --------------------------------------------->
         <div class="container widthTargetElement">
             <div class="table card_display table_card">

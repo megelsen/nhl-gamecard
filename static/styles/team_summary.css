@@ -9,3 +9,45 @@
 .team-summary_upcoming {
     grid-row: 3;
 }
+
+.special-teams-circle {
+    --size: 110px;
+    --thickness: 4px;
+    --pct: 0;
+    --ring-color: #000;
+
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: solid 1px #d1d1d1;
+    background: #f2f2f2;
+
+
+}  
+
+.main-stat-text{
+    font-size: 1.1rem;
+    font-weight: bold;
+    font-family: 'DINPro', sans-serif;  /* use DIN Pro */
+    line-height: 1;
+}
+
+.secondary-stat-text {
+    font-size: 0.9rem;
+    font-family: 'DINPro', sans-serif;  /* use DIN Pro */
+    line-height: 1;
+}
+
+.stats-circle{
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    overflow: auto;
+    text-align: center;
+}

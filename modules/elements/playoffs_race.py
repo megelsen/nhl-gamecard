@@ -50,7 +50,7 @@ def get_standings(team):
         "points_rank": team["points"],
     }
 
-def format_team_standings(standings,playoffs):
+def format_team_standings(standings,playoffs,bold_on=1):
     """
     Applies formatting to standings based on conditions.
 
@@ -59,16 +59,18 @@ def format_team_standings(standings,playoffs):
     :param label_change_condition: Function that modifies a specific label.
     :return: List of formatted standings dictionaries.
     """
+        # Apply label change condition
+    if playoffs == 2:
+        standings["Rank"] = f"WC2"  # Change label
+    if playoffs == 1:
+        standings["Rank"] = f"WC1"  # Change label
+
     
     # Apply bold condition
-    if playoffs < 3:
+    if playoffs < 3 and bold_on == 1:
         standings = {k: bold(v) if k != "points_rank" else v for k, v in standings.items()}  # Apply bold to all fields
 
-    # Apply label change condition
-    if playoffs == 2:
-        standings["Rank"] = f"<b>WC2</b>"  # Change label
-    if playoffs == 1:
-        standings["Rank"] = f"<b>WC1</b>"  # Change label
+
 
 
     return standings

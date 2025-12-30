@@ -1,0 +1,31 @@
+.player-compare {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: initial;
+    align-self: baseline;
+    background-color: #ffffff;
+}
+
+.player-compare th {
+    font-weight: normal;
+    padding: 4px 8px;
+    white-space: nowrap;
+     background-color: #ffffff;
+}
+
+.player-compare td {
+    font-weight:bold;
+    padding: 4px 8px;
+    background-color: #ffffff;
+}
+
+.player-compare .left {
+    text-align: right;
+
+}
+
+.player-compare .right {
+    text-align: left;
+    
+}
+
