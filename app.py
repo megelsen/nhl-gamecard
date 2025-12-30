@@ -16,6 +16,9 @@ from scheduler import update_daily_cache
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+if os.environ.get("RUN_SCHEDULER", "true") == "true":
+    start_scheduler()
+
 team_abbr_list = [
 "ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL",
 "DET", "EDM", "FLA", "LAK", "MIN", "MTL", "NJD", "NSH", "NYI", "NYR",
@@ -291,5 +294,6 @@ def health():
 # Run function
 if __name__ == "__main__":
    
-    start_scheduler()
+   
     app.run(debug=True)# )
+    #app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
