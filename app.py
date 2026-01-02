@@ -116,8 +116,8 @@ def team_page(team_abbr):
     opponent_logo = get_logo(next_opponent)
     previous_matchup = get_previous_matchup(team_abbr,team_info, next_opponent,sorted_opponents,season_data,current_season_id)
     html_previous_matchup, previous_date = display_previous_matchup(previous_matchup)
-    previous_winning_goal_scorer_data = get_player_stats(previous_matchup['winning_goal_scorer']['playerId']) 
-    previous_winning_goal_scorer = get_stats_from_playerID(previous_winning_goal_scorer_data)
+    #previous_winning_goal_scorer_data = get_player_stats(previous_matchup['winning_goal_scorer']['playerId']) 
+    #previous_winning_goal_scorer = get_stats_from_playerID(previous_winning_goal_scorer_data)
 
     html_next_game, utc_starttime = get_upcoming_game(next_game)
     opponent_summary_list = team_summary(next_opponent,standings_data)
@@ -222,7 +222,7 @@ def team_page(team_abbr):
         "team_summary_list": team_summary_list[0],
         "opponent_summary_list": opponent_summary_list[0],
         "opponent_logo": opponent_logo,
-        "previous_winning_goal_scorer": previous_winning_goal_scorer,
+        #"previous_winning_goal_scorer": previous_winning_goal_scorer,
 
     }
     return render_template("index.html",**vars)

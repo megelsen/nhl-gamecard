@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     padding-block-end: 0px;
-    
+    white-space: nowrap;
 }
 
 .previous-matchup{

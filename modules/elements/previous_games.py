@@ -116,7 +116,7 @@ def display_previous_matchup(game):
             </tr>
             <tr>
                 <td class="team left">{home_score}</td>
-                <th>Score</th>
+                <th>Score  ({game['result']}) </th>
                 <td class="team right">{away_score}</td>
             </tr>
             <tr>
