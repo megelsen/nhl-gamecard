@@ -26,6 +26,8 @@
     border-radius: 50%;
     border: solid 1px #d1d1d1;
     background: #f2f2f2;
+    height: 140px;
+    object-fit: cover;
 }
 
 
