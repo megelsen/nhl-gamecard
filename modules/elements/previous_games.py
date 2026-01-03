@@ -62,7 +62,7 @@ def display_previous_matchup(game):
     game_date = game['game_date']
     current_date = datetime.now()
     current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    date_str = game_date.strftime("%b %d %Y")
+    date_str = game_date.strftime("%b %d %Y") + " " + ({game['result']})
     if current_date - game_date < timedelta(days=3):
         previous_matchup =  display_latest_game_result(game)
     else:
@@ -116,7 +116,7 @@ def display_previous_matchup(game):
             </tr>
             <tr>
                 <td class="team left">{home_score}</td>
-                <th>Score  ({game['result']}) </th>
+                <th>Score</th>
                 <td class="team right">{away_score}</td>
             </tr>
             <tr>
