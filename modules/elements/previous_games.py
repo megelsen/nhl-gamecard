@@ -62,9 +62,10 @@ def display_previous_matchup(game):
     game_date = game['game_date']
     current_date = datetime.now()
     current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    date_str = game_date.strftime("%b %d %Y") + " " + ({game['result']})
+    date_str = game_date.strftime("%b %d %Y") 
     if current_date - game_date < timedelta(days=3):
         previous_matchup =  display_latest_game_result(game)
+        
     else:
         game_data = get_game_stats(game['game_id'])
     
@@ -150,7 +151,7 @@ def display_previous_matchup(game):
             </table>         
             """   
         date_str = f"""
-                <span> On {date_str} </span>
+                <span> On {date_str} ({game['result']})</span>
                 <a href={game["gamecenterURL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
