@@ -22,6 +22,7 @@
     }
 
 .headshot-img > img, .headshot-img-opponent > img {    
+    width: 100%;
     max-width: 140px;
     border-radius: 50%;
     border: solid 1px #d1d1d1;
