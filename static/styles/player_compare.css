@@ -8,15 +8,17 @@
 
 .player-compare th {
     font-weight: normal;
-    padding: 4px 8px;
+    padding: 4px;
     white-space: nowrap;
-     background-color: #ffffff;
+    background-color: #ffffff;
+    font-size:  clamp(0.85rem, 3.5vw, 1.1rem);
 }
 
 .player-compare td {
-    font-weight:bold;
-    padding: 4px 8px;
+    font-weight: bold;
+    padding: 0px;
     background-color: #ffffff;
+    font-size:  clamp(0.85rem, 3.5vw, 1.1rem);
 }
 
 .player-compare .left {

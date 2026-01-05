@@ -91,7 +91,6 @@
     }
     .content {
         overflow: auto;
-        white-space: wrap;
     }
     .title_card { 
         grid-template-columns: 1fr;
@@ -108,9 +107,8 @@
 
     .top_row_element {
         display: grid;
-        grid-template-columns: 1fr 1fr;    
+        grid-template-columns: 1fr 1fr 1fr;    
         gap: 2px;
-        white-space: wrap;
     }
 
 
@@ -156,7 +154,8 @@
         margin-bottom: -1px;
     }
     .headshot-img > img, .headshot-img-opponent > img {    
-    max-width: 110px;
+    width: clamp(70px, 20vw, 110px);
+    margin: 0 auto;
     }
     .previous-matchup{
         grid-row: 3;
@@ -167,5 +166,11 @@
         grid-row: 2;
         grid-column: 1;
     }
+
+    .player-compare > th, tr, .goalie-compare > th, tr, {
+        font-size: 85%;
+    }
+
 }
+
 
