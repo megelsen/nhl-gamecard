@@ -30,6 +30,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_games_card.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_compare.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/team_compare.css') }}">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/arrow_buttons.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -189,7 +190,7 @@
                     </div>                    
                 </div>
             </div>
-
+        <!-- LAST THREE GAMES ------------------------------------------------------------------->      
             <div class="previous_game_card card_display">
                 <h2  class="top_card_header">Last games</h2>        
                 <span class="game_display previous_game">{{html_last_games[0] | safe }}</span>
@@ -197,7 +198,7 @@
                 <span class="game_display previous_game">{{html_last_games[2] | safe }}</span>
             </div>
         </div>
-
+<!-- Next Row ------------------------------------------------------------------------------------------------------------------------------->        
   <!-- TOP SCORER COMPARISON -------------------------------->
         <div  class="container widthTargetElement">
             <div class="top_row_element card_display">
@@ -229,25 +230,47 @@
                 
           <!-- Goalie COMPARISON -------------------------------->
             <div class="top_row_element card_display">
-                <h2  class="top_card_header">Goalies</h2> 
+
+                <h2 class="top_card_header">Goalies</h2>
+
+                <!-- LEFT GOALIE -->
                 <div class="headshot-img">
-                    <img src={{ goalies[0]['heroImage_url']}}>
-                    <p style="margin-block-end: 0"><b>{{goalies[0]['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{goalies[0]['sweaterNumber']}}</p>  
+                    <img id="goalie-img">
+                    <p id="goalie-name"><b></b></p>
+                    <div class="arrow-button team-arrows">
+                        <button class="arrow-button" onclick="prevHomeGoalie()">
+                            <span class="material-symbols-outlined">arrow_back_ios</span>
+                        </button>
+                        <p style="margin-block: 0" id="goalie-number"></p>
+                        <button class="arrow-button" onclick="nextHomeGoalie()">
+                            <span class="material-symbols-outlined">arrow_forward_ios</span>
+                        </button>
+                    </div>                 
+                </div>
 
-                </div> 
 
+                <!-- COMPARISON TABLE -->
+                <div class="top-scorer-info-opponent" id="goalie-compare">
 
-                <div class ="top-scorer-info-opponent" >
-                            
-                    {{ goalie_compare(goalies[0], goalies_opponent[0]) }}
-                 </div>
+                </div>
+
+                <!-- RIGHT GOALIE -->
                 <div class="headshot-img-opponent">
-                    <img src={{goalies_opponent[0]['heroImage_url'] }}>
-                    <p style="margin-block-end: 0"><b>{{goalies_opponent[0]['name']}}</b> </p>    
-                    <p style="margin-block: 0"> #{{goalies_opponent[0]['sweaterNumber']}}</p>  
+                    <img id="opp-goalie-img">
+                    <p id="opp-goalie-name"><b></b></p>
+                    <div class="arrow-button opponent-arrows">
+                    <button class="arrow-button" onclick="prevOppGoalie()">
+                        <span class="material-symbols-outlined">arrow_back_ios</span>
+                    </button>                    
+                    <p style="margin-block: 0" id="opp-goalie-number"></p>
+                    <button class="arrow-button" onclick="nextOppGoalie()">
+                        <span class="material-symbols-outlined">arrow_forward_ios</span>
+                    </button>
+                </div>
+                </div>
+                <!-- RIGHT ARROWS (same index, optional) -->
+                
 
-                </div>                 
             </div>
         <!-- PREVIOUS MATCHUP AGAINST NEXT OPPONENT-->
             <div class="previous_game_card card_display">
@@ -375,6 +398,11 @@
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
+    <script>
+        window.goalies = {{ goalies | tojson }};
+        window.goaliesOpponent = {{ goalies_opponent | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/goalieCarousel.js') }}"defer></script>
     <!-- 🔹 Dynamic JavaScript -->
     <script>
         var max_width_smallest_screen = {{ max_width_smallest_screen }};
