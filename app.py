@@ -42,18 +42,20 @@ def team_page(team_abbr):
     schedule_data = get_schedule(team_abbr)
     current_date = datetime.now().strftime("%Y-%m-%d")
     season_data = get_season_data()
+
     current_season_id = get_season_id()
     season_start = get_season_start(season_data,current_season_id)
     season_end = get_season_end(current_season_id)
     # Check whether current date is past last game of regular season:
     current_date_format = datetime.strptime(current_date, "%Y-%m-%d")
     last_reg_season_format = datetime.strptime(season_data['currentDate'], "%Y-%m-%d")
-    if current_date_format > season_end:
+    if current_date_format > last_reg_season_format:
         current_date = last_reg_season_format
         post_season = 1
+        standings_data = get_current_standings(last_reg_season_format.strftime("%Y-%m-%d"))
     else: 
         post_season = 0
-    standings_data = get_current_standings(current_date)    
+        standings_data = get_current_standings(current_date)    
     team_stats_data = get_team_stats(team_abbr)
 
     # Get Team overview
