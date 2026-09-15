@@ -311,6 +311,19 @@ def manual_refresh():
     Thread(target=run_refresh).start()
     return " Refresh started in background. Check logs for progress."
 
+@app.route('/debug-nhl')
+def debug_nhl():
+    url = "https://api-web.nhle.com/v1/standings-season"
+    try:
+        res = requests.get(url, timeout=10)
+        return {
+            "status_code": res.status_code,
+            "headers": dict(res.headers),
+            "body_preview": res.text[:500],
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.route('/health')
 def health():
     return "OK", 200
