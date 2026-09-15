@@ -1,4 +1,5 @@
 import requests
+import time
 import logging
 from datetime import datetime
 from cache_utils import load_cache, save_cache, is_cache_fresh
@@ -7,29 +8,46 @@ __all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats',
 
 logger = logging.getLogger(__name__)
 
+MAX_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 1.5  # multiplied by attempt number (1.5s, 3s, ...)
+
+
+def _fetch_once(url):
+    """Single attempt. Returns parsed JSON, or raises on failure/bad response."""
+    res = requests.get(url, timeout=10)
+    res.raise_for_status()
+    return res.json()
+
 
 def _safe_get_json(url, cache_name):
     """
-    Fetch JSON from `url`, falling back to whatever is in cache (even if stale)
-    if the request fails or the response isn't valid JSON. Never raises.
+    Fetch JSON from `url`, retrying a few times on transient failures before
+    falling back to whatever is in cache (even if stale). Never raises.
     Returns None only if there is no cached fallback available either.
     """
-    try:
-        res = requests.get(url, timeout=10)
-        res.raise_for_status()
-        data = res.json()
-    except requests.exceptions.RequestException as e:
-        logger.warning(f"[fetch_nhl_api] Request failed for {url}: {e}")
-        data = None
-    except ValueError as e:
-        # includes requests' JSONDecodeError, which subclasses ValueError
-        body_preview = res.text[:200] if 'res' in locals() else ""
-        logger.warning(f"[fetch_nhl_api] Non-JSON response from {url}: {e} | body: {body_preview!r}")
-        data = None
+    data = None
+    last_error = None
+
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            data = _fetch_once(url)
+            break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS} failed for {url}: {e}")
+        except ValueError as e:
+            # includes requests' JSONDecodeError, which subclasses ValueError
+            last_error = e
+            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS}: non-JSON response from {url}: {e}")
+
+        if attempt < MAX_ATTEMPTS:
+            time.sleep(RETRY_DELAY_SECONDS * attempt)
 
     if data is not None:
         save_cache(cache_name, data)
         return data
+
+    logger.warning(f"[fetch_nhl_api] All {MAX_ATTEMPTS} attempts failed for {url}: {last_error}")
 
     # Fall back to stale cache if we have one, rather than crashing the caller.
     try:
