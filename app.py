@@ -113,7 +113,7 @@ def team_page(team_abbr):
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
     # Playoff Data
     # playoff_series_data = get_playoff_series(current_season_id)
-    playoff_series_data = get_playoff_series('20232024')
+    playoff_series_data = get_playoff_series('current_season_id')
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
