@@ -30,6 +30,18 @@ team_abbr_list = [
 "OTT", "PHI", "PIT", "SEA", "SJS", "STL", "TBL", "UTA", "TOR", "VAN", "VGK",
 "WPG", "WSH",
 ]
+@app.errorhandler(500)
+@app.errorhandler(Exception)
+def handle_internal_error(e):
+    # Catches downstream failures too (e.g. a None value slipping through from
+    # a failed/uncached NHL API call) so a single bad request doesn't just
+    # dump a stack trace — it returns a clean, loggable 503 instead.
+    print(f"[ERROR] Unhandled exception in request: {e}")
+    return Response(
+        "NHL data is temporarily unavailable. Please try again in a few minutes.",
+        status=503,
+    )
+
 @app.route("/", methods=["GET"])
 def home():
     return redirect(url_for("team_page", team_abbr="NYR"))  # Default to MIN
@@ -47,6 +59,15 @@ def team_page(team_abbr):
     schedule_data = get_schedule(team_abbr)
     current_date = datetime.now().strftime("%Y-%m-%d")
     season_data = get_season_data()
+
+    if schedule_data is None or season_data is None:
+        # NHL API is unreachable/blocked and there's no cached fallback yet.
+        # Fail gracefully instead of raising on season_data['currentDate'] below.
+        return Response(
+            "NHL data is temporarily unavailable (upstream API unreachable and no "
+            "cache yet). Please try again in a few minutes.",
+            status=503,
+        )
 
     current_season_id = get_season_id()
     season_start = get_season_start(season_data,current_season_id)
