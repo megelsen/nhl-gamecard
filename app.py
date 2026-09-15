@@ -90,6 +90,13 @@ def team_page(team_abbr):
         standings_data = get_current_standings(current_date)    
     team_stats_data = get_team_stats(team_abbr)
 
+    if standings_data is None or team_stats_data is None:
+        return Response(
+            "NHL data is temporarily unavailable (team stats/standings unreachable "
+            "and no cache yet). Please try again in a few minutes.",
+            status=503,
+        )
+
     # Get Team overview
     
     all_teams_summary_data = get_team_summary(current_season_id,post_season) # get team summary of all teams
@@ -164,6 +171,12 @@ def team_page(team_abbr):
 
     # Get next Opponent Top Scorer:
     opponent_stats = get_team_stats(next_games[0]['opponent_abr'])
+    if opponent_stats is None:
+        return Response(
+            "NHL data is temporarily unavailable (opponent stats unreachable and "
+            "no cache yet). Please try again in a few minutes.",
+            status=503,
+        )
     top_scorer_opponent = find_top_scorer(opponent_stats)
     point_leaders_opponent = find_pointleaders(opponent_stats,nr_top)
     html_pts_leader_table_opponent = build_leaders_table(point_leaders_opponent,'P')
@@ -319,16 +332,20 @@ def manual_refresh():
 
 @app.route('/debug-nhl')
 def debug_nhl():
-    url = "https://api-web.nhle.com/v1/standings-season"
+    url = request.args.get(
+        "url",
+        "https://api-web.nhle.com/v1/club-stats/BOS/now",  # default: the endpoint that's failing
+    )
     try:
         res = requests.get(url, timeout=10)
         return {
+            "url": url,
             "status_code": res.status_code,
             "headers": dict(res.headers),
             "body_preview": res.text[:500],
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"url": url, "error": str(e)}
 
 @app.route('/health')
 def health():
