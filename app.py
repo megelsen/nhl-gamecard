@@ -17,7 +17,12 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 if os.environ.get("RUN_SCHEDULER", "true") == "true":
-    start_scheduler()
+    try:
+        start_scheduler()
+    except Exception as e:
+        # Don't let a failed initial cache refresh (e.g. a bad/non-JSON
+        # response from the NHL API) prevent the app from booting.
+        print(f"[ERROR] start_scheduler failed, continuing without initial cache warm-up: {e}")
 
 team_abbr_list = [
 "ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL",
