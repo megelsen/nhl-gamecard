@@ -113,7 +113,13 @@ def team_page(team_abbr):
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
     # Playoff Data
     # playoff_series_data = get_playoff_series(current_season_id)
-    playoff_series_data = get_playoff_series('current_season_id')
+    playoff_series_data = get_playoff_series('20232024')
+    if playoff_series_data is None:
+        return Response(
+            "NHL data is temporarily unavailable (playoff series data unreachable "
+            "and no cache yet). Please try again in a few minutes.",
+            status=503,
+        )
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
@@ -334,7 +340,7 @@ def manual_refresh():
 def debug_nhl():
     url = request.args.get(
         "url",
-        "https://api-web.nhle.com/v1/club-stats/BOS/now",  # default: the endpoint that's failing
+        "https://api-web.nhle.com/v1/playoff-series/carousel/20232024/",  # default: the endpoint that's failing
     )
     try:
         res = requests.get(url, timeout=10)
