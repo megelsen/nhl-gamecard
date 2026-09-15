@@ -36,11 +36,17 @@ def handle_internal_error(e):
     # Catches downstream failures too (e.g. a None value slipping through from
     # a failed/uncached NHL API call) so a single bad request doesn't just
     # dump a stack trace — it returns a clean, loggable 503 instead.
-    print(f"[ERROR] Unhandled exception in request: {e}")
-    return Response(
-        "NHL data is temporarily unavailable. Please try again in a few minutes.",
-        status=503,
-    )
+    import traceback
+    tb = traceback.format_exc()
+    print(f"[ERROR] Unhandled exception in request: {e}\n{tb}")
+    # TEMP DEBUG: show the real error/traceback in the response so it can be
+    # diagnosed without needing to open Render's logs. Remove this once the
+    # underlying issue is found — replace with the generic 503 message below.
+    return Response(f"<pre>{tb}</pre>", status=503, mimetype="text/html")
+    # return Response(
+    #     "NHL data is temporarily unavailable. Please try again in a few minutes.",
+    #     status=503,
+    # )
 
 @app.route("/", methods=["GET"])
 def home():
