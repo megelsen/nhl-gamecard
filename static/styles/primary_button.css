@@ -1,18 +1,39 @@
 .primary_button {
-    padding: 4px;
-    border-radius: 4px;
-    border: solid lightgrey 1px;
-    background: #f3f3f3;            
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #d1d1d1;
+    background: #f7f7f7;
+    color: #333;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
     justify-self: center;
     cursor: pointer;
-    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
     z-index: 10;
     display: flex;
+    align-items: center;
     margin-top: 16px;
 }
 
-.primary_button:hover{
-    background: #d6d6d6;
+.primary_button:hover {
+    background: #ececec;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.primary_button:active {
+    background: #e2e2e2;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    transform: translateY(0);
+}
+
+.primary_button:focus-visible {
+    outline: 2px solid #888;
+    outline-offset: 2px;
 }
 
 .upcoming_games_button{

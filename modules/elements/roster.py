@@ -79,18 +79,17 @@ def player_row(player, stats, is_goalie):
         f"<b>{name}</b>{position_html}",
         player.get("sweaterNumber", "-"),
     ]
-    if is_goalie:
-        if stats:
-            cells += [stats.get("wins", 0), f"{stats.get('goalsAgainstAverage') or 0:.2f}", f"{stats.get('savePercentage') or 0:.3f}"]
-        else:
-            cells += ["-", "-", "-"]
+    if not stats:
+        cells += ["-"] * 4
+    elif is_goalie:
+        cells += [stats.get("gamesPlayed", 0), stats.get("wins", 0), f"{stats.get('goalsAgainstAverage') or 0:.2f}", f"{stats.get('savePercentage') or 0:.3f}"]
     else:
-        cells += [stats.get(key, 0) for key in ("goals", "assists", "points")] if stats else ["-", "-", "-"]
+        cells += [stats.get(key, 0) for key in ("gamesPlayed", "goals", "assists", "points")]
     return "<tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>"
 
 
 def columns(is_goalie):
-    return ["", "Player", "Nr"] + (["W", "GAA", "S%"] if is_goalie else ["G", "A", "P"])
+    return ["", "Player", "Nr", "GP"] + (["W", "GAA", "S%"] if is_goalie else ["G", "A", "P"])
 
 
 def group_row(label, is_goalie):
