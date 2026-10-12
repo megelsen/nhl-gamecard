@@ -346,6 +346,24 @@
                 <h2  class="top_card_header">  Record vs {{team_info['opposite_conference']}} </h2>
                 {{ record_table_2 | safe }}
             </div>
+            <!-- PLAYOFFS -->
+            <div class="card_display table_card playoff-card" style="--standings-accent: {{ session['team_color'] }}; --standings-highlight: {{ standings_highlight }};">
+                <h2 class="top_card_header">{{ playoff_picture.title }}</h2>
+                <p class="playoff-subtitle">{{ playoff_picture.subtitle }}</p>
+                {% set playoff_tables = playoff_picture.tables %}
+                {% if playoff_tables | length > 1 %}
+                <div class="tabs-container standings-tabs-container">
+                    {% for conference in playoff_tables %}
+                    <div class="standings-tab {% if conference == team_info['team_conference'] %}active{% endif %}" data-conference="{{ conference }}">{{ conference[:4] }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% for conference, table_html in playoff_tables.items() %}
+                <div class="standings-table-wrapper" data-conference="{{ conference }}" data-view="conference" {% if playoff_tables | length > 1 and conference != team_info['team_conference'] %}hidden{% endif %}>
+                    {{ table_html | safe }}
+                </div>
+                {% endfor %}
+            </div>
         </div>  
 <!--- BETA --------------------------------------------------------------->
 <!--- Goalie Card -------------------------------------------------------->

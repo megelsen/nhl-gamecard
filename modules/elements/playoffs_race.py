@@ -1,6 +1,6 @@
 from modules.fetch_nhl_api import get_logo
 
-__all__ =['build_standings_tables','get_standings','format_team_standings','bold','playoff_bracket','current_round_matchups']
+__all__ =['build_standings_tables','get_standings','format_team_standings','bold','build_playoff_picture']
 
 STANDINGS_COLUMNS = ["Team", "Rank", "GP", "PTS", "W", "L", "OTL", "P%"]
 PLAYOFF_SPOTS_PER_DIVISION = 3
@@ -130,45 +130,115 @@ def format_team_standings(standings,playoffs,bold_on=1):
 def bold(text):
     return f"<b>{text}</b>"  # Change formatting as needed (Markdown, HTML, etc.)
 
-def playoff_bracket(playoff_data):
+ROUND_LABELS = {1: "1st Round", 2: "2nd Round", 3: "Conference Finals", 4: "Stanley Cup Final"}
 
-    bracket_dict = {}
-    if not playoff_data:
-        return bracket_dict
-    rounds = playoff_data.get('rounds', [])
-    current_round = min(playoff_data.get('currentRound', 0), len(rounds))
 
-    for i in range(current_round):
-        round_data = rounds[i]
-        round_label = f"Round {i + 1}"
-        western, eastern, finals = current_round_matchups(round_data)
+def build_playoff_picture(team_abbr, standings_data, bracket_data):
+    """
+    Matchups of the current playoff round. Before the playoffs: round 1 projected from
+    standings ("if the season ended today"); during/after them: the real series.
+    Returns {"title": str, "subtitle": str, "tables": {"Eastern": html, "Western": html} or {"Final": html}}.
+    """
+    standings = {t["teamAbbrev"]["default"]: t for t in standings_data.get("standings", [])}
+    series = [s for s in (bracket_data or {}).get("series", []) if s.get("topSeedTeam") and s.get("bottomSeedTeam")]
 
-        if finals:
-            bracket_dict[round_label] = {"Finals": finals}
-        else:
-            bracket_dict[round_label] = {
-                "Eastern": eastern,
-                "Western": western
-            }
+    if series:
+        return live_picture(team_abbr, standings, series)
+    return projected_picture(team_abbr, standings)
 
-    return bracket_dict
 
-def current_round_matchups(current_round_data):
-    eastern_matchups = []
-    western_matchups = []
-    finals_matchup = []
-    # Find round number & number of matchups:
-    # Max 4 rounds, nr of mathcups is given by: 2^3, 2^2, 2^1, 2^1
-    nr_matchups = len(current_round_data['series'])
-    for series_nr in range(nr_matchups):
-        top_seed = current_round_data['series'][series_nr]['topSeed']
-        bottom_seed = current_round_data['series'][series_nr]['bottomSeed']
+def projected_picture(team_abbr, standings):
+    picture = {"title": "Playoff Picture", "subtitle": "1st round if the season ended today", "tables": {}}
+    if not any(t.get("gamesPlayed") for t in standings.values()):
+        picture["subtitle"] = "Projected matchups appear after the first games"
+        return picture
 
-        if nr_matchups == 1:
-            finals_matchup.append([top_seed, bottom_seed])
-        elif series_nr < nr_matchups/2:           
-            eastern_matchups.append([top_seed, bottom_seed])
-        else:
-            western_matchups.append([top_seed, bottom_seed])
-    
-    return [western_matchups, eastern_matchups, finals_matchup]
+    for conference in ("Eastern", "Western"):
+        teams = [t for t in standings.values() if t.get("conferenceName") == conference]
+        leaders = sorted((t for t in teams if t.get("divisionSequence") == 1), key=lambda t: t.get("conferenceSequence", 99))
+        wildcards = {t.get("wildcardSequence"): t for t in teams}
+        if len(leaders) != 2 or 1 not in wildcards or 2 not in wildcards:
+            continue
+        matchups = []
+        # Best division winner plays WC2, the other one WC1; 2nd vs 3rd in each division
+        for leader, wildcard in ((leaders[0], wildcards[2]), (leaders[1], wildcards[1])):
+            division = [t for t in teams if t.get("divisionName") == leader.get("divisionName")]
+            by_seq = {t.get("divisionSequence"): t for t in division}
+            matchups.append((leader, wildcard))
+            if 2 in by_seq and 3 in by_seq:
+                matchups.append((by_seq[2], by_seq[3]))
+        rows = [matchup_row(team_abbr, projected_side(top), projected_side(bottom)) for top, bottom in matchups]
+        picture["tables"][conference] = matchup_table(rows)
+    return picture
+
+
+def projected_side(team):
+    return {
+        "abbrev": team["teamAbbrev"]["default"],
+        "seed": format_team_standings(get_standings(team), team.get("wildcardSequence", 99), bold_on=0)["Rank"],
+        "value": f"{team.get('points', 0)} <small>PTS</small>",
+        "won": False,
+    }
+
+
+def live_picture(team_abbr, standings, series):
+    # Lowest round still being played; once everything is decided, the last round
+    unfinished = [s["playoffRound"] for s in series if not s.get("winningTeamId")]
+    current_round = min(unfinished) if unfinished else max(s["playoffRound"] for s in series)
+    round_series = sorted((s for s in series if s["playoffRound"] == current_round), key=lambda s: s.get("seriesLetter", ""))
+    picture = {"title": "Playoffs", "subtitle": ROUND_LABELS.get(current_round, f"Round {current_round}"), "tables": {}}
+
+    if current_round >= 4:
+        picture["tables"]["Final"] = matchup_table([series_row(team_abbr, standings, s) for s in round_series])
+        return picture
+    for conference in ("Eastern", "Western"):
+        rows = [series_row(team_abbr, standings, s) for s in round_series
+                if standings.get(s["topSeedTeam"]["abbrev"], {}).get("conferenceName") == conference]
+        if rows:
+            picture["tables"][conference] = matchup_table(rows)
+    return picture
+
+
+def series_row(team_abbr, standings, series):
+    sides = []
+    for prefix in ("topSeed", "bottomSeed"):
+        team = series[f"{prefix}Team"]
+        abbrev = team["abbrev"]
+        rank = series.get(f"{prefix}RankAbbrev", "")
+        # "D2" -> "M2" so seeds read like the standings card
+        if rank.startswith("D") and abbrev in standings:
+            rank = f"{standings[abbrev].get('divisionAbbrev', 'D')}{rank[1:]}"
+        sides.append({
+            "abbrev": abbrev,
+            "seed": rank,
+            "value": series.get(f"{prefix}Wins", 0),
+            "won": series.get("winningTeamId") == team.get("id"),
+        })
+    return matchup_row(team_abbr, *sides, status=series_status(series, sides))
+
+
+def series_status(series, sides):
+    top, bottom = sides
+    if series.get("winningTeamId"):
+        winner, loser = (top, bottom) if top["won"] else (bottom, top)
+        return f"{winner['abbrev']} wins {winner['value']}-{loser['value']}"
+    if top["value"] == bottom["value"]:
+        return f"Tied {top['value']}-{bottom['value']}"
+    leader, trailer = (top, bottom) if top["value"] > bottom["value"] else (bottom, top)
+    return f"{leader['abbrev']} leads {leader['value']}-{trailer['value']}"
+
+
+def matchup_row(team_abbr, left, right, status="vs"):
+    def side_html(side):
+        classes = "playoff-team" + (" won" if side["won"] else "")
+        return (
+            f'<td class="{classes}"><span class="playoff-seed">{side["seed"]}</span>'
+            f'<a href="javascript:void(0);" class="team-link"><img src="{get_logo(side["abbrev"])}"></a>'
+            f'<span class="playoff-value">{side["value"]}</span></td>'
+        )
+    own_class = ' class="own-team"' if team_abbr in (left["abbrev"], right["abbrev"]) else ""
+    return f"<tr{own_class}>{side_html(left)}<th>{status}</th>{side_html(right)}</tr>"
+
+
+def matchup_table(rows):
+    return f'<table class="playoff-matchups"><tbody>{"".join(rows)}</tbody></table>'

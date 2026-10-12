@@ -9,7 +9,7 @@ from modules import (
     get_current_standings,
     get_team_stats,
     get_season_data,
-    get_playoff_series,
+    get_playoff_bracket,
     get_team_summary,
     get_season_id,
     get_roster,
@@ -46,7 +46,7 @@ def update_daily_cache():
         get_current_standings(standings_date, force=True)
         get_team_summary(season_id, 0, force=True)
         get_team_summary(season_id, 1, force=True)
-        get_playoff_series(season_id, force=True)
+        get_playoff_bracket(season_id, force=True)
 
         for team in TEAM_LIST:
             logging.info(f"Updating cache for {team}")

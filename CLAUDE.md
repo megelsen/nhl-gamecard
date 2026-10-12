@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. [x] League-wide standings: switch between East and West in the standings card
 4. [x] Roster overview: a "Roster" button in the title row opens a modal (like the topscorer modal) with the full roster and relevant stats, split into Goalies, Defense, and Forwards
 5. [x] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
-6. [ ] Complete the playoff race module: a separate card showing the current playoff bracket, based on matchups from current standings
+6. [x] Complete the playoff race module: a separate card showing the current playoff bracket, based on matchups from current standings
 7. [ ] Player cards: clicking a player's headshot opens a hockey-card-style modal (birthplace, nationality flag, hero image, career stats, ...)
 
 ## Overview
@@ -33,7 +33,7 @@ RUN_SCHEDULER=false python app.py   # skip the APScheduler + startup cache warm-
 
 There are no tests, linter, or build step. Verify changes by loading `/<TEAM_ABBR>` (e.g. `/NYR`) in a browser, or with `app.test_client()` and `RUN_SCHEDULER=false`. Run from a scratch directory if you don't want to touch the project's `cache/` (it's relative to the CWD). A cold cache takes ~25s per team page because every leader and goalie needs a separate player-landing request.
 
-For visual checks, run the app on a spare port and screenshot with headless Chrome (`--headless=new --screenshot --virtual-time-budget=6000`). To test an interaction, save the page HTML into `static/` with an injected script that clicks the controls, serve it from the app, and delete it afterwards. Without the session cookie, that copy renders with the default dynamic CSS. Headless Chrome won't lay out narrower than ~500px, so for phone widths wrap the page in a 375px `<iframe>`.
+For visual checks, run the app on a spare port and screenshot with headless Chrome (`--headless=new --screenshot --virtual-time-budget=6000`). To test an interaction, save the page HTML into `static/` with an injected script that clicks the controls, serve it from the app, and delete it afterwards. Without the session cookie, that copy renders with the default dynamic CSS. Headless Chrome won't lay out narrower than ~500px, so for phone widths wrap the page in a 375px `<iframe>` served from `static/`. Pointing the iframe at `/<TEAM>` itself gives the real session CSS. Compile with `py -3.11 -W error -m py_compile ...` before finishing: production is 3.11, and the local 3.14 accepts syntax 3.11 rejects (e.g. backslashes inside f-string expressions).
 
 Set `SECRET_KEY` in production, otherwise sessions (and therefore the dynamic CSS) reset on every restart.
 
@@ -63,6 +63,8 @@ Useful routes: `/refresh` (force-refresh the cache in a background thread), `/de
 **Roster modal** — `build_roster_tables()` (`modules/elements/roster.py`) merges `/v1/roster/{team}/current` (all rostered players plus bio) with `club-stats` (only players who have played). Within each position tab it splits players into Lineup / Rotation / Extras, based on who dressed in the last 5 completed games (from boxscores, `get_boxscore`). Headshots carry `data-player-id` for the player cards (step 7). Use `window.addEventListener("click", ...)`, never `window.onclick =`, for outside-click closing: each modal script used to overwrite the others' handler.
 
 **Comparison bars** — `static/js/compareBars.js` adds a bar row under each stat row of every `.player-compare` / `.team-compare` table. It reads the two cell values in the row, skips GP, inverts GAA, and uses an amplified difference for rate stats (`COMPARE_RATE_SPREAD`). Call `applyCompareBars(el)` again after re-rendering a comparison (the goalie carousel does). Colors come from `window.compareColors` (team primary; the opponent's color is chosen by `pick_contrasting_color`). Tables are team-left/opponent-right unless they set `data-left-team` / `data-right-team`, like the home/away "Last meeting" table.
+
+**Playoff card** — `build_playoff_picture()` (`playoffs_race.py`) shows only the current round. Until `/v1/playoff-bracket/{year}` (year = the season's end year) has series, it projects round 1 from standings: the better division winner plays WC2, the other WC1, and 2nd plays 3rd in each division. During the playoffs it shows the lowest round with an unfinished series; after the Final, the Final. Seeds use standings labels (M1, WC2). The card shares `.standings-tab` and `standingsToggle.js` with the standings card.
 
 **No next game** — In the off-season there's no upcoming opponent: `next_game`/`next_opponent` are `None`, opponent dicts are empty, and the template and `goalieCarousel.js` render blanks/dashes. Keep that path working when touching opponent features. `TEAM_LIST` lives in `scheduler.py` and `app.py` imports it.
 

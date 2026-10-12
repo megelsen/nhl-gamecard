@@ -115,9 +115,6 @@ def team_page(team_abbr):
 
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
     roster_tables = build_roster_tables(team_abbr, get_roster(team_abbr), team_stats_data, games_by_date)
-    # Playoff Data
-    # Not every season has playoff data (e.g. before the playoffs start), so this may be None
-    playoff_series_data = get_playoff_series(current_season_id)
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
@@ -214,8 +211,8 @@ def team_page(team_abbr):
 
     # Playoffs race standings
     standings_tables = build_standings_tables(team_abbr, standings_data)
-    # Playoff Bracket
-    playoff_data = playoff_bracket(playoff_series_data)
+    # Current playoff round: projected from standings until the playoffs start
+    playoff_picture = build_playoff_picture(team_abbr, standings_data, get_playoff_bracket(current_season_id))
     
     # Some styling variables:
     min_width_team_summary = 515
@@ -253,6 +250,7 @@ def team_page(team_abbr):
         "html_assists_leader_table": html_assists_leader_table,
         "standings_tables": standings_tables,
         "roster_tables": roster_tables,
+        "playoff_picture": playoff_picture,
         "compare_colors": compare_colors,
         "team_abbr": team_abbr,
         "next_opponent": next_opponent,

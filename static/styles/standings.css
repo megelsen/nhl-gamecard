@@ -49,3 +49,76 @@
 .standings-table tr.cut-line td {
     border-bottom: 2px dashed #888;
 }
+
+/* Playoff card: current round matchups */
+.playoff-subtitle {
+    margin: 0 0 8px 0;
+    color: #666;
+    text-align: center;
+}
+
+.playoff-matchups {
+    width: 100%;
+}
+
+.playoff-matchups th {
+    font-weight: normal;
+    font-size: 0.9rem;
+    color: #444;
+    white-space: nowrap;
+}
+
+.playoff-team {
+    width: 40%;
+}
+
+.playoff-team img {
+    width: 56px;
+    vertical-align: middle;
+    margin: 0 6px;
+}
+
+.playoff-seed {
+    display: inline-block;
+    min-width: 2.5em;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.playoff-value {
+    display: inline-block;
+    min-width: 3.5em;
+    font-weight: bold;
+}
+
+.playoff-team.won .playoff-value {
+    color: var(--standings-accent, #555);
+}
+
+.playoff-matchups tr.own-team td,
+.playoff-matchups tr.own-team th {
+    background-color: var(--standings-highlight, #e8e8e8);
+}
+
+.playoff-value small {
+    font-size: 0.7em;
+    font-weight: normal;
+}
+
+@media (max-width: 500px) {
+    .playoff-matchups td,
+    .playoff-matchups th {
+        padding: 4px 2px;
+    }
+    .playoff-team img {
+        width: 36px;
+        margin: 0 3px;
+    }
+    .playoff-seed {
+        min-width: 2em;
+        font-size: 0.75rem;
+    }
+    .playoff-value {
+        min-width: 0;
+    }
+}

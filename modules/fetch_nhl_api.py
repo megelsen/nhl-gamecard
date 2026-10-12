@@ -3,7 +3,7 @@ import time
 import logging
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_series','get_team_summary','get_game_stats','get_roster','get_boxscore']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore']
 
 logger = logging.getLogger(__name__)
 
@@ -154,9 +154,12 @@ def get_game_stats(gameID):
     return _safe_get_json(url, cache_name)
 
 
-def get_playoff_series(seasonID, force=False):
-    cache_name = f"playoff_series_{seasonID}"
-    url = f"https://api-web.nhle.com/v1/playoff-series/carousel/{seasonID}/"
+def get_playoff_bracket(seasonID, force=False):
+    # The bracket is keyed by the year the playoffs are played in (season 20262027 -> 2027);
+    # its "series" list stays empty until the playoffs start.
+    year = str(seasonID)[-4:]
+    cache_name = f"playoff_bracket_{year}"
+    url = f"https://api-web.nhle.com/v1/playoff-bracket/{year}"
     return _safe_get_json(url, cache_name, force)
 
 def get_team_summary(seasonID, playoffs, force=False):
