@@ -17,14 +17,28 @@
         <tr><th>Draft</th><td>{{ card.draft }}</td></tr>
     </table>
     {% if card.stats_rows %}
+    <div class="hockey-card-stats-wrap">
     <table class="hockey-card-stats">
-        <thead><tr><th></th>{% for column in card.stat_columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+        <thead><tr><th>Season</th><th>Team</th>{% for column in card.stat_columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
         <tbody>
-            {% for label, values in card.stats_rows %}
-            <tr><th>{{ label }}</th>{% for value in values %}<td>{{ value }}</td>{% endfor %}</tr>
+            {% for label, teams, values in card.stats_rows %}
+            <tr{% if label == 'Career' %} class="hockey-card-career"{% endif %}>
+                <th>{{ label }}</th>
+                <td class="hockey-card-teams">
+                    {%- for team in teams -%}
+                    {%- if team.logo -%}
+                    <img src="{{ team.logo }}" alt="{{ team.abbrev }}" title="{{ team.abbrev }}" onerror="this.replaceWith(this.alt)">
+                    {%- else -%}
+                    <span>{{ team.abbrev }}</span>
+                    {%- endif -%}
+                    {%- endfor -%}
+                </td>
+                {% for value in values %}<td>{{ value }}</td>{% endfor %}
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p class="hockey-card-empty">No NHL games played yet.</p>
     {% endif %}

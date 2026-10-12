@@ -3,7 +3,7 @@ import time
 import logging
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report']
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +142,14 @@ def get_goalie_edge(playerID):
     # NHL EDGE: save % by danger zone (regular season)
     cache_name = f"edge_goalie_{playerID}"
     url = f"https://api-web.nhle.com/v1/edge/goalie-detail/{playerID}/now"
+    return _safe_get_json(url, cache_name)
+
+
+def get_player_season_report(playerID, goalie=False):
+    # One row per NHL regular season with the teams in order ("VAN,NYR") and, for skaters, hits
+    report = "goalie/summary" if goalie else "skater/realtime"
+    cache_name = f"season_report_{playerID}"
+    url = f"https://api.nhle.com/stats/rest/en/{report}?cayenneExp=playerId={playerID}%20and%20gameTypeId=2"
     return _safe_get_json(url, cache_name)
 
 

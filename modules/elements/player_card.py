@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from modules.fetch_nhl_api import get_logo
+
 __all__ = ['build_player_card']
 
 POSITIONS = {"C": "C", "L": "LW", "R": "RW", "D": "D", "G": "G"}
@@ -14,25 +16,25 @@ COUNTRY_ISO2 = {
     "SRB": "rs", "ROU": "ro", "BGR": "bg", "ISR": "il", "MEX": "mx", "VEN": "ve", "TWN": "tw",
 }
 
-SKATER_COLUMNS = [("GP", "gamesPlayed"), ("G", "goals"), ("A", "assists"), ("P", "points"), ("+/-", "plusMinus")]
+SKATER_COLUMNS = [("GP", "gamesPlayed"), ("G", "goals"), ("A", "assists"), ("P", "points"), ("+/-", "plusMinus"),
+                  ("PIM", "pim"), ("Hits", "hits")]
 GOALIE_COLUMNS = [("GP", "gamesPlayed"), ("W", "wins"), ("GAA", "goalsAgainstAvg"), ("SV%", "savePctg"), ("SO", "shutouts")]
+SEASONS_SHOWN = 5
+# Summed when a player had several teams in one season (trade)
+COUNTING_KEYS = ("gamesPlayed", "goals", "assists", "points", "plusMinus", "pim", "wins", "losses", "otLosses",
+                 "shutouts", "goalsAgainst", "shotsAgainst")
 
 
-def build_player_card(landing):
-    """Everything the player card template needs, from the /player/{id}/landing response."""
+def build_player_card(landing, season_report=None):
+    """
+    Everything the player card template needs, from the /player/{id}/landing response.
+    `season_report` (stats API, one row per season) adds the teams per season and hits.
+    """
     is_goalie = landing.get("position") == "G"
     country = landing.get("birthCountry", "")
     iso2 = COUNTRY_ISO2.get(country)
-
     columns = GOALIE_COLUMNS if is_goalie else SKATER_COLUMNS
-    featured = landing.get("featuredStats") or {}
-    season_stats = featured.get("regularSeason", {}).get("subSeason")
-    career_stats = (landing.get("careerTotals") or {}).get("regularSeason")
-    stats_rows = []
-    if season_stats:
-        stats_rows.append((season_label(featured.get("season")), format_stats(season_stats, columns)))
-    if career_stats:
-        stats_rows.append(("Career", format_stats(career_stats, columns)))
+    stats_rows = season_rows(landing, season_report, columns, is_goalie)
 
     return {
         "name": f"{landing['firstName']['default']} {landing['lastName']['default']}",
@@ -60,10 +62,65 @@ def build_player_card(landing):
     }
 
 
+def season_rows(landing, season_report, columns, is_goalie):
+    """Last NHL regular seasons (up to SEASONS_SHOWN) plus a career row: [(label, teams, values)]."""
+    report = {row.get("seasonId"): row for row in (season_report or {}).get("data", [])}
+    by_season = {}
+    for entry in landing.get("seasonTotals", []):
+        if entry.get("leagueAbbrev") == "NHL" and entry.get("gameTypeId") == 2:
+            by_season.setdefault(entry["season"], []).append(entry)
+
+    rows = []
+    for season in sorted(by_season)[-SEASONS_SHOWN:]:
+        parts = sorted(by_season[season], key=lambda e: e.get("sequence", 0))
+        stats = combine_seasons(parts, is_goalie)
+        stats["hits"] = report.get(season, {}).get("hits")
+        rows.append((season_label(season), season_teams(parts, report.get(season)), format_stats(stats, columns)))
+
+    career = dict((landing.get("careerTotals") or {}).get("regularSeason") or {})
+    if career:
+        # Hits are only tracked since 2005-06, so the career total covers those seasons
+        hits = [row.get("hits") for row in report.values() if row.get("hits") is not None]
+        career["hits"] = sum(hits) if hits else None
+        rows.append(("Career", [], format_stats(career, columns)))
+    return rows
+
+
+def combine_seasons(parts, is_goalie):
+    """One season's stats; a traded player's per-team rows are summed (goalie rates recalculated)."""
+    if len(parts) == 1:
+        return dict(parts[0])
+    stats = {key: sum(p.get(key) or 0 for p in parts) for key in COUNTING_KEYS}
+    if is_goalie:
+        minutes = sum(toi_minutes(p.get("timeOnIce")) for p in parts)
+        stats["goalsAgainstAvg"] = stats["goalsAgainst"] * 60 / minutes if minutes else None
+        shots = stats["shotsAgainst"]
+        stats["savePctg"] = 1 - stats["goalsAgainst"] / shots if shots else None
+    return stats
+
+
+def toi_minutes(time_on_ice):
+    # "334:45" -> 334.75
+    try:
+        minutes, seconds = str(time_on_ice).split(":")
+        return int(minutes) + int(seconds) / 60
+    except ValueError:
+        return 0
+
+
+def season_teams(parts, report_row):
+    """Teams of one season in order, e.g. [VAN, NYR] after a trade. Abbreviations (for logos) come
+    from the stats report; without it, fall back to the team names."""
+    abbrevs = [a for a in ((report_row or {}).get("teamAbbrevs") or "").split(",") if a]
+    if len(abbrevs) == len(parts):
+        return [{"abbrev": a, "logo": get_logo(a)} for a in abbrevs]
+    return [{"abbrev": (p.get("teamCommonName") or {}).get("default", ""), "logo": None} for p in parts]
+
+
 def season_label(season):
-    # 20262027 -> "2026-27"
+    # 20262027 -> "26-27"
     season = str(season or "")
-    return f"{season[:4]}-{season[-2:]}" if len(season) == 8 else "This season"
+    return f"{season[2:4]}-{season[-2:]}" if len(season) == 8 else ""
 
 
 def format_stats(stats, columns):
