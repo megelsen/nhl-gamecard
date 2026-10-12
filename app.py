@@ -255,7 +255,6 @@ def team_page(team_abbr):
         "standings_tables": standings_tables,
         "roster_tables": roster_tables,
         "topscorer_compare": topscorer_compare,
-        "stats_subtitle": season_subtitle(team_stats_data),
         "playoff_picture": playoff_picture,
         "compare_colors": compare_colors,
         "team_abbr": team_abbr,

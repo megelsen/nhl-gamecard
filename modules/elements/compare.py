@@ -3,20 +3,17 @@ import json
 
 from modules.fetch_nhl_api import get_skater_edge, get_goalie_edge
 
-__all__ = ['skater_edge_stats', 'goalie_edge_stats', 'skater_comparison', 'game_comparison', 'compare_mount', 'season_subtitle']
+__all__ = ['skater_edge_stats', 'goalie_edge_stats', 'skater_comparison', 'game_comparison', 'compare_mount']
 
 # Row keys understood by static/js/comparison.js (labels, formats and bar rules live there)
-SKATER_ROWS = ["GP", "G", "A", "P", "TOI", "HDSOG", "HDG", "SHOT", "SPEED"]
+SKATER_ROWS = ["GP", "G", "A", "P", "TOI", "SHOT", "SPEED"]
 GAME_ROWS = ["Score", "SOG", "SV%", "FO%", "PP", "Hits"]
 
 
 def skater_edge_stats(player_id):
-    """High-danger shots/goals, top shot speed and max skating speed from NHL EDGE (None when missing)."""
+    """Top shot speed and max skating speed from NHL EDGE (None when missing)."""
     edge = get_skater_edge(player_id) or {}
-    high = next((s for s in edge.get("sogSummary", []) if s.get("locationCode") == "high"), {})
     return {
-        "hd_shots": high.get("shots"),
-        "hd_goals": high.get("goals"),
         "shot_speed": (edge.get("topShotSpeed") or {}).get("metric"),
         "skate_speed": ((edge.get("skatingSpeed") or {}).get("speedMax") or {}).get("metric"),
     }
@@ -37,8 +34,6 @@ def skater_comparison(left, right, left_team, right_team):
             "A": player.get("assists"),
             "P": player.get("points"),
             "TOI": player.get("toi_seconds"),
-            "HDSOG": player.get("hd_shots"),
-            "HDG": player.get("hd_goals"),
             "SHOT": player.get("shot_speed"),
             "SPEED": player.get("skate_speed"),
         }
@@ -93,10 +88,3 @@ def comparison(left_team, right_team, rows):
 def compare_mount(data):
     """Placeholder element that comparison.js renders into."""
     return f'<div class="compare-mount" data-compare="{html.escape(json.dumps(data), quote=True)}"></div>'
-
-
-def season_subtitle(team_stats_data):
-    season = str((team_stats_data or {}).get("season", ""))
-    label = f"{season[:4]}-{season[-2:]}" if len(season) == 8 else ""
-    phase = "playoffs" if (team_stats_data or {}).get("gameType") == 3 else "regular season"
-    return f"{label} {phase}".strip()

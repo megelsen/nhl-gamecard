@@ -4,15 +4,13 @@
 // Colors: window.compareColors = {ABBR: color}.
 
 const COMPARE_SPECS = {
-    GP: { label: "GP", bar: false },
+    GP: { label: "GP" },
     G: { label: "G" },
     A: { label: "A" },
     P: { label: "P" },
     W: { label: "W" },
     SO: { label: "SO" },
     TOI: { label: "TOI/GP", format: "time" },
-    HDSOG: { label: "HD Shots" },
-    HDG: { label: "HD Goals" },
     SHOT: { label: "Shot km/h", format: "fixed1", spread: 10 },
     SPEED: { label: "Speed km/h", format: "fixed1", spread: 3 },
     GAA: { label: "GAA", format: "fixed2", spread: 1.5, lowerIsBetter: true },
