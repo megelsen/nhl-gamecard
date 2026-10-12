@@ -4,7 +4,7 @@ import json
 import unicodedata
 import logging
 
-__all__ = ['get_team_info','get_team_color','lighten_hex_color','pick_contrasting_color']
+__all__ = ['get_team_info','get_team_color','lighten_hex_color','pick_contrasting_color','DEFAULT_COLORS']
 
 DEFAULT_COLORS = {"primary": "#555555", "secondary": "#ffffff", "accent": "#999999"}
 

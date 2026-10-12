@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. [x] Roster overview: a "Roster" button in the title row opens a modal (like the topscorer modal) with the full roster and relevant stats, split into Goalies, Defense, and Forwards
 5. [x] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
 6. [x] Complete the playoff race module: a separate card showing the current playoff bracket, based on matchups from current standings
-7. [ ] Player cards: clicking a player's headshot opens a hockey-card-style modal (birthplace, nationality flag, hero image, career stats, ...)
+7. [x] Player cards: clicking a player's headshot opens a hockey-card-style modal (birthplace, nationality flag, hero image, career stats, ...)
 
 ## Overview
 
@@ -37,7 +37,7 @@ For visual checks, run the app on a spare port and screenshot with headless Chro
 
 Set `SECRET_KEY` in production, otherwise sessions (and therefore the dynamic CSS) reset on every restart.
 
-Useful routes: `/refresh` (force-refresh the cache in a background thread), `/debug-nhl?url=...` (proxy an `https://*.nhle.com` URL and show status/headers/body preview), `/health`. Unknown team codes return 404; lowercase codes redirect to uppercase.
+Useful routes: `/player/<id>/card` (player card HTML fragment), `/refresh` (force-refresh the cache in a background thread), `/debug-nhl?url=...` (proxy an `https://*.nhle.com` URL and show status/headers/body preview), `/health`. Unknown team codes return 404; lowercase codes redirect to uppercase.
 
 ## Architecture
 
@@ -65,6 +65,8 @@ Useful routes: `/refresh` (force-refresh the cache in a background thread), `/de
 **Comparison bars** — `static/js/compareBars.js` adds a bar row under each stat row of every `.player-compare` / `.team-compare` table. It reads the two cell values in the row, skips GP, inverts GAA, and uses an amplified difference for rate stats (`COMPARE_RATE_SPREAD`). Call `applyCompareBars(el)` again after re-rendering a comparison (the goalie carousel does). Colors come from `window.compareColors` (team primary; the opponent's color is chosen by `pick_contrasting_color`). Tables are team-left/opponent-right unless they set `data-left-team` / `data-right-team`, like the home/away "Last meeting" table.
 
 **Playoff card** — `build_playoff_picture()` (`playoffs_race.py`) shows only the current round. Until `/v1/playoff-bracket/{year}` (year = the season's end year) has series, it projects round 1 from standings: the better division winner plays WC2, the other WC1, and 2nd plays 3rd in each division. During the playoffs it shows the lowest round with an unfinished series; after the Final, the Final. Seeds use standings labels (M1, WC2). The card shares `.standings-tab` and `standingsToggle.js` with the standings card.
+
+**Player cards** — Any element with `data-player-id` opens a card. `static/js/playerCard.js` uses one delegated click listener and fetches `/player/<id>/card`. That route renders `templates/partials/player_card.html` from `build_player_card()` (`modules/elements/player_card.py`) using the cached player landing data, in the player's current team colors. Flags come from flagcdn.com via the `COUNTRY_ISO2` map (the API gives ISO alpha-3 codes); add codes there when a new country shows up. When adding a new headshot anywhere, give it `data-player-id`.
 
 **No next game** — In the off-season there's no upcoming opponent: `next_game`/`next_opponent` are `None`, opponent dicts are empty, and the template and `goalieCarousel.js` render blanks/dashes. Keep that path working when touching opponent features. `TEAM_LIST` lives in `scheduler.py` and `app.py` imports it.
 

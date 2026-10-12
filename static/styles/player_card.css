@@ -1,5 +1,171 @@
-.player-card{
+/* Player card modal (static/js/playerCard.js, templates/partials/player_card.html) */
+[data-player-id] {
+    cursor: pointer;
+}
+
+/* Above the roster / Top 5 modals it can be opened from */
+#playerCardPopUp {
+    z-index: 200;
+}
+
+.player-card-popup-content {
+    position: relative;
+    align-self: baseline;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.player-card-popup-content .close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    z-index: 2;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.player-card-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: min(360px, 92vw);
+    height: 300px;
+    background: white;
+    border-radius: 14px;
+}
+
+.hockey-card {
+    width: min(360px, 92vw);
+    box-sizing: border-box;
+    background: #fefefe;
+    border: 8px solid var(--card-primary);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    text-align: left;
+}
+
+.hockey-card-image {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(160deg, #f2f2f2, #d1d1d1);
+}
+
+.hockey-card-hero {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.hockey-card-logo {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 52px;
+    height: 52px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.hockey-card-flag {
+    position: absolute;
+    bottom: 22px;
+    right: 10px;
+    width: 40px;
+    border: 2px solid white;
+    border-radius: 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Name banner with a slanted top edge */
+.hockey-card-banner {
+    position: relative;
+    margin-top: -16px;
+    padding: 20px 14px 10px;
+    background: var(--card-primary);
+    color: white;
+    clip-path: polygon(0 16px, 100% 0, 100% 100%, 0 100%);
+    border-bottom: 5px solid var(--card-accent);
     display: grid;
-    max-width: 515px;
-    grid-column: 1;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    align-items: baseline;
+}
+
+.hockey-card-number {
+    grid-row: 1 / span 2;
+    font-size: 2.2rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.hockey-card-name {
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.hockey-card-team {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.hockey-card-bio,
+.hockey-card-stats {
+    width: calc(100% - 20px);
+    margin: 10px;
+    white-space: normal;
+}
+
+.hockey-card-bio th {
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #666;
+    text-transform: uppercase;
+    width: 30%;
+    vertical-align: top;
+    background: transparent;
+}
+
+.hockey-card-bio td {
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.hockey-card-bio tr,
+.hockey-card-stats tr {
+    background: transparent;
+}
+
+.hockey-card-flag-inline {
+    width: 18px;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+.hockey-card-stats thead th {
+    background: var(--card-primary);
+    color: white;
+    font-size: 0.85rem;
+}
+
+.hockey-card-stats tbody th {
+    background: transparent;
+    text-align: left;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.hockey-card-stats tbody tr:nth-child(odd) {
+    background: #f2f2f2;
+}
+
+.hockey-card-empty {
+    margin: 10px;
+    color: #666;
+    background: white;
 }

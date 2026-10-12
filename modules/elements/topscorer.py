@@ -90,7 +90,7 @@ def get_skater_info(skater):
             "games_played": skater['gamesPlayed'],
             "headshot_url": skater.get('headshot', ''),
             "headshot_html": f"""<img src="{skater.get('headshot', '')}">""",
-            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater.get('headshot', '')}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater.get('headshot', '')}" data-player-id="{skater['playerId']}">""",
             "position": position_code,
             "playerID": skater['playerId'],
     }
@@ -133,7 +133,7 @@ def get_goalie_info(goalie):
             "games_played": goalie['gamesPlayed'],
             "headshot_url": goalie.get('headshot', ''),
             "headshot_html": f"""<img src="{goalie.get('headshot', '')}">""",
-            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie.get('headshot', '')}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie.get('headshot', '')}" data-player-id="{goalie['playerId']}">""",
             "position": 'G',
             "playerID": goalie['playerId'],
     }

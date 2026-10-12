@@ -327,6 +327,20 @@ def dynamic_titleCard_css():
     card_gap = session.get("card_gap", "4px")
     return Response(render_template("dynamic/styles/title_card.css.jinja", card_gap=card_gap,), mimetype="text/css")
 
+@app.route("/player/<int:player_id>/card")
+def player_card(player_id):
+    # HTML fragment for the player card modal (static/js/playerCard.js)
+    landing = get_player_stats(player_id)
+    if not landing or "firstName" not in landing:
+        abort(404)
+    card = build_player_card(landing)
+    colors = get_team_color(card["team_name"]) if card["team_name"] else DEFAULT_COLORS
+    card["primary_color"] = colors.get("primary") or DEFAULT_COLORS["primary"]
+    card["accent_color"] = pick_contrasting_color(
+        card["primary_color"], [colors.get("secondary"), colors.get("accent")], min_distance=80, fallback="#d1d1d1"
+    )
+    return render_template("partials/player_card.html", card=card)
+
 @app.route("/refresh")
 def manual_refresh():
   

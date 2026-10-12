@@ -1,0 +1,31 @@
+<div class="hockey-card" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};">
+    <div class="hockey-card-image">
+        <img class="hockey-card-hero" src="{{ card.hero_image }}" alt="{{ card.name }}">
+        {% if card.team_logo %}<img class="hockey-card-logo" src="{{ card.team_logo }}" alt="">{% endif %}
+        {% if card.flag_url %}<img class="hockey-card-flag" src="{{ card.flag_url }}" alt="{{ card.country }}" title="{{ card.country }}">{% endif %}
+    </div>
+    <div class="hockey-card-banner">
+        <span class="hockey-card-number">#{{ card.number }}</span>
+        <span class="hockey-card-name">{{ card.name }}</span>
+        <span class="hockey-card-team">{{ card.position }} – {{ card.team_name }}</span>
+    </div>
+    <table class="hockey-card-bio">
+        <tr><th>Born</th><td>{{ card.born }}</td></tr>
+        <tr><th>Birthplace</th><td>{{ card.birthplace }}{% if card.flag_url %} <img class="hockey-card-flag-inline" src="{{ card.flag_url }}" alt="">{% endif %}</td></tr>
+        <tr><th>Size</th><td>{{ card.size }}</td></tr>
+        <tr><th>{{ card.hand_label }}</th><td>{{ card.hand }}</td></tr>
+        <tr><th>Draft</th><td>{{ card.draft }}</td></tr>
+    </table>
+    {% if card.stats_rows %}
+    <table class="hockey-card-stats">
+        <thead><tr><th></th>{% for column in card.stat_columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+        <tbody>
+            {% for label, values in card.stats_rows %}
+            <tr><th>{{ label }}</th>{% for value in values %}<td>{{ value }}</td>{% endfor %}</tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="hockey-card-empty">No NHL games played yet.</p>
+    {% endif %}
+</div>
