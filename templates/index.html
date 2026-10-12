@@ -31,6 +31,7 @@
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_compare.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/team_compare.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/arrow_buttons.css') }}">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/standings.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -288,11 +289,26 @@
                  
   <!-- STANDINGS --------------------------------------------->
         <div class="container widthTargetElement">
-            <div class="table card_display table_card">
+            <div class="table card_display table_card standings-card" style="--standings-accent: {{ session['team_color'] }}; --standings-highlight: {{ standings_highlight }};">
                 <h2  class="top_card_header">
                 Standings
                 </h2>
-                <p>{{html_standings_table | safe }}</p>
+                <div class="tabs-container standings-tabs-container">
+                    {% for conference, label in [("Eastern", "East"), ("Western", "West")] %}
+                    <div class="standings-tab {% if conference == team_info['team_conference'] %}active{% endif %}" data-conference="{{ conference }}">{{ label }}</div>
+                    {% endfor %}
+                </div>
+                <div class="standings-view-toggle">
+                    <button class="standings-view active" data-view="conference">Conference</button>
+                    <button class="standings-view" data-view="wildcard">Wild Card</button>
+                </div>
+                {% for conference, views in standings_tables.items() %}
+                    {% for view, table_html in views.items() %}
+                    <div class="standings-table-wrapper" data-conference="{{ conference }}" data-view="{{ view }}" {% if not (conference == team_info['team_conference'] and view == 'conference') %}hidden{% endif %}>
+                        {{ table_html | safe }}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
             </div>
             <div class="card_display table_card">
                 <h2  class="top_card_header"> Record vs {{team_info['team_conference']}} </h2>
@@ -402,6 +418,7 @@
     <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
     <script>
         window.goalies = {{ goalies | tojson }};
         window.goaliesOpponent = {{ goalies_opponent | tojson }};

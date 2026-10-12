@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. [x] Plan and fix the known bugs
 2. [x] Find out why the team summary (Rank, PP, PK) isn't working
-3. [ ] League-wide standings: switch between East and West in the standings card
+3. [x] League-wide standings: switch between East and West in the standings card
 4. [ ] Roster overview: a "Roster" button in the title row opens a modal (like the topscorer modal) with the full roster and relevant stats, split into Goalies, Defense, and Forwards
 5. [ ] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
 6. [ ] Complete the playoff race module: a separate card showing the current playoff bracket, based on matchups from current standings
@@ -55,6 +55,8 @@ Useful routes: `/refresh` (force-refresh the cache in a background thread), `/de
 **Season phase** — `season_data['currentDate']` is the latest date with standings: it trails today by a day during the season, so don't compare it to today to detect the post-season. Standings are requested for `min(today, currentDate)` (the scheduler warms the same date). Post-season means the playoff team summary (`get_team_summary(season, 1)`) has rows; `get_special_teams_for` uses a team's playoff stats if it has any, else regular season. Team rows from the stats API are matched to standings by exact full name (`teamFullName` == standings `teamName.default`).
 
 **Summary circles** — `templates/index.html` reads `Conf Rank` / `Conf Name` / `Conf Rank Pct` from `team_summary()` and `PP%` / `PK%` / `* Rank` / `* Rank Pct` from `get_special_teams()`. Keep those keys when changing either function.
+
+**Standings card** — `build_standings_tables()` (`modules/elements/playoffs_race.py`) pre-renders 4 tables (East/West × Conference/Wild Card) as hand-built HTML (row classes `own-team`, `cut-line`, `standings-group`); `static/js/standingsToggle.js` only toggles `hidden`. Use `.standings-tab`, not `.tab`, for tabs outside the topscorer modal: `topscorers_modal.js` binds every `.tab` on the page.
 
 **No next game** — In the off-season there's no upcoming opponent: `next_game`/`next_opponent` are `None`, opponent dicts are empty, and the template and `goalieCarousel.js` render blanks/dashes. Keep that path working when touching opponent features. `TEAM_LIST` lives in `scheduler.py` and `app.py` imports it.
 

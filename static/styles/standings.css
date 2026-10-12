@@ -1,0 +1,51 @@
+/* Standings card: tabs, view toggle, group rows, own team, playoff cut line */
+.standings-tabs-container {
+    margin-bottom: 8px;
+}
+
+.standings-view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.standings-view {
+    padding: 2px 10px;
+    border-radius: 12px;
+    border: solid lightgrey 1px;
+    background: #f3f3f3;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.standings-view:hover {
+    background: #d6d6d6;
+}
+
+.standings-view.active {
+    background: var(--standings-accent, #555);
+    border-color: var(--standings-accent, #555);
+    color: white;
+}
+
+.standings-table tr.standings-group th {
+    text-align: left;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 10px;
+    border-bottom: 1px solid lightgrey;
+}
+
+.standings-table tr.own-team td {
+    background-color: var(--standings-highlight, #e8e8e8);
+}
+
+.standings-table tr.own-team td:first-child {
+    box-shadow: inset 4px 0 0 var(--standings-accent, #555);
+}
+
+.standings-table tr.cut-line td {
+    border-bottom: 2px dashed #888;
+}

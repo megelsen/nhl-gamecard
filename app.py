@@ -108,6 +108,7 @@ def team_page(team_abbr):
         )
     team_colors = get_team_color(team_info["team_name"])  
     light_color = lighten_hex_color(team_colors['primary'],0.25)
+    standings_highlight = lighten_hex_color(team_colors['primary'], 0.8)
 
     # Read Schedule
 
@@ -204,7 +205,7 @@ def team_page(team_abbr):
     html_last_games = get_previous_games(games_by_date,nr_games=3)
 
     # Playoffs race standings
-    html_standings_table = build_playoffs_race_table(team_info,standings_data)
+    standings_tables = build_standings_tables(team_abbr, standings_data)
     # Playoff Bracket
     playoff_data = playoff_bracket(playoff_series_data)
     
@@ -242,7 +243,8 @@ def team_page(team_abbr):
         "html_pts_leader_table": html_pts_leader_table,
         "html_goals_leader_table": html_goals_leader_table,
         "html_assists_leader_table": html_assists_leader_table,
-        "html_standings_table": html_standings_table,
+        "standings_tables": standings_tables,
+        "standings_highlight": standings_highlight,
         "html_next_game": html_next_game,
         "next_games_data": next_games_data,
         "html_next_opponent_summary": html_next_opponent_summary,

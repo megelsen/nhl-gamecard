@@ -1,33 +1,85 @@
 from modules.fetch_nhl_api import get_logo
-import pandas as pd
 
-__all__ =['build_playoffs_race_table','get_standings','format_team_standings','bold','playoff_bracket','current_round_matchups']
-def build_playoffs_race_table(team_info,standings_data):
-    # Extract standings by division
-    standings_list = []
-    team_conference = team_info.get("team_conference")
-    for team in standings_data.get("standings", []):
-        if team['conferenceName'] == team_conference:
-            playoffs = team['wildcardSequence']
-            team_stats = get_standings(team)
-            formatted_stats = format_team_standings(team_stats,playoffs)
-            standings_list.append(formatted_stats)
+__all__ =['build_standings_tables','get_standings','format_team_standings','bold','playoff_bracket','current_round_matchups']
 
-    # Convert to DataFrame
-    df_div_standings = pd.DataFrame(standings_list)
+STANDINGS_COLUMNS = ["Team", "Rank", "GP", "PTS", "W", "L", "OTL", "P%"]
+PLAYOFF_SPOTS_PER_DIVISION = 3
 
-    #print(df_div_standings)
-    # Sort by division and points
-    df_div_standings = df_div_standings.sort_values(by=['points_rank'], ascending=[ False])
-    # Extract only the first 8 columns
-    columns_to_display = ["Team", "Rank", "GP", "PTS", "W", "L", "OTL", "P%"]
 
-    # Filter the DataFrame to only include those columns
-    df_div_standings = df_div_standings[columns_to_display]
+def build_standings_tables(team_abbr, standings_data):
+    """
+    Standings tables for both conferences, in two views each:
+    {"Eastern": {"conference": html, "wildcard": html}, "Western": {...}}
+    """
+    standings = standings_data.get("standings", [])
+    tables = {}
+    for conference in ("Eastern", "Western"):
+        teams = [t for t in standings if t.get("conferenceName") == conference]
+        tables[conference] = {
+            "conference": build_conference_table(teams, team_abbr),
+            "wildcard": build_wildcard_table(teams, team_abbr),
+        }
+    return tables
 
-    html_standings_table = df_div_standings.to_html(classes="teams-table", escape=False, index=False)
-    return html_standings_table
-    
+
+def build_conference_table(teams, team_abbr):
+    teams = sorted(teams, key=lambda t: t.get("conferenceSequence", 99))
+    playoff_teams = [t for t in teams if t.get("wildcardSequence", 99) <= 2]
+    # Division leaders can rank below a wild card, so the 8 playoff teams aren't always
+    # the top 8 by conference rank: only draw the cut line when they are.
+    cut_after = len(playoff_teams) - 1 if teams[:len(playoff_teams)] == playoff_teams else None
+    rows = [standings_row(t, team_abbr, cut_line=(i == cut_after)) for i, t in enumerate(teams)]
+    return standings_table(rows)
+
+
+def build_wildcard_table(teams, team_abbr):
+    """NHL.com style: top 3 of each division, then the wild card race."""
+    divisions = {}
+    for t in teams:
+        divisions.setdefault(t.get("divisionName", ""), []).append(t)
+    # Division with the conference leader first
+    division_order = sorted(divisions, key=lambda d: min(t.get("conferenceSequence", 99) for t in divisions[d]))
+
+    rows = []
+    for division in division_order:
+        leaders = sorted(divisions[division], key=lambda t: t.get("divisionSequence", 99))[:PLAYOFF_SPOTS_PER_DIVISION]
+        rows.append(group_row(division))
+        rows += [standings_row(t, team_abbr) for t in leaders]
+
+    wildcard = sorted(
+        (t for t in teams if t.get("wildcardSequence", 0) > 0),
+        key=lambda t: t["wildcardSequence"],
+    )
+    rows.append(group_row("Wild Card"))
+    rows += [standings_row(t, team_abbr, cut_line=(t["wildcardSequence"] == 2)) for t in wildcard]
+    return standings_table(rows)
+
+
+def standings_row(team, team_abbr, cut_line=False):
+    stats = format_team_standings(get_standings(team), team.get("wildcardSequence", 99))
+    classes = []
+    if team.get("teamAbbrev", {}).get("default") == team_abbr:
+        classes.append("own-team")
+    if cut_line:
+        classes.append("cut-line")
+    class_attr = f' class="{" ".join(classes)}"' if classes else ""
+    cells = "".join(f"<td>{stats[col]}</td>" for col in STANDINGS_COLUMNS)
+    return f"<tr{class_attr}>{cells}</tr>"
+
+
+def group_row(label):
+    return f'<tr class="standings-group"><th colspan="{len(STANDINGS_COLUMNS)}">{label}</th></tr>'
+
+
+def standings_table(rows):
+    header = "".join(f"<th>{col}</th>" for col in STANDINGS_COLUMNS)
+    return (
+        '<table class="teams-table standings-table">'
+        f"<thead><tr>{header}</tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody>"
+        "</table>"
+    )
+
 def get_standings(team):
     """
     Returns a dictionary with the standings data for a given team.
