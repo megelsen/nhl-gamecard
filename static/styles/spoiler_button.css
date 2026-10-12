@@ -1,28 +1,41 @@
+/* Spoiler cover: sits exactly on top of the hidden content (.hide-spoiler) */
 .spoiler-wrapper {
     position: relative;
     display: inline-block;
     text-align: center;
+    vertical-align: middle;
 }
 .toggle-spoiler {
     position: absolute;
-    width: 100%;
-    min-width: fit-content;
-    min-height: max-content;
-    height: 100%;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
     background: rgba(80, 80, 80, 1);
     color: white;
     border: none;
-    padding: 4px 8px;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 12px;
-    transform: translateY(-4px);
     z-index: 10;
-
-    span {
-        margin-top: 4px;
-    }
+    overflow: hidden;
+}
+.toggle-spoiler .material-symbols-outlined {
+    font-size: min(24px, 1.4em);
+    line-height: 1;
 }
 .hide-spoiler {
     display: inline-block;
     position: relative;
+    padding: 2px 6px;
+}
+
+/* Last meeting: the spoiler covers the whole comparison, which needs the full width */
+.previous-matchup .spoiler-wrapper,
+.previous-matchup .hide-spoiler {
+    display: block;
+}
+.previous-matchup .hide-spoiler {
+    padding: 0;
 }

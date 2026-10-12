@@ -51,15 +51,31 @@
 }
 
 .compare-team {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding-bottom: 3px;
-    border-bottom: 3px solid var(--team-color);
+    padding-bottom: 6px;
     font-size: 0.85rem;
     font-weight: bold;
     letter-spacing: 0.05em;
     color: #333;
+}
+
+/* Team-color underline, rounded like the stat bars */
+.compare-team::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--team-color);
+}
+
+.compare-team:empty::after {
+    display: none;
 }
 
 .compare-team img {
