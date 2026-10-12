@@ -45,3 +45,4 @@ with open("nhl_team_colors.json", "w") as f:
     json.dump(teams, f, indent=4)
 
 print(f"Extracted {len(teams)} teams and saved to nhl_team_colors.json")
+

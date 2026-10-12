@@ -1,0 +1,32 @@
+.team-compare {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: initial;
+    align-self: baseline;
+    background-color: #ffffff;
+}
+
+.team-compare th {
+    font-weight: normal;
+    padding: 4px 8px;
+    white-space: nowrap;
+     background-color: #ffffff;
+}
+
+.team-compare td {
+    
+    font-weight:bold;
+    padding: 4px 8px;
+    background-color: #ffffff;
+}
+
+.team-compare .left {
+    text-align: center;
+
+}
+
+.team-compare .right {
+    text-align: center;
+    
+}
+

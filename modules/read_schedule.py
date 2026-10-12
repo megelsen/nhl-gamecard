@@ -17,13 +17,15 @@ def get_season_id():
     return season_id
 
 def get_season_start(season_data,current_season_id):
-    seasons = season_data.get("seasons")
+    seasons = (season_data or {}).get("seasons") or []
     for season in seasons:
         season_id = str(season.get("id"))
-        if season_id == current_season_id:
+        if season_id == current_season_id and season.get("standingsStart"):
             season_start = season.get("standingsStart")
             season_start = datetime.strptime(season_start, "%Y-%m-%d")
             return season_start
+    # Season not listed (yet): assume it starts in September of its first year
+    return datetime(int(str(current_season_id)[:4]), 9, 1)
 
 
 def get_season_end(current_season_id):
@@ -40,13 +42,15 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
     end_date = get_season_end(current_season_id)
     games_by_date = []
     games_by_opponent = {}
+    if not schedule_data:
+        return games_by_date, games_by_opponent
     games = schedule_data.get("games", [])
 
     for game in games:
         game_date = datetime.strptime(game.get("gameDate"), "%Y-%m-%d")  # Convert string to datetime object
 
         # Filter games after the cutoff date
-        if start_date < game_date < end_date and game.get("gameType") > 1:
+        if start_date < game_date < end_date and (game.get("gameType") or 0) > 1:
             game_type = game.get("gameType")
             game_id = game.get("id")
             home_team = game.get("homeTeam", {}).get("commonName", {}).get("default")
@@ -54,19 +58,22 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             home_score = game.get("homeTeam", {}).get("score")
             away_score = game.get("awayTeam", {}).get("score")
             game_outcome = game.get("gameOutcome", {}).get("lastPeriodType")
-            winning_goalie = game.get("winningGoalie", {}).get("lastName", {}).get("default")
-            winning_goal_scorer = game.get("winningGoalScorer", {}).get("lastName", {}).get("default")
+            winning_goalie = game.get("winningGoalie", {})
+            winning_goal_scorer = game.get("winningGoalScorer")
+            gamecenter = game.get("gameCenterLink")
+            gamecenterURL = f'https://www.nhl.com{gamecenter}'
             recap = game.get("condensedGame")
             if recap == None:
                recap = game.get("threeMinRecap")
             startTimeUTC = game.get("startTimeUTC")
             venueTimezone = game.get("venueTimezone")
             recapURL = f'https://www.nhl.com{recap}'
-
+            
             if away_team == query_team:
-              game_venue = "at"
+              game_venue = f'<span class="alt-font">@</span>'
               opponent = home_team
-
+              opponent_place = game.get("homeTeam", {}).get("placeName", {}).get("default")
+              opponent_name = f"{opponent_place or ''} {opponent or ''}".strip()
               opponent_abr = game.get("homeTeam", {}).get("abbrev")
               opponent_score = home_score
               team_score = away_score
@@ -74,6 +81,8 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
             else:
               game_venue = "vs"
               opponent = away_team
+              opponent_place = game.get("awayTeam", {}).get("placeName", {}).get("default")
+              opponent_name = f"{opponent_place or ''} {opponent or ''}".strip()
               opponent_abr = game.get("awayTeam", {}).get("abbrev")
               opponent_score = away_score
               team_score = home_score
@@ -92,7 +101,7 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
 
             # Store the game information as a dictionary
             game_details = {
-               "game_type": game_type,
+              "game_type": game_type,
               "game_id": game_id,
               "game_date": game_date,
               "home_team": home_team,
@@ -109,7 +118,10 @@ def get_games_data(team_info,schedule_data,season_data,current_season_id):
               "result": result,
               "startTimeUTC": startTimeUTC,
               "venueTimezone": venueTimezone,
-              "recapURL": recapURL
+              "recapURL": recapURL,
+              "opponent_name": opponent_name, 
+              "gamecenterURL": gamecenterURL,
+
             }
             games_by_date.append(game_details)
             games_by_opponent.setdefault(opponent, []).append(game_details)

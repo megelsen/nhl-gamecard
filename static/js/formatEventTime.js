@@ -170,7 +170,7 @@ for (let eventElement of eventElements) {
         // const currentContent = eventElement.innerHTML.trim();
         
         eventElement.innerHTML = `${eventElement.innerHTML} ${formattedTime}`;
-    } else {
+    } else if (!eventElement.textContent.trim()) {
         eventElement.innerHTML = "Time unavailable";
     }
 }

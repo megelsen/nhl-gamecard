@@ -20,21 +20,22 @@
     grid-row: 1;
     grid-column: 3;
     margin-left: 8px;
-    justify-self: baseline;
+    justify-self: end;
+    margin-right: 12px;
 }
 
 .show-top5-btn{
-    grid-row: 2;
+    grid-row: 3;
     grid-column: 1;
     align-self: center;
-    margin-top: 32px;
+    margin-top: 2px;
 }
 
 .show-top5-btn-opponent{
-    grid-row: 2;
+    grid-row: 3;
     grid-column: 3;
     align-self: left;
-    margin-top: 16px;
-    margin-left: 8px;
-    justify-self: baseline;
+    margin-top: 2px;
+    margin-left: 0px;
+    justify-self: center;
 }

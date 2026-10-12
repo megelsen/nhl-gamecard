@@ -1,12 +1,27 @@
 .upcoming_game{
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 2 / span 2;
     padding: 0 12px;
+    justify-self: baseline;
 
 }
 .upcoming_game span{
     display: flex;
     align-items: center;
-    padding-block-end: 12px;
-    
+    padding-block-end: 0px;
+    white-space: nowrap;
+}
+
+.previous-matchup{
+    grid-row: 2;
+    grid-column: 3;
+    padding: 0 12px;
+    text-align: center;
+
+}
+
+.previous-matchup-date{
+    align-content: center;
+    grid-row: 1;
+    grid-column: 2;
 }

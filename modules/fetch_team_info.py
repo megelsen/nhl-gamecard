@@ -1,11 +1,16 @@
 from modules.fetch_nhl_api import get_logo
 import os
 import json
+import unicodedata
+import logging
 
 __all__ = ['get_team_info','get_team_color','lighten_hex_color']
 
+DEFAULT_COLORS = {"primary": "#555555", "secondary": "#ffffff", "accent": "#999999"}
+
 def get_team_info(standings_data,team_abbr='CAR'):
-    for team in standings_data['standings']:
+    team_info = None
+    for team in standings_data.get('standings', []):
         if team['teamAbbrev']['default'] == team_abbr:
             team_info = {
 
@@ -20,7 +25,10 @@ def get_team_info(standings_data,team_abbr='CAR'):
     return team_info
 
 def get_team_color(team_info):
-    team_name = team_info['team_name']
+    if isinstance(team_info, dict):
+        team_name = team_info.get("team_name", "")
+    else:
+        team_name = team_info
     # Make sure the JSON file exists
     json_path = os.path.join(os.path.dirname(__file__), "nhl_team_colors.json")
     if not os.path.exists(json_path):
@@ -32,14 +40,15 @@ def get_team_color(team_info):
 
     # Search for the matching team
     for team in team_data:
-        if team["team"].lower() == team_name.lower():
+        if normalize(team["team"].lower()) == normalize(team_name.lower()):
             return {
                 "primary": team.get("primary"),
                 "secondary": team.get("secondary"),
                 "accent": team.get("accent")
             }
 
-    raise ValueError(f"Could not find colors for {team_name}")
+    logging.warning(f"Could not find colors for {team_name}, using defaults")
+    return DEFAULT_COLORS
 
 
 def lighten_hex_color(hex_color, factor):
@@ -55,3 +64,9 @@ def lighten_hex_color(hex_color, factor):
 
     # Convert back to hex and return
     return f"#{r_new:02x}{g_new:02x}{b_new:02x}"
+
+def normalize(text):
+    return ''.join(
+        c for c in unicodedata.normalize('NFKD', text)
+        if not unicodedata.combining(c)
+    ).casefold()

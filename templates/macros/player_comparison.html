@@ -1,0 +1,72 @@
+{% macro skater_compare(left, right) %}
+<table class="player-compare">
+    <tr>
+        <td class="player left">{{ left.games_played }}</td>
+        <th>GP</th>
+        <td class="player right">{{ right.games_played }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.goals }}</td>
+        <th>G</th>
+        <td class="player right">{{ right.goals }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.assists }}</td>
+        <th>A</th>
+        <td class="player right">{{ right.assists }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.points }}</td>
+        <th>P</th>
+        <td class="player right">{{ right.points }}</td>
+    </tr>
+
+</table>
+{% endmacro %}
+
+{% macro goalie_compare(left, right) %}
+<table class="player-compare">
+    <tr>
+        <td class="player left">{{ left.games_played }}</td>
+        <th>GP</th>
+        <td class="player right">{{ right.games_played }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.wins }}</td>
+        <th>W</th>
+        <td class="player right">{{ right.wins }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.goalsAgainstAverage }}</td>
+        <th>GAA</th>
+        <td class="player right">{{ right.goalsAgainstAverage }}</td>
+    </tr>
+    <tr>
+        <td class="player left">{{ left.savePercentage }}</td>
+        <th>S%</th>
+        <td class="player right">{{ right.savePercentage }}</td>
+    </tr>
+        <tr>
+        <td class="player left">{{ left.shutouts }}</td>
+        <th>SO</th>
+        <td class="player right">{{ right.shutouts }}</td>
+    </tr>
+
+</table>
+{% endmacro %}
+
+"name": goalie['firstName']['default'] + " " + goalie['lastName']['default'],
+            "points": goalie['points'],
+            "goals": goalie['goals'],
+            "assists": goalie['assists'],
+            "wins": goalie['wins'],
+            "goalsAgainstAverage": round(goalie['goalsAgainstAverage'],2),
+            "savePercentage": round(goalie['savePercentage'],2),           
+            "shutouts": goalie['shutouts'],
+            "games_played": goalie['gamesPlayed'],
+            "headshot_url": goalie['headshot'],
+            "headshot_html": f"""<img src="{goalie['headshot']}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie['headshot']}">""",
+            "position": 'G',
+            "playerID": goalie['playerId'],
+

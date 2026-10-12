@@ -1,17 +1,19 @@
 # scheduler.py
-import os
+import logging
+import threading
+from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime
-import logging
 from modules import (
     get_schedule,
     get_current_standings,
     get_team_stats,
     get_season_data,
     get_playoff_series,
+    get_team_summary,
+    get_season_id,
 )
-from cache_utils import (save_cache, clear_cache)
+from cache_utils import is_cache_fresh, prune_cache
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -22,33 +24,38 @@ TEAM_LIST = [
     "WPG", "WSH",
 ]
 
+_refresh_lock = threading.Lock()
+
+
 def update_daily_cache():
-    """Fetch all critical data and save it to cache once per day."""
+    """Re-fetch all critical data. Goes through the fetch functions so cache keys always
+    match what the app reads; if a fetch fails, the previous cache entry is kept."""
+    if not _refresh_lock.acquire(blocking=False):
+        logging.info("Cache refresh already running — skipping.")
+        return
 
-    clear_cache()
-    logging.info("Starting daily NHL data cache refresh...")
+    try:
+        logging.info("Starting NHL data cache refresh...")
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        season_id = get_season_id()
 
-    # Example: use today's date for standings
-    current_date = datetime.now().strftime("%Y-%m-%d")
+        season_data = get_season_data(force=True) or {}
+        # Same date the app requests standings for
+        standings_date = min(current_date, season_data.get("currentDate") or current_date)
+        get_current_standings(standings_date, force=True)
+        get_team_summary(season_id, 0, force=True)
+        get_team_summary(season_id, 1, force=True)
+        get_playoff_series(season_id, force=True)
 
-    # Refresh general data
-    season_data = get_season_data()
-    save_cache("season_data", season_data)
+        for team in TEAM_LIST:
+            logging.info(f"Updating cache for {team}")
+            get_schedule(team, force=True)
+            get_team_stats(team, force=True)
 
-    standings_data = get_current_standings(current_date)
-    save_cache(f"standings_{current_date}", standings_data)
-
-    # Refresh each team's data
-    for team in TEAM_LIST:
-        logging.info(f"Updating cache for {team}")
-        save_cache(f"schedule_{team}", get_schedule(team))
-        save_cache(f"team_stats_{team}", get_team_stats(team))
-
-    # Refresh playoff data (use hardcoded or dynamically detected season)
-    playoff_data = get_playoff_series("20232024")
-    save_cache("playoff_series_20232024", playoff_data)
-
-    logging.info("Daily cache refresh complete.")
+        prune_cache()
+        logging.info("Cache refresh complete.")
+    finally:
+        _refresh_lock.release()
 
 
 def start_scheduler():
@@ -59,15 +66,9 @@ def start_scheduler():
     scheduler.start()
     logging.info(" Scheduler started (06:00 and 12:00 UTC).")
 
-    # Check cache folder at startup
-    cache_dir = "cache"
-    if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir)
-
-    files = [f for f in os.listdir(cache_dir) if f.endswith(".json")]
-    if not files:
-        logging.info("Cache empty on startup — refreshing now...")
-        update_daily_cache()
-        logging.info(" Cache built successfully.")
+    # Warm the cache at startup in the background so the server can bind its port right away
+    if not is_cache_fresh("season_data"):
+        logging.info("No cache for today on startup — refreshing in background...")
+        threading.Thread(target=update_daily_cache, daemon=True).start()
     else:
-        logging.info("Cache already populated.")
+        logging.info("Cache already populated for today.")

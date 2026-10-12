@@ -1,0 +1,26 @@
+/* Arrow Button */
+.arrow-button{
+    padding: 8px;
+    justify-self: center;
+    background-color: white;
+    border-width: 0px;
+    display: flex;
+    justify-content: space-around;
+    padding-top: 0px;
+}
+
+
+.arrow:hover,
+.arrow:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.team-arrows{
+   grid-column: 1;
+}
+
+.opponent-arrows{
+   grid-column: 3;
+}

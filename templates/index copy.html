@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NHL Gamecard</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='stick-64x64.ico') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+
+     <!-- Static CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styling.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/primary_button.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/close_button.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/game_display.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/headings.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/links.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/loading_spinner.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/tables.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/team_summary.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/teams_table.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_row_element.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_scorer_modal.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/top_scorer.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_game.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/spoiler_button.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/player_card.css') }}">    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/records_legend.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_games_card.css') }}">
+
+    <!-- Load Dynamic CSS -->
+    <link rel="stylesheet" type="text/css" href="/body.css">
+    <link rel="stylesheet" type="text/css" href="/cards.css">
+    <link rel="stylesheet" type="text/css" href="/container.css">
+    <link rel="stylesheet" type="text/css" href="/previous_games.css">
+    <link rel="stylesheet" type="text/css" href="/team_dropdown.css">
+    <link rel="stylesheet" type="text/css" href="/title_card.css">    
+    <link rel="stylesheet" type="text/css" href="/media_scaling.css">
+
+</head>
+<body>
+    <div id="loading-wheel">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- UNIVERSAL LEADERS MODAL -->
+    <div id="statsPopUp" class="stats-popup">                    
+        <div class="stats-popup-content card_display">
+            <span class="close" id="closeBtn">&times;</span>
+
+            <div class="tabs-container">
+                <div id="tabs">
+                    <div class="tab active" data-index="0">Points</div>
+                    <div class="tab" data-index="1">Goals</div>
+                    <div class="tab" data-index="2">Assists</div>
+                </div>
+            </div>
+
+            <div id="modalContent">
+                <div id="points-leaders-content"></div>
+                <div id="goal-leaders-content" style="display: none;"></div>
+                <div id="assist-leaders-content" style="display: none;"></div>    
+            </div>                      
+        </div>
+    </div>
+    <!-- Hidden data for modal population -->
+    <div id="team-tables" style="display: none;">
+        <div id="team-points">{{ html_pts_leader_table | safe }}</div>
+        <div id="team-goals">{{ html_goals_leader_table | safe }}</div>
+        <div id="team-assists">{{ html_assists_leader_table | safe }}</div>
+    </div>
+
+    <div id="opponent-tables" style="display: none;">
+        <div id="opp-points">{{ html_pts_leader_table_opponent | safe }}</div>
+        <div id="opp-goals">{{ html_goals_leader_table_opponent | safe }}</div>
+        <div id="opp-assists">{{ html_assists_leader_table_opponent | safe }}</div>
+    </div>
+  <!-- PAGE HEADER -------------------------------------------------------------------------->
+    <div class="content"> 
+        <div class="container_title widthTargetElement ">
+            <div class="title_card title_card_display">
+                <img src="{{team_info['query_team_logo_big']}}">
+                <h1>
+                    {{team_info['team_name']}}
+                </h1>
+                <form class="dropdown_wrapper" id="team_form" method="POST">
+                    <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleTeamChange()">
+                        {{dropdown_html | safe }}
+                    </select>        
+                </form>
+            </div>
+        </div>
+  <!--  TEAM SUMMARY ------------------------------------------------------------------------>
+        <div class="container" id="widthSourceElement">
+            <div class="top_row_element card_display" id="statsCard">
+                <h2 class="top_card_header">
+                    Summary
+                </h2>      
+                <div class="top-scorer-label" >
+                    <b>Top Scorer:</b>                    
+                </div>
+                <button class="primary_button show-top5-btn" id="moreStats" >
+                    Show Top 5        
+                </button>
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{top_scorer['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{top_scorer['sweaterNumber']}} {{top_scorer['position']}}</p>        
+                    <p style="margin-block: 0">{{ top_scorer['goals']}}G-{{ top_scorer['assists']}}A-{{ top_scorer['points']}}P</p>
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ top_scorer['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
+                <div class="team-summary">
+                    {{ html_team_summary | safe }}
+                </div>
+            </div>
+  <!-- UPCOMING GAMES ------------------------------------------------------------------->           
+            <div class="top_row_element card_display" id="card_target_width">
+                <!--<h2  class="top_card_header">Upcoming games</h2>-->
+                <div class="upcoming_game">
+                     <span class="event-time" data-utc-time={{utc_starttime}}>
+                         {{html_next_game | safe }}
+                    </span>
+                </div>
+                <div class="team-summary team-summary_upcoming">
+                    {{html_next_opponent_summary | safe  }}
+                </div>      
+                <button class="primary_button upcoming_games_button"  id="moreGames">
+                    Next 5        
+                </button>
+                <!-- Opponent Topscorer -->
+                <div class="top-scorer-label-opponent" >
+                    <b>Top Scorer:</b>                    
+                </div>
+                <button class="primary_button show-top5-btn-opponent" id="moreStatsOpponent" >
+                    Show Top 5        
+                </button>
+                <div class ="top-scorer-info-opponent" >
+                    <p style="margin-block-end: 0"><b>{{top_scorer_opponent['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{top_scorer_opponent['sweaterNumber']}} {{top_scorer_opponent['position']}}</p>        
+                    <p style="margin-block: 0">{{ top_scorer_opponent['goals']}}G-{{ top_scorer_opponent['assists']}}A-{{ top_scorer_opponent['points']}}P</p>
+                </div>
+                <div class="headshot-img-opponent">
+                    <img src={{ top_scorer_opponent['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
+            </div>
+            <div id="UpcomingGamesPopUp" class="stats-popup ">                    
+                <!-- Modal Content -->
+                <div class="stats-popup-content card_display ">
+                    <!-- Closing Button -->
+                    <span class="close" id="closeBtnUpcoming">&times;</span>
+                    <!-- Navigation Buttons -->
+                
+                    <div id="modalUpcomingGames" class="upcoming_games_card">
+                        <div>   
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{utc_starttime}}>{{html_next_game | safe }}</span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[0][1]}}>{{next_games_data[0][0] | safe }}</span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[1][1]}}>{{next_games_data[1][0] | safe }} </span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[2][1]}}>{{next_games_data[2][0] | safe }} </span>
+                            </div>
+                            <div class="upcoming_game">
+                                <span class="event-time" data-utc-time={{next_games_data[3][1]}}>{{next_games_data[3][0] | safe }} </span>
+                            </div>
+                          <!--  # Access results like this:
+                            # next_game_data[0][0] -> html_next_game_2
+                            # next_game_data[0][1] -> utc_starttime_2-->
+                        </div>    
+                    </div>                    
+                </div>
+            </div>
+
+            <div class="previous_game_card card_display">
+                <h2  class="top_card_header">Last games</h2>        
+                <span class="game_display previous_game">{{html_last_games[0] | safe }}</span>
+                <span class="game_display previous_game">{{html_last_games[1] | safe }}</span>
+                <span class="game_display previous_game">{{html_last_games[2] | safe }}</span>
+            </div>
+        </div>
+  <!-- STANDINGS --------------------------------------------->
+        <div class="container widthTargetElement">
+            <div class="table card_display table_card">
+                <h2  class="top_card_header">
+                Standings
+                </h2>
+                <p>{{html_standings_table | safe }}</p>
+            </div>
+            <div class="card_display table_card">
+                <h2  class="top_card_header"> Record vs {{team_info['team_conference']}} </h2>
+                {{ record_table_1 | safe }}
+                <div class="legend">
+                   <span>  </span>
+                   <span style="background-color: green; color: white"> Win </span>
+                   <span style="background-color: #EDB120; color: black"> OTL </span>
+                   <span style="background-color: #D95319; color: white "> Loss </span>
+                </div>
+            </div>
+            <div class="card_display table_card">
+                <h2  class="top_card_header">  Record vs {{team_info['opposite_conference']}} </h2>
+                {{ record_table_2 | safe }}
+            </div>
+        </div>  
+<!--- BETA --------------------------------------------------------------->
+<!--- Goalie Card -------------------------------------------------------->
+        <div style="display: none">
+            <div class="top_row_element card_display" id="goalieCard_team">
+                <h2 class="top_card_header">
+                    Goalie
+                </h2>      
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{goalies[0]['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{goalies[0]['sweaterNumber']}}</p>        
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ goalies[0]['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
+                <div class="team-summary">
+                    {{ html_goalie_table[0] | safe }}
+                </div>
+            </div>
+
+                <div class="top_row_element card_display" id="goalieCard_opponent">
+                <h2 class="top_card_header">
+                    Opponent's Goalie
+                </h2>      
+                <div class ="top-scorer-info" >
+                    <p style="margin-block-end: 0"><b>{{goalies_opponent[0]['name']}}</b> </p>    
+                    <p style="margin-block: 0"> #{{goalies_opponent[0]['sweaterNumber']}}</p>        
+                </div>
+                <div class="headshot-img" >
+                    <img src={{ goalies_opponent[0]['headshot_url'] }} style="max-width: 150px;">
+
+                </div>
+                <div class="team-summary">
+                    {{ html_goalie_table_opponent[0] | safe }}
+                </div>
+            </div>
+    </div> 
+
+<!---Player Cards --------------------------------------------------------->
+        <div style="display: none" class="container">
+            <div class="card_display player-card">
+                <h2 class="top_card_header">{{ top_scorer['name'] }}</h2>
+                <div>
+                    <img src={{ top_scorer['heroImage_url'] }} style="max-width: 250px;">
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><b>Nationality:</b></td> <td> {{top_scorer["birth_country"]}} </td>
+                        </tr>
+                            <td><b>Born:</b></td> <td> {{top_scorer["birthdate"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Height:</b></td> <td> {{top_scorer["height_in"]}}in/{{top_scorer["height_cm"]}}cm </td>
+                        </tr>
+                        <tr>  
+                            <td><b>Nr:</b></td> <td> #{{top_scorer["sweaterNumber"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Position:</b></td> <td> {{top_scorer["position"]}} </td>
+                        </tr>
+                        <tr>
+                            <td><b>Shoots:</b></td> <td> {{top_scorer["shoots"]}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>     
+
+    <footer class="disclaimer">
+        <p>
+            This site is an independent project and is not affiliated with, endorsed, or sponsored by 
+            the National Hockey League (NHL) or any of its teams. All logos and trademarks are the 
+            property of their respective owners.
+        </p>
+    </footer>
+
+    <!-- 🔹 Static JavaScript -->
+    <script src="{{ url_for('static', filename='js/timezoneMap.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/eventListeners.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/formatEventTime.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/link_team_logos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/synchronizeWidths.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/team_dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/updateUrl.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/topscorers_modal.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
+    <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
+    <!-- 🔹 Dynamic JavaScript -->
+    <script>
+        var max_width_smallest_screen = {{ max_width_smallest_screen }};
+    </script>
+    <script src="{{ url_for('static', filename='js/applyScaling.js') }}"></script>
+</body>
+</html>

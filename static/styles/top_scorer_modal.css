@@ -27,7 +27,7 @@
         width: 490px;    
         max-height: 100vw ;
         text-align: left;  
-        white-space: wrap;
+        white-space: normal;
         img {
             max-width: 120px;  
             height: auto;

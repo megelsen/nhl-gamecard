@@ -1,22 +1,22 @@
 import pandas as pd
 from modules.fetch_nhl_api import get_player_stats
 
-__all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assistleaders','build_leaders_table','get_skater_info','get_goalies','build_goalie_table']
+__all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assistleaders','build_leaders_table','get_skater_info','get_goalies','build_goalie_table','get_stats_from_playerID']
 
 def find_top_scorer(team_stats_data):
     # Initialize a variable to track the player with the most points
     top_scorer_info = {}
     # Check if summary is from playoffs (gameType 3) or regular season (gameType 2)
     #Sort skaters by points in descending order
-    sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['points'], reverse=True)
+    sorted_skaters = sorted(team_stats_data.get('skaters', []), key=lambda skater: skater['points'], reverse=True)
     # Iterate through the list of players to find the one with the most points
-    top_scorer = sorted_skaters[0] if len(sorted_skaters) is not 0 else None
+    top_scorer = sorted_skaters[0] if sorted_skaters else None
     top_scorer_info = get_skater_info(top_scorer) if top_scorer is not None else None
     return top_scorer_info
 
 def find_pointleaders(team_stats_data,n):
     # Sort skaters by points in descending order
-    sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['points'], reverse=True)
+    sorted_skaters = sorted(team_stats_data.get('skaters', []), key=lambda skater: skater['points'], reverse=True)
     # Get the top 10 skaters
     point_leaders = []
     for skater in sorted_skaters[:n]:  # Slice to get the top 10
@@ -26,7 +26,7 @@ def find_pointleaders(team_stats_data,n):
 
 def find_goalleaders(team_stats_data,n):
     # Sort skaters by points in descending order
-    sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['goals'], reverse=True)
+    sorted_skaters = sorted(team_stats_data.get('skaters', []), key=lambda skater: skater['goals'], reverse=True)
     # Get the top 10 skaters
     goal_leaders = []
     for skater in sorted_skaters[:n]:  # Slice to get the top 10
@@ -36,7 +36,7 @@ def find_goalleaders(team_stats_data,n):
 
 def find_assistleaders(team_stats_data,n):
     # Sort skaters by points in descending order
-    sorted_skaters = sorted(team_stats_data['skaters'], key=lambda skater: skater['assists'], reverse=True)
+    sorted_skaters = sorted(team_stats_data.get('skaters', []), key=lambda skater: skater['assists'], reverse=True)
     # Get the top 10 skaters
     assist_leaders = []
     for skater in sorted_skaters[:n]:  # Slice to get the top 10
@@ -57,13 +57,13 @@ def build_leaders_table(leaders,category):
         category_header = "Points"
         category_key = 'points'    
 
-    if leaders is not None:
+    if leaders:
         for skater in leaders:            
             leader_info = {            
                 " ": skater['headshot_scalable_html'],
-                "Player": f"<b>{skater['name']}</b> #{skater['sweaterNumber']} {skater['position']}",
-                category_header: skater[category_key],
+                "Player": f"<b>{skater['name']}</b> <br> #{skater['sweaterNumber']} {skater['position']}",                
                 "GP": skater['games_played'],
+                category_header: skater[category_key],
             }
             leaders_list.append(leader_info)
 
@@ -78,7 +78,7 @@ def build_leaders_table(leaders,category):
 
 def get_skater_info(skater):
     
-    position_code = skater['positionCode']
+    position_code =  skater.get("position") or skater.get("positionCode")
     if position_code in ['R', 'L']:
         position_code += 'W'
 
@@ -88,30 +88,34 @@ def get_skater_info(skater):
             "goals": skater['goals'],
             "assists": skater['assists'],
             "games_played": skater['gamesPlayed'],
-            "headshot_url": skater['headshot'],
-            "headshot_html": f"""<img src="{skater['headshot']}">""",
-            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater['headshot']}">""",
+            "headshot_url": skater.get('headshot', ''),
+            "headshot_html": f"""<img src="{skater.get('headshot', '')}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater.get('headshot', '')}">""",
             "position": position_code,
             "playerID": skater['playerId'],
     }
-    player_stats_data = get_player_stats(player_basic_stats["playerID"])
-    player_advanced_stats = {       
-        "sweaterNumber": player_stats_data['sweaterNumber'],
-        "heroImage_url": player_stats_data['heroImage'],
-        "birth_country": player_stats_data['birthCountry'],
-        "shoots": player_stats_data['shootsCatches'],
-        "height_in": player_stats_data['heightInInches'],
-        "height_cm": player_stats_data['heightInCentimeters'],
-        "birthdate": player_stats_data['birthDate'],
-        "draft_details": player_stats_data.get('draftDetails', 'undrafted'),
-        "career_stats": player_stats_data['careerTotals']['regularSeason'],
-    }
+    player_advanced_stats = get_player_details(player_basic_stats)
     skater_info = {**player_basic_stats, **player_advanced_stats}
     return skater_info
 
+def get_player_details(player_basic_stats):
+    # Landing data can be missing (API down, no cache) or partial (e.g. no heroImage)
+    player_stats_data = get_player_stats(player_basic_stats["playerID"]) or {}
+    return {
+        "sweaterNumber": player_stats_data.get('sweaterNumber', player_basic_stats.get('sweaterNumber', '')),
+        "heroImage_url": player_stats_data.get('heroImage', player_basic_stats['headshot_url']),
+        "birth_country": player_stats_data.get('birthCountry', ''),
+        "shoots": player_stats_data.get('shootsCatches', ''),
+        "height_in": player_stats_data.get('heightInInches', ''),
+        "height_cm": player_stats_data.get('heightInCentimeters', ''),
+        "birthdate": player_stats_data.get('birthDate', ''),
+        "draft_details": player_stats_data.get('draftDetails', 'undrafted'),
+        "career_stats": player_stats_data.get('careerTotals', {}).get('regularSeason', {}),
+    }
+
 def get_goalies(team_stats_data):
     goalies = []
-    sorted_goalies = sorted(team_stats_data['goalies'], key=lambda goalie: goalie['wins'], reverse=True)
+    sorted_goalies = sorted(team_stats_data.get('goalies', []), key=lambda goalie: goalie['wins'], reverse=True)
     for goalie in sorted_goalies:
        goalies.append(get_goalie_info(goalie))
     return goalies
@@ -123,28 +127,17 @@ def get_goalie_info(goalie):
             "goals": goalie['goals'],
             "assists": goalie['assists'],
             "wins": goalie['wins'],
-            "goalsAgainstAverage": round(goalie['goalsAgainstAverage'],2),
-            "savePercentage": round(goalie['savePercentage'],2),           
+            "goalsAgainstAverage": round(goalie.get('goalsAgainstAverage') or 0, 2),
+            "savePercentage": round(goalie.get('savePercentage') or 0, 3),
             "shutouts": goalie['shutouts'],
             "games_played": goalie['gamesPlayed'],
-            "headshot_url": goalie['headshot'],
-            "headshot_html": f"""<img src="{goalie['headshot']}">""",
-            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie['headshot']}">""",
+            "headshot_url": goalie.get('headshot', ''),
+            "headshot_html": f"""<img src="{goalie.get('headshot', '')}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{goalie.get('headshot', '')}">""",
             "position": 'G',
             "playerID": goalie['playerId'],
     }
-    player_stats_data = get_player_stats(player_basic_stats["playerID"])
-    player_advanced_stats = {       
-        "sweaterNumber": player_stats_data['sweaterNumber'],
-        "heroImage_url": player_stats_data['heroImage'],
-        "birth_country": player_stats_data['birthCountry'],
-        "shoots": player_stats_data['shootsCatches'],
-        "height_in": player_stats_data['heightInInches'],
-        "height_cm": player_stats_data['heightInCentimeters'],
-        "birthdate": player_stats_data['birthDate'],
-        "draft_details": player_stats_data.get('draftDetails', 'undrafted'),
-        "career_stats": player_stats_data['careerTotals']['regularSeason'],
-    }
+    player_advanced_stats = get_player_details(player_basic_stats)
     goalie_info = {**player_basic_stats, **player_advanced_stats}
     return goalie_info
     
@@ -169,3 +162,33 @@ def build_goalie_table(goalie):
 
     html_goalie_fields = df_goalie_fields.to_html(classes="teams-table", escape=False, index=False)
     return html_goalie_fields
+
+def get_stats_from_playerID(skater):
+    position_code =  skater.get("position")
+    if position_code in ['R', 'L']:
+        position_code += 'W'
+
+    player_stats = {
+            "name": skater['firstName']['default'] + " " + skater['lastName']['default'],
+            "points": skater['featuredStats']['regularSeason']['subSeason']['points'],
+            "goals": skater['featuredStats']['regularSeason']['subSeason']['goals'],
+            "assists": skater['featuredStats']['regularSeason']['subSeason']['assists'],
+            "games_played": skater['featuredStats']['regularSeason']['subSeason']['gamesPlayed'],
+            "headshot_url": skater['headshot'],
+            "headshot_html": f"""<img src="{skater['headshot']}">""",
+            "headshot_scalable_html": f"""<img class="content_scalable" src="{skater['headshot']}">""",
+            "position": position_code,
+            "playerID": skater['playerId'],
+
+            "sweaterNumber": skater['sweaterNumber'],
+            "heroImage_url": skater['heroImage'],
+            "birth_country": skater['birthCountry'],
+            "shoots": skater['shootsCatches'],
+            "height_in": skater['heightInInches'],
+            "height_cm": skater['heightInCentimeters'],
+            "birthdate": skater['birthDate'],
+            "draft_details": skater.get('draftDetails', 'undrafted'),
+            "career_stats": skater['careerTotals']['regularSeason'],
+    }
+    
+    return player_stats

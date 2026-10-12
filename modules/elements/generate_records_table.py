@@ -71,10 +71,10 @@ def build_records_table(sorted_opponents):
     
     # Create the DataFrame
     df_record_table_eastern = pd.DataFrame(data_eastern, columns=columns_E)
-    record_table_eastern = df_record_table_eastern.applymap(lambda x: " " if x is None else x)
+    record_table_eastern =  df_record_table_eastern.replace({None: " "}).fillna(" ")
 
     df_record_table_western = pd.DataFrame(data_western, columns=columns_W)
-    record_table_western = df_record_table_western.applymap(lambda x: " " if x is None else x)
+    record_table_western = df_record_table_western.replace({None: " "}).fillna(" ")
     # convert to html element the logos as a row of images
     #record_table_html = df_record_table.to_html(escape=False,index=False)
     return record_table_eastern, record_table_western
