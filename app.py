@@ -173,6 +173,13 @@ def team_page(team_abbr):
     opponent_special_teams = get_special_teams_for(opponent_info['team_name'] if opponent_info else None, regular_season_summary, playoff_summary)
     # Opponent colors
     opponent_colors = get_team_color(next_game['opponent_name']) if next_game else {"primary": "#d1d1d1"}
+    # Comparison bars: the opponent's side needs a color that stands out from the team's
+    compare_colors = {team_abbr: team_colors['primary']}
+    if next_opponent:
+        compare_colors[next_opponent] = pick_contrasting_color(
+            team_colors['primary'],
+            [opponent_colors.get('primary'), opponent_colors.get('secondary'), opponent_colors.get('accent')],
+        )
 
     # Get next Opponent Top Scorer (opponent stats may be missing: show empty sections then)
     opponent_stats = (get_team_stats(next_opponent) if next_opponent else None) or {}
@@ -246,6 +253,9 @@ def team_page(team_abbr):
         "html_assists_leader_table": html_assists_leader_table,
         "standings_tables": standings_tables,
         "roster_tables": roster_tables,
+        "compare_colors": compare_colors,
+        "team_abbr": team_abbr,
+        "next_opponent": next_opponent,
         "standings_highlight": standings_highlight,
         "html_next_game": html_next_game,
         "next_games_data": next_games_data,

@@ -4,7 +4,7 @@ import json
 import unicodedata
 import logging
 
-__all__ = ['get_team_info','get_team_color','lighten_hex_color']
+__all__ = ['get_team_info','get_team_color','lighten_hex_color','pick_contrasting_color']
 
 DEFAULT_COLORS = {"primary": "#555555", "secondary": "#ffffff", "accent": "#999999"}
 
@@ -64,6 +64,22 @@ def lighten_hex_color(hex_color, factor):
 
     # Convert back to hex and return
     return f"#{r_new:02x}{g_new:02x}{b_new:02x}"
+
+def hex_to_rgb(hex_color):
+    return tuple(int(hex_color[i:i + 2], 16) for i in (1, 3, 5))
+
+def pick_contrasting_color(base_color, candidates, min_distance=120, fallback="#888888"):
+    """First candidate that differs enough from `base_color` and is visible on a white card."""
+    base = hex_to_rgb(base_color)
+    for color in candidates:
+        if not color or len(color) != 7:
+            continue
+        rgb = hex_to_rgb(color)
+        distance = sum((a - b) ** 2 for a, b in zip(rgb, base)) ** 0.5
+        near_white = min(rgb) > 220
+        if distance >= min_distance and not near_white:
+            return color
+    return fallback
 
 def normalize(text):
     return ''.join(

@@ -102,7 +102,7 @@ def display_previous_matchup(game):
     hits_home = hits["homeValue"]        
 
     previous_matchup =   f"""
-        <table class="team-compare">
+        <table class="team-compare" data-left-team="{game_data['homeTeam']['abbrev']}" data-right-team="{game_data['awayTeam']['abbrev']}">
         <tr>
             <td class="team left">
                 <a href="javascript:void(0);" class="team-link">

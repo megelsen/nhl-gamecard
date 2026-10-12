@@ -1,0 +1,33 @@
+/* Slanted-split comparison bar under each stat row (see static/js/compareBars.js) */
+tr.compare-bar-row td {
+    padding: 0 0 6px 0;
+    background-color: #ffffff;
+}
+
+.compare-bar {
+    --slant: 4px;
+    --gap: 3px;
+    position: relative;
+    height: 8px;
+    min-width: 80px;
+}
+
+.compare-bar span {
+    position: absolute;
+    inset: 0;
+}
+
+.compare-bar .bar-left {
+    background: var(--left-color);
+    clip-path: polygon(0 0, calc(var(--split) + var(--slant) - var(--gap)) 0, calc(var(--split) - var(--slant) - var(--gap)) 100%, 0 100%);
+}
+
+.compare-bar .bar-right {
+    background: var(--right-color);
+    clip-path: polygon(calc(var(--split) + var(--slant) + var(--gap)) 0, 100% 0, 100% 100%, calc(var(--split) - var(--slant) + var(--gap)) 100%);
+}
+
+.compare-bar.even .bar-left,
+.compare-bar.even .bar-right {
+    background: #d1d1d1;
+}

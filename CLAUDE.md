@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. [x] Find out why the team summary (Rank, PP, PK) isn't working
 3. [x] League-wide standings: switch between East and West in the standings card
 4. [x] Roster overview: a "Roster" button in the title row opens a modal (like the topscorer modal) with the full roster and relevant stats, split into Goalies, Defense, and Forwards
-5. [ ] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
+5. [x] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
 6. [ ] Complete the playoff race module: a separate card showing the current playoff bracket, based on matchups from current standings
 7. [ ] Player cards: clicking a player's headshot opens a hockey-card-style modal (birthplace, nationality flag, hero image, career stats, ...)
 
@@ -61,6 +61,8 @@ Useful routes: `/refresh` (force-refresh the cache in a background thread), `/de
 **Standings card** — `build_standings_tables()` (`modules/elements/playoffs_race.py`) pre-renders 4 tables (East/West × Conference/Wild Card) as hand-built HTML (row classes `own-team`, `cut-line`, `standings-group`); `static/js/standingsToggle.js` only toggles `hidden`. Use `.standings-tab`, not `.tab`, for tabs outside the topscorer modal: `topscorers_modal.js` binds every `.tab` on the page.
 
 **Roster modal** — `build_roster_tables()` (`modules/elements/roster.py`) merges `/v1/roster/{team}/current` (all rostered players plus bio) with `club-stats` (only players who have played). Within each position tab it splits players into Lineup / Rotation / Extras, based on who dressed in the last 5 completed games (from boxscores, `get_boxscore`). Headshots carry `data-player-id` for the player cards (step 7). Use `window.addEventListener("click", ...)`, never `window.onclick =`, for outside-click closing: each modal script used to overwrite the others' handler.
+
+**Comparison bars** — `static/js/compareBars.js` adds a bar row under each stat row of every `.player-compare` / `.team-compare` table. It reads the two cell values in the row, skips GP, inverts GAA, and uses an amplified difference for rate stats (`COMPARE_RATE_SPREAD`). Call `applyCompareBars(el)` again after re-rendering a comparison (the goalie carousel does). Colors come from `window.compareColors` (team primary; the opponent's color is chosen by `pick_contrasting_color`). Tables are team-left/opponent-right unless they set `data-left-team` / `data-right-team`, like the home/away "Last meeting" table.
 
 **No next game** — In the off-season there's no upcoming opponent: `next_game`/`next_opponent` are `None`, opponent dicts are empty, and the template and `goalieCarousel.js` render blanks/dashes. Keep that path working when touching opponent features. `TEAM_LIST` lives in `scheduler.py` and `app.py` imports it.
 

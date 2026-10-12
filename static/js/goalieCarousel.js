@@ -54,8 +54,9 @@ function renderGoalies() {
     }
 
     // Comparison table
-    document.getElementById("goalie-compare").innerHTML =
-        goalieCompare(home || {}, opp || {});
+    const compare = document.getElementById("goalie-compare");
+    compare.innerHTML = goalieCompare(home || {}, opp || {});
+    if (typeof applyCompareBars === "function") applyCompareBars(compare);
 }
 
 // Home goalie arrows

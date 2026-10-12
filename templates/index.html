@@ -33,6 +33,7 @@
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/arrow_buttons.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/standings.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/roster.css') }}">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/compare_bars.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -441,6 +442,11 @@
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
     <script src="{{ url_for('static', filename='js/rosterModal.js') }}"></script>
+    <script>
+        window.compareColors = {{ compare_colors | tojson }};
+        window.compareTeams = {{ {"left": team_abbr, "right": next_opponent} | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/compareBars.js') }}"></script>
     <script>
         window.goalies = {{ goalies | tojson }};
         window.goaliesOpponent = {{ goalies_opponent | tojson }};
