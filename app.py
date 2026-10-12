@@ -181,6 +181,10 @@ def team_page(team_abbr):
     # Get next Opponent Top Scorer (opponent stats may be missing: show empty sections then)
     opponent_stats = (get_team_stats(next_opponent) if next_opponent else None) or {}
     top_scorer_opponent = find_top_scorer(opponent_stats)
+    for scorer in (top_scorer, top_scorer_opponent):
+        if scorer:
+            scorer.update(skater_edge_stats(scorer["playerID"]))
+    topscorer_compare = compare_mount(skater_comparison(top_scorer, top_scorer_opponent, team_abbr, next_opponent))
     point_leaders_opponent = find_pointleaders(opponent_stats,nr_top)
     html_pts_leader_table_opponent = build_leaders_table(point_leaders_opponent,'P')
     goal_leaders_opponent = find_goalleaders(opponent_stats,nr_top)
@@ -250,6 +254,8 @@ def team_page(team_abbr):
         "html_assists_leader_table": html_assists_leader_table,
         "standings_tables": standings_tables,
         "roster_tables": roster_tables,
+        "topscorer_compare": topscorer_compare,
+        "stats_subtitle": season_subtitle(team_stats_data),
         "playoff_picture": playoff_picture,
         "compare_colors": compare_colors,
         "team_abbr": team_abbr,

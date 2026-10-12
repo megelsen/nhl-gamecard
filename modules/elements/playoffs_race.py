@@ -167,8 +167,8 @@ def projected_picture(team_abbr, standings):
             matchups.append((leader, wildcard))
             if 2 in by_seq and 3 in by_seq:
                 matchups.append((by_seq[2], by_seq[3]))
-        rows = [matchup_row(team_abbr, projected_side(top), projected_side(bottom)) for top, bottom in matchups]
-        picture["tables"][conference] = matchup_table(rows)
+        boxes = [series_box(team_abbr, projected_side(top), projected_side(bottom)) for top, bottom in matchups]
+        picture["tables"][conference] = bracket(boxes)
     return picture
 
 
@@ -189,13 +189,13 @@ def live_picture(team_abbr, standings, series):
     picture = {"title": "Playoffs", "subtitle": ROUND_LABELS.get(current_round, f"Round {current_round}"), "tables": {}}
 
     if current_round >= 4:
-        picture["tables"]["Final"] = matchup_table([series_row(team_abbr, standings, s) for s in round_series])
+        picture["tables"]["Final"] = bracket([series_row(team_abbr, standings, s) for s in round_series])
         return picture
     for conference in ("Eastern", "Western"):
         rows = [series_row(team_abbr, standings, s) for s in round_series
                 if standings.get(s["topSeedTeam"]["abbrev"], {}).get("conferenceName") == conference]
         if rows:
-            picture["tables"][conference] = matchup_table(rows)
+            picture["tables"][conference] = bracket(rows)
     return picture
 
 
@@ -214,7 +214,7 @@ def series_row(team_abbr, standings, series):
             "value": series.get(f"{prefix}Wins", 0),
             "won": series.get("winningTeamId") == team.get("id"),
         })
-    return matchup_row(team_abbr, *sides, status=series_status(series, sides))
+    return series_box(team_abbr, *sides, status=series_status(series, sides))
 
 
 def series_status(series, sides):
@@ -228,17 +228,31 @@ def series_status(series, sides):
     return f"{leader['abbrev']} leads {leader['value']}-{trailer['value']}"
 
 
-def matchup_row(team_abbr, left, right, status="vs"):
-    def side_html(side):
-        classes = "playoff-team" + (" won" if side["won"] else "")
+def series_box(team_abbr, top, bottom, status=None):
+    """One bracket slot: both teams stacked, with the series status underneath (live only)."""
+    def team_row(side):
+        classes = ["bracket-team"]
+        if side["won"]:
+            classes.append("won")
+        if side["abbrev"] == team_abbr:
+            classes.append("own-team")
         return (
-            f'<td class="{classes}"><span class="playoff-seed">{side["seed"]}</span>'
-            f'<a href="javascript:void(0);" class="team-link"><img src="{get_logo(side["abbrev"])}"></a>'
-            f'<span class="playoff-value">{side["value"]}</span></td>'
+            f'<div class="{" ".join(classes)}">'
+            f'<span class="bracket-seed">{side["seed"]}</span>'
+            f'<a href="javascript:void(0);" class="team-link"><img src="{get_logo(side["abbrev"])}" alt=""></a>'
+            f'<span class="bracket-abbrev">{side["abbrev"]}</span>'
+            f'<span class="bracket-value">{side["value"]}</span>'
+            "</div>"
         )
-    own_class = ' class="own-team"' if team_abbr in (left["abbrev"], right["abbrev"]) else ""
-    return f"<tr{own_class}>{side_html(left)}<th>{status}</th>{side_html(right)}</tr>"
+    status_html = f'<div class="bracket-status">{status}</div>' if status else ""
+    return f'<div class="bracket-series">{team_row(top)}{team_row(bottom)}{status_html}</div>'
 
 
-def matchup_table(rows):
-    return f'<table class="playoff-matchups"><tbody>{"".join(rows)}</tbody></table>'
+def bracket(boxes):
+    """Series in pairs (their winners meet next round), joined by connector lines."""
+    pairs = [boxes[i:i + 2] for i in range(0, len(boxes), 2)]
+    html = "".join(
+        f'<div class="bracket-pair{" single" if len(pair) == 1 else ""}">{"".join(pair)}</div>'
+        for pair in pairs
+    )
+    return f'<div class="bracket">{html}</div>'

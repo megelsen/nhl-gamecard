@@ -1,0 +1,153 @@
+/* Shared stat comparison (static/js/comparison.js): Top scorers, Goalies, Last meeting */
+
+/* minmax(0, ...) lets the columns shrink below long names instead of squeezing the comparison */
+.top_row_element.compare-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+}
+
+.compare-card .headshot-img,
+.compare-card .headshot-img-opponent {
+    min-width: 0;
+    white-space: normal;
+}
+
+/* Last meeting: use the card width (capped so it doesn't stretch too far) */
+.previous-matchup {
+    justify-self: stretch;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.previous-matchup .compare-mount {
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.card-subtitle {
+    margin-left: 6px;
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #888;
+}
+
+.compare-mount,
+#goalie-compare {
+    width: 100%;
+    min-width: 0;
+}
+
+.compare {
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Team tags above the value columns */
+.compare-teams {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.compare-team {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: 2px;
+    border-bottom: 3px solid var(--team-color);
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    color: #333;
+}
+
+.compare-team img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Value | label | value, with the bar underneath across the full width */
+.compare-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: baseline;
+    column-gap: 8px;
+    padding-top: 4px;
+}
+
+.compare-value {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #222;
+}
+
+.compare-value.left {
+    text-align: left;
+}
+
+.compare-value.right {
+    text-align: right;
+}
+
+.compare-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    white-space: nowrap;
+}
+
+.compare-bar {
+    --slant: 4px;
+    --gap: 3px;
+    grid-column: 1 / -1;
+    position: relative;
+    height: 6px;
+    margin-top: 3px;
+}
+
+.compare-bar span {
+    position: absolute;
+    inset: 0;
+    /* Rounded outer ends; the clip-path keeps the slanted split sharp */
+    border-radius: 3px;
+}
+
+.compare-bar .bar-left {
+    background: var(--left-color);
+    clip-path: polygon(0 0, calc(var(--split) + var(--slant) - var(--gap)) 0, calc(var(--split) - var(--slant) - var(--gap)) 100%, 0 100%);
+}
+
+.compare-bar .bar-right {
+    background: var(--right-color);
+    clip-path: polygon(calc(var(--split) + var(--slant) + var(--gap)) 0, 100% 0, 100% 100%, calc(var(--split) - var(--slant) + var(--gap)) 100%);
+}
+
+.compare-bar.even .bar-left,
+.compare-bar.even .bar-right {
+    background: #d1d1d1;
+}
+
+@media (max-width: 500px) {
+    .compare-row {
+        column-gap: 4px;
+    }
+    .compare-value {
+        font-size: 0.95rem;
+    }
+    .compare-label {
+        font-size: 0.6rem;
+        letter-spacing: 0.04em;
+    }
+    .compare-card .primary_button {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+    /* Goalie arrows (< #31 >) must fit the narrow headshot column */
+    .compare-card .arrow-button {
+        padding: 0 2px;
+    }
+    .compare-card .arrow-button .material-symbols-outlined {
+        font-size: 18px;
+    }
+}

@@ -3,36 +3,19 @@ let oppGoalieIndex = 0;
 
 const { goalies, goaliesOpponent } = window;
 
-function goalieCompare(left, right) {
-    return `
-        <table class="player-compare">
-            <tr>
-                <td class="player left">${left.games_played ?? "-"}</td>
-                <th>GP</th>
-                <td class="player right">${right.games_played ?? "-"}</td>
-            </tr>
-            <tr>
-                <td class="player left">${left.wins ?? "-"}</td>
-                <th>W</th>
-                <td class="player right">${right.wins ?? "-"}</td>
-            </tr>
-            <tr>
-                <td class="player left">${left.goalsAgainstAverage ?? "-"}</td>
-                <th>GAA</th>
-                <td class="player right">${right.goalsAgainstAverage ?? "-"}</td>
-            </tr>
-            <tr>
-                <td class="player left">${left.savePercentage ?? "-"}</td>
-                <th>S%</th>
-                <td class="player right">${right.savePercentage ?? "-"}</td>
-            </tr>
-            <tr>
-                <td class="player left">${left.shutouts ?? "-"}</td>
-                <th>SO</th>
-                <td class="player right">${right.shutouts ?? "-"}</td>
-            </tr>
-        </table>
-    `;
+// Rows for the shared comparison component (static/js/comparison.js)
+const GOALIE_ROWS = [
+    ["GP", "games_played"], ["W", "wins"], ["GAA", "goalsAgainstAverage"],
+    ["SV%", "savePercentage"], ["HDSV%", "hd_save_pct"], ["SO", "shutouts"],
+];
+
+function goalieComparison(left, right) {
+    const teams = window.compareTeams || {};
+    return {
+        left: teams.left,
+        right: teams.right,
+        rows: GOALIE_ROWS.map(([key, field]) => ({ key, left: left[field] ?? null, right: right[field] ?? null })),
+    };
 }
 
 function renderGoalies() {
@@ -57,8 +40,7 @@ function renderGoalies() {
 
     // Comparison table
     const compare = document.getElementById("goalie-compare");
-    compare.innerHTML = goalieCompare(home || {}, opp || {});
-    if (typeof applyCompareBars === "function") applyCompareBars(compare);
+    renderComparison(compare, goalieComparison(home || {}, opp || {}));
 }
 
 // Home goalie arrows

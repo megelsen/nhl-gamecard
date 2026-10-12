@@ -1,5 +1,6 @@
 from datetime import datetime
 from modules.fetch_nhl_api import (get_logo,  get_game_stats)
+from modules.elements.compare import compare_mount, game_comparison
 from datetime import timedelta
 __all__ = ['display_game_result', 'get_previous_games','display_latest_game_result','display_previous_matchup']
 
@@ -71,86 +72,7 @@ def display_previous_matchup(game):
         # Game details unavailable: fall back to the result from the schedule
         return display_game_result(game), f"<span> On {date_str} </span>"
 
-    home_logo = get_logo(game_data['homeTeam']['abbrev'])
-    home_score = game_data['homeTeam']['score']
-    home_sog = game_data['homeTeam'].get('sog')
-
-    away_logo = get_logo(game_data['awayTeam']['abbrev'])
-    away_score = game_data['awayTeam']['score']
-    away_sog = game_data['awayTeam'].get('sog')
-
-    home_svpct = round(1 - (away_score/away_sog),2) if away_sog else "-"
-    away_svpct = round(1 - (home_score/home_sog),2) if home_sog else "-"
-
-    stats = {
-        item["category"]: item
-        for item in game_data.get("summary", {}).get("teamGameStats", [])
-    }
-
-    missing_stat = {"awayValue": "-", "homeValue": "-"}
-    faceoff = stats.get("faceoffWinningPctg", missing_stat)
-    powerplay = stats.get("powerPlay", missing_stat)
-    hits = stats.get("hits", missing_stat)
-
-    faceoff_away = round(faceoff["awayValue"],2) if isinstance(faceoff["awayValue"], (int, float)) else "-"
-    faceoff_home = round(faceoff["homeValue"],2) if isinstance(faceoff["homeValue"], (int, float)) else "-"
-
-    pp_away = powerplay["awayValue"]
-    pp_home = powerplay["homeValue"]
-
-    hits_away = hits["awayValue"]
-    hits_home = hits["homeValue"]        
-
-    previous_matchup =   f"""
-        <table class="team-compare" data-left-team="{game_data['homeTeam']['abbrev']}" data-right-team="{game_data['awayTeam']['abbrev']}">
-        <tr>
-            <td class="team left">
-                <a href="javascript:void(0);" class="team-link">
-                    <img src="{home_logo}" style="width: 85px">
-                </a>
-            </td>
-            <th>vs</th>
-            <td class="team right">
-                <a href="javascript:void(0);" class="team-link">                
-                    <img src="{away_logo}" style="width: 85px">
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td class="team left">{home_score}</td>
-            <th>Score</th>
-            <td class="team right">{away_score}</td>
-        </tr>
-        <tr>
-            <td class="team left">{home_sog}</td>
-            <th>SOG</th>
-            <td class="team right">{away_sog}</td>
-        </tr>
-
-        <tr>
-            <td class="team left">{home_svpct}</td>
-            <th>S%</th>
-            <td class="team right">{away_svpct}</td>
-        </tr>                         
-        <tr>
-            <td class="team left">{faceoff_home}</td>
-            <th>FO%</th>
-            <td class="team right">{faceoff_away}</td>
-        </tr>
-                                
-        <tr>
-            <td class="team left">{pp_home}</td>
-            <th>PP</th>
-            <td class="team right">{pp_away}</td>            
-        </tr>                                     
-        <tr>
-            <td class="team left">{hits_home}</td>
-            <th>Hits</th>
-            <td class="team right">{hits_away}</td>            
-        </tr> 
-                
-        </table>         
-        """   
+    previous_matchup = compare_mount(game_comparison(game_data))
     if current_date - game_date < timedelta(days=3):
         previous_matchup_html = f"""
         <div class="spoiler-wrapper">

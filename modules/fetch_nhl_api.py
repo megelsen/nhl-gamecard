@@ -3,7 +3,7 @@ import time
 import logging
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge']
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +129,20 @@ def get_roster(team_abbr, force=False):
     cache_name = f"roster_{team_abbr}"
     url = f"https://api-web.nhle.com/v1/roster/{team_abbr}/current"
     return _safe_get_json(url, cache_name, force)
+
+
+def get_skater_edge(playerID):
+    # NHL EDGE tracking: shot speed, skating speed, shots by danger zone (regular season)
+    cache_name = f"edge_skater_{playerID}"
+    url = f"https://api-web.nhle.com/v1/edge/skater-detail/{playerID}/now"
+    return _safe_get_json(url, cache_name)
+
+
+def get_goalie_edge(playerID):
+    # NHL EDGE: save % by danger zone (regular season)
+    cache_name = f"edge_goalie_{playerID}"
+    url = f"https://api-web.nhle.com/v1/edge/goalie-detail/{playerID}/now"
+    return _safe_get_json(url, cache_name)
 
 
 def get_boxscore(gameID):

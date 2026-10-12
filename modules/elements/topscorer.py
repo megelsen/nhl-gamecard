@@ -1,5 +1,6 @@
 import pandas as pd
 from modules.fetch_nhl_api import get_player_stats
+from modules.elements.compare import goalie_edge_stats
 
 __all__ = ['find_top_scorer','find_pointleaders','find_goalleaders','find_assistleaders','build_leaders_table','get_skater_info','get_goalies','build_goalie_table','get_stats_from_playerID']
 
@@ -93,6 +94,7 @@ def get_skater_info(skater):
             "headshot_scalable_html": f"""<img class="content_scalable" src="{skater.get('headshot', '')}" data-player-id="{skater['playerId']}">""",
             "position": position_code,
             "playerID": skater['playerId'],
+            "toi_seconds": skater.get('avgTimeOnIcePerGame'),
     }
     player_advanced_stats = get_player_details(player_basic_stats)
     skater_info = {**player_basic_stats, **player_advanced_stats}
@@ -138,7 +140,7 @@ def get_goalie_info(goalie):
             "playerID": goalie['playerId'],
     }
     player_advanced_stats = get_player_details(player_basic_stats)
-    goalie_info = {**player_basic_stats, **player_advanced_stats}
+    goalie_info = {**player_basic_stats, **player_advanced_stats, **goalie_edge_stats(goalie['playerId'])}
     return goalie_info
     
 def build_goalie_table(goalie):
