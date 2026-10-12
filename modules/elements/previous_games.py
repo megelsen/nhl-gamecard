@@ -59,35 +59,41 @@ def get_previous_games(games_by_date,nr_games=3):
     return last_game_disp
 
 def display_previous_matchup(game):
+    if game is None:
+        return "<span> No recent meeting </span>", ""
     game_date = game['game_date']
     current_date = datetime.now()
     current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
     date_str = game_date.strftime("%b %d %Y")     
 
     game_data = get_game_stats(game['game_id'])
+    if not game_data or 'homeTeam' not in game_data or 'awayTeam' not in game_data:
+        # Game details unavailable: fall back to the result from the schedule
+        return display_game_result(game), f"<span> On {date_str} </span>"
 
     home_logo = get_logo(game_data['homeTeam']['abbrev'])
     home_score = game_data['homeTeam']['score']
-    home_sog = game_data['homeTeam']['sog']              
+    home_sog = game_data['homeTeam'].get('sog')
 
     away_logo = get_logo(game_data['awayTeam']['abbrev'])
     away_score = game_data['awayTeam']['score']
-    away_sog = game_data['awayTeam']['sog']      
+    away_sog = game_data['awayTeam'].get('sog')
 
-    home_svpct = round(1 - (away_score/away_sog),2)
-    away_svpct = round(1 - (home_score/home_sog),2)
-    
+    home_svpct = round(1 - (away_score/away_sog),2) if away_sog else "-"
+    away_svpct = round(1 - (home_score/home_sog),2) if home_sog else "-"
+
     stats = {
         item["category"]: item
-        for item in game_data["summary"]["teamGameStats"]
+        for item in game_data.get("summary", {}).get("teamGameStats", [])
     }
 
-    faceoff = stats["faceoffWinningPctg"]
-    powerplay = stats["powerPlay"]
-    hits = stats["hits"]
+    missing_stat = {"awayValue": "-", "homeValue": "-"}
+    faceoff = stats.get("faceoffWinningPctg", missing_stat)
+    powerplay = stats.get("powerPlay", missing_stat)
+    hits = stats.get("hits", missing_stat)
 
-    faceoff_away = round(faceoff["awayValue"],2)
-    faceoff_home = round(faceoff["homeValue"],2)
+    faceoff_away = round(faceoff["awayValue"],2) if isinstance(faceoff["awayValue"], (int, float)) else "-"
+    faceoff_home = round(faceoff["homeValue"],2) if isinstance(faceoff["homeValue"], (int, float)) else "-"
 
     pp_away = powerplay["awayValue"]
     pp_home = powerplay["homeValue"]

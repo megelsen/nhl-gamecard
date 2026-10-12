@@ -2,11 +2,15 @@ from modules.fetch_nhl_api import get_logo
 import os
 import json
 import unicodedata
+import logging
 
 __all__ = ['get_team_info','get_team_color','lighten_hex_color']
 
+DEFAULT_COLORS = {"primary": "#555555", "secondary": "#ffffff", "accent": "#999999"}
+
 def get_team_info(standings_data,team_abbr='CAR'):
-    for team in standings_data['standings']:
+    team_info = None
+    for team in standings_data.get('standings', []):
         if team['teamAbbrev']['default'] == team_abbr:
             team_info = {
 
@@ -43,7 +47,8 @@ def get_team_color(team_info):
                 "accent": team.get("accent")
             }
 
-    raise ValueError(f"Could not find colors for {team_name}")
+    logging.warning(f"Could not find colors for {team_name}, using defaults")
+    return DEFAULT_COLORS
 
 
 def lighten_hex_color(hex_color, factor):

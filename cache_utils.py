@@ -1,25 +1,40 @@
-import os, json
+import os, json, re
 from datetime import datetime, timedelta
-import shutil
 
 
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-def clear_cache():
-    if os.path.exists(CACHE_DIR):
-        shutil.rmtree(CACHE_DIR)
-    os.makedirs(CACHE_DIR, exist_ok=True)
+DATE_FORMAT = "%Y-%m-%d"
+CACHE_FILE_RE = re.compile(r"^(?P<name>.+)_(?P<date>\d{4}-\d{2}-\d{2})\.json$")
 
-def get_cache_path(name):
-    today = datetime.now().strftime("%Y-%m-%d")
-    return os.path.join(CACHE_DIR, f"{name}_{today}.json")
+
+def get_cache_path(name, date=None):
+    date = date or datetime.now().strftime(DATE_FORMAT)
+    return os.path.join(CACHE_DIR, f"{name}_{date}.json")
 
 def load_cache(name):
     path = get_cache_path(name)
     if os.path.exists(path):
         with open(path, "r") as f:
             return json.load(f)
+    return None
+
+def load_latest_cache(name):
+    """Return the newest cached entry for `name` from any day (today included), or None."""
+    dates = []
+    for filename in os.listdir(CACHE_DIR):
+        match = CACHE_FILE_RE.match(filename)
+        if match and match.group("name") == name:
+            dates.append(match.group("date"))
+    for date in sorted(dates, reverse=True):
+        try:
+            with open(get_cache_path(name, date), "r") as f:
+                data = json.load(f)
+        except (OSError, ValueError):
+            continue
+        if data:
+            return data
     return None
 
 def save_cache(name, data):
@@ -31,8 +46,13 @@ def is_cache_fresh(name):
     path = get_cache_path(name)
     return os.path.exists(path)
 
-
-def clear_cache():
-    if os.path.exists(CACHE_DIR):
-        shutil.rmtree(CACHE_DIR)
-    os.makedirs(CACHE_DIR, exist_ok=True)
+def prune_cache(keep_days=3):
+    """Delete cache files older than `keep_days`, keeping recent ones as stale fallbacks."""
+    cutoff = (datetime.now() - timedelta(days=keep_days)).strftime(DATE_FORMAT)
+    for filename in os.listdir(CACHE_DIR):
+        match = CACHE_FILE_RE.match(filename)
+        if match and match.group("date") < cutoff:
+            try:
+                os.remove(os.path.join(CACHE_DIR, filename))
+            except OSError:
+                pass

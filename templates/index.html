@@ -126,7 +126,7 @@
             <div class="top_row_element card_display" id="card_target_width">
                 <h2  class="top_card_header">Next up</h2>
                 <div class="upcoming_game">
-                     <span class="event-time" data-utc-time={{utc_starttime}}>
+                     <span class="event-time" data-utc-time="{{ utc_starttime or '' }}">
                          {{html_next_game | safe }}
                     </span>
                 </div>
@@ -169,19 +169,19 @@
                     <div id="modalUpcomingGames" class="upcoming_games_card">
                         <div>   
                             <div class="upcoming_game">
-                                <span class="event-time" data-utc-time={{utc_starttime}}>{{html_next_game | safe }}</span>
+                                <span class="event-time" data-utc-time="{{ utc_starttime or '' }}">{{html_next_game | safe }}</span>
                             </div>
                             <div class="upcoming_game">
-                                <span class="event-time" data-utc-time={{next_games_data[0][1]}}>{{next_games_data[0][0] | safe }}</span>
+                                <span class="event-time" data-utc-time="{{ next_games_data[0][1] or '' }}">{{next_games_data[0][0] | safe }}</span>
                             </div>
                             <div class="upcoming_game">
-                                <span class="event-time" data-utc-time={{next_games_data[1][1]}}>{{next_games_data[1][0] | safe }} </span>
+                                <span class="event-time" data-utc-time="{{ next_games_data[1][1] or '' }}">{{next_games_data[1][0] | safe }} </span>
                             </div>
                             <div class="upcoming_game">
-                                <span class="event-time" data-utc-time={{next_games_data[2][1]}}>{{next_games_data[2][0] | safe }} </span>
+                                <span class="event-time" data-utc-time="{{ next_games_data[2][1] or '' }}">{{next_games_data[2][0] | safe }} </span>
                             </div>
                             <div class="upcoming_game">
-                                <span class="event-time" data-utc-time={{next_games_data[3][1]}}>{{next_games_data[3][0] | safe }} </span>
+                                <span class="event-time" data-utc-time="{{ next_games_data[3][1] or '' }}">{{next_games_data[3][0] | safe }} </span>
                             </div>
                           <!--  # Access results like this:
                             # next_game_data[0][0] -> html_next_game_2
@@ -312,6 +312,7 @@
 <!--- BETA --------------------------------------------------------------->
 <!--- Goalie Card -------------------------------------------------------->
         <div style="display: none">
+            {% if goalies %}
             <div class="top_row_element card_display" id="goalieCard_team">
                 <h2 class="top_card_header">
                     Goalie
@@ -328,7 +329,9 @@
                     {{ html_goalie_table[0] | safe }}
                 </div>
             </div>
+            {% endif %}
 
+            {% if goalies_opponent %}
                 <div class="top_row_element card_display" id="goalieCard_opponent">
                 <h2 class="top_card_header">
                     Opponent's Goalie
@@ -345,6 +348,7 @@
                     {{ html_goalie_table_opponent[0] | safe }}
                 </div>
             </div>
+            {% endif %}
     </div> 
 
 <!---Player Cards --------------------------------------------------------->

@@ -1,20 +1,19 @@
 import requests
 from datetime import datetime
-from collections import defaultdict
-from IPython.display import SVG, display, HTML
-import pandas as pd
-from flask import Flask, render_template_string, request, render_template, Response, session, send_from_directory, redirect, url_for
+from urllib.parse import urlparse
+from flask import Flask, request, render_template, Response, session, send_from_directory, redirect, url_for, abort
+from werkzeug.exceptions import HTTPException
 import os
 from threading import Thread
-  
+
 
 # Import custom functions
 from modules import *
-from scheduler import start_scheduler
-from scheduler import update_daily_cache
+from scheduler import start_scheduler, update_daily_cache, TEAM_LIST
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+# A fixed key keeps sessions (which the dynamic CSS routes read) valid across restarts
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 
 if os.environ.get("RUN_SCHEDULER", "true") == "true":
     try:
@@ -24,39 +23,42 @@ if os.environ.get("RUN_SCHEDULER", "true") == "true":
         # response from the NHL API) prevent the app from booting.
         print(f"[ERROR] start_scheduler failed, continuing without initial cache warm-up: {e}")
 
-team_abbr_list = [
-"ANA", "BOS", "BUF", "CGY", "CAR", "CHI", "COL", "CBJ", "DAL",
-"DET", "EDM", "FLA", "LAK", "MIN", "MTL", "NJD", "NSH", "NYI", "NYR",
-"OTT", "PHI", "PIT", "SEA", "SJS", "STL", "TBL", "UTA", "TOR", "VAN", "VGK",
-"WPG", "WSH",
-]
-@app.errorhandler(500)
+team_abbr_list = TEAM_LIST
+DEFAULT_TEAM = "NYR"
+
 @app.errorhandler(Exception)
 def handle_internal_error(e):
+    # Let normal HTTP errors (404, 405, ...) through unchanged
+    if isinstance(e, HTTPException):
+        return e
     # Catches downstream failures too (e.g. a None value slipping through from
-    # a failed/uncached NHL API call) so a single bad request doesn't just
-    # dump a stack trace — it returns a clean, loggable 503 instead.
-    import traceback
-    tb = traceback.format_exc()
-    print(f"[ERROR] Unhandled exception in request: {e}\n{tb}")
-    # TEMP DEBUG: show the real error/traceback in the response so it can be
-    # diagnosed without needing to open Render's logs. Remove this once the
-    # underlying issue is found — replace with the generic 503 message below.
-    return Response(f"<pre>{tb}</pre>", status=503, mimetype="text/html")
-    # return Response(
-    #     "NHL data is temporarily unavailable. Please try again in a few minutes.",
-    #     status=503,
-    # )
+    # a failed/uncached NHL API call): log the traceback, return a clean 503.
+    app.logger.exception(f"Unhandled exception in request: {e}")
+    return Response(
+        "NHL data is temporarily unavailable. Please try again in a few minutes.",
+        status=503,
+    )
 
 @app.route("/", methods=["GET"])
 def home():
-    return redirect(url_for("team_page", team_abbr="NYR"))  # Default to MIN
+    return redirect(url_for("team_page", team_abbr=DEFAULT_TEAM))
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, "static"), "stick-64x64.ico", mimetype="image/vnd.microsoft.icon")
 
 @app.route("/<team_abbr>", methods=["GET", "POST"])
 def team_page(team_abbr):
     if request.method == "POST":
-        team_abbr = request.form.get("team_abbr", "UTA").upper()
+        team_abbr = request.form.get("team_abbr", DEFAULT_TEAM).upper()
+        if team_abbr not in team_abbr_list:
+            team_abbr = DEFAULT_TEAM
         return redirect(url_for("team_page", team_abbr=team_abbr))  # Redirect on selection
+
+    if team_abbr not in team_abbr_list:
+        if team_abbr.upper() in team_abbr_list:
+            return redirect(url_for("team_page", team_abbr=team_abbr.upper()))
+        abort(404)
 
 
     # Build the dropdown HTML
@@ -104,6 +106,11 @@ def team_page(team_abbr):
 
     # Load Team info
     team_info = get_team_info(standings_data, team_abbr)
+    if team_info is None:
+        return Response(
+            f"No standings data for {team_abbr} yet. Please try again in a few minutes.",
+            status=503,
+        )
     team_colors = get_team_color(team_info["team_name"])  
     light_color = lighten_hex_color(team_colors['primary'],0.25)
 
@@ -112,14 +119,8 @@ def team_page(team_abbr):
 
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
     # Playoff Data
-    # playoff_series_data = get_playoff_series(current_season_id)
-    playoff_series_data = get_playoff_series('20232024')
-    if playoff_series_data is None:
-        return Response(
-            "NHL data is temporarily unavailable (playoff series data unreachable "
-            "and no cache yet). Please try again in a few minutes.",
-            status=503,
-        )
+    # Not every season has playoff data (e.g. before the playoffs start), so this may be None
+    playoff_series_data = get_playoff_series(current_season_id)
     # Sort games by opponents: 
     sorted_opponents = sort_games_by_opponent(games_by_opponent)
     # Put into table
@@ -157,32 +158,26 @@ def team_page(team_abbr):
         html_goalie_table.append(build_goalie_table(goalie))
       
     # Next game
-    next_games = get_upcoming_opponent(games_by_date,5)  or []      
+    # Next game (there may be none, e.g. in the off-season)
+    next_games = get_upcoming_opponent(games_by_date,5)  or []
     next_game = next_games[0] if next_games and next_games[0] is not None else None
-    next_opponent = next_games[0]['opponent_abr'] if next_games and next_games[0] is not None else None
-    opponent_logo = get_logo(next_opponent)
+    next_opponent = next_game['opponent_abr'] if next_game else None
+    opponent_logo = get_logo(next_opponent) if next_opponent else None
     previous_matchup = get_previous_matchup(team_abbr,team_info, next_opponent,sorted_opponents,season_data,current_season_id)
     html_previous_matchup, previous_date = display_previous_matchup(previous_matchup)
-    #previous_winning_goal_scorer_data = get_player_stats(previous_matchup['winning_goal_scorer']['playerId']) 
+    #previous_winning_goal_scorer_data = get_player_stats(previous_matchup['winning_goal_scorer']['playerId'])
     #previous_winning_goal_scorer = get_stats_from_playerID(previous_winning_goal_scorer_data)
 
     html_next_game, utc_starttime = get_upcoming_game(next_game)
     opponent_summary_list = team_summary(next_opponent,standings_data)
     html_next_opponent_summary = generate_team_summary_table(opponent_summary_list)
-    
-    opponent_special_teams = get_special_teams(all_teams_summary_data,next_games[0]['opponent'])
+
+    opponent_special_teams = get_special_teams(all_teams_summary_data, next_game['opponent'] if next_game else None)
     # Opponent colors
+    opponent_colors = get_team_color(next_game['opponent_name']) if next_game else {"primary": "#d1d1d1"}
 
-    opponent_colors = get_team_color(next_games[0]['opponent_name'])
-
-    # Get next Opponent Top Scorer:
-    opponent_stats = get_team_stats(next_games[0]['opponent_abr'])
-    if opponent_stats is None:
-        return Response(
-            "NHL data is temporarily unavailable (opponent stats unreachable and "
-            "no cache yet). Please try again in a few minutes.",
-            status=503,
-        )
+    # Get next Opponent Top Scorer (opponent stats may be missing: show empty sections then)
+    opponent_stats = (get_team_stats(next_opponent) if next_opponent else None) or {}
     top_scorer_opponent = find_top_scorer(opponent_stats)
     point_leaders_opponent = find_pointleaders(opponent_stats,nr_top)
     html_pts_leader_table_opponent = build_leaders_table(point_leaders_opponent,'P')
@@ -272,8 +267,8 @@ def team_page(team_abbr):
         "opponent_special_teams":opponent_special_teams,
         "html_previous_matchup": html_previous_matchup,
         "previous_date": previous_date,
-        "team_summary_list": team_summary_list[0],
-        "opponent_summary_list": opponent_summary_list[0],
+        "team_summary_list": team_summary_list[0] if team_summary_list else {},
+        "opponent_summary_list": opponent_summary_list[0] if opponent_summary_list else {},
         "opponent_logo": opponent_logo,
         #"previous_winning_goal_scorer": previous_winning_goal_scorer,
 
@@ -315,7 +310,7 @@ def dynamic__prevGame_css():
 
 @app.route('/team_dropdown.css')
 def dynamic_dropdown_css():
-    light_color = session.get("lightcolor", "white")
+    light_color = session.get("light_color", "white")
     outer_margin = session.get("outer_margin", "12px")
     return Response(render_template("dynamic/styles/team_dropdown.css.jinja", outer_margin=outer_margin,light_color=light_color), mimetype="text/css")
 
@@ -340,8 +335,13 @@ def manual_refresh():
 def debug_nhl():
     url = request.args.get(
         "url",
-        "https://api-web.nhle.com/v1/playoff-series/carousel/20232024/",  # default: the endpoint that's failing
+        "https://api-web.nhle.com/v1/standings/now",
     )
+    # Only proxy NHL API hosts, so this can't be used to make the server fetch arbitrary URLs
+    parsed = urlparse(url)
+    host = parsed.hostname or ""
+    if parsed.scheme != "https" or not (host == "nhle.com" or host.endswith(".nhle.com")):
+        return {"url": url, "error": "Only https://*.nhle.com URLs are allowed"}, 400
     try:
         res = requests.get(url, timeout=10)
         return {

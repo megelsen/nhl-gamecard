@@ -80,11 +80,14 @@ def bold(text):
 
 def playoff_bracket(playoff_data):
 
-    current_round = playoff_data['currentRound']
     bracket_dict = {}
+    if not playoff_data:
+        return bracket_dict
+    rounds = playoff_data.get('rounds', [])
+    current_round = min(playoff_data.get('currentRound', 0), len(rounds))
 
     for i in range(current_round):
-        round_data = playoff_data['rounds'][i]
+        round_data = rounds[i]
         round_label = f"Round {i + 1}"
         western, eastern, finals = current_round_matchups(round_data)
 

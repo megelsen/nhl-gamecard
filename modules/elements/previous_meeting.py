@@ -2,7 +2,7 @@ from modules.elements.previous_games import (get_logo, display_game_result)
 from modules.read_schedule import *
 from modules.fetch_nhl_api import get_schedule
 
-__all__ = ['games_vs_opponent','get_previous_matchup']
+__all__ = ['games_vs_opponent','get_previous_matchup','latest_completed_game']
 # 
 def games_vs_opponent(sorted_opponents, opponent_abr):
     return next(
@@ -15,32 +15,27 @@ def games_vs_opponent(sorted_opponents, opponent_abr):
     )
 
 def get_previous_matchup(team_abbr,team_info, opponent,sorted_opponents,season_data,season_id):
+    if not opponent:
+        return None
+
     # current season
-    games = games_vs_opponent(sorted_opponents, opponent)
-
-
-    games_list = games[1] 
-    latest_game = next(
-    (g for g in reversed(games_list)
-     if g["home_score"] is not None and g["away_score"] is not None),
-    None)
+    latest_game = latest_completed_game(games_vs_opponent(sorted_opponents, opponent))
 
     # previous season
     if latest_game is None:
-        # API Call to previous season:
-        
         previous_season_id = str(int(season_id) - 10001)
-        previous_season_schelude = get_schedule(team_abbr,previous_season_id)
-        previous_games_by_date, previous_games_by_opponent =  get_games_data(team_info,previous_season_schelude,season_data,previous_season_id)
+        previous_season_schedule = get_schedule(team_abbr,previous_season_id)
+        previous_games_by_date, previous_games_by_opponent =  get_games_data(team_info,previous_season_schedule,season_data,previous_season_id)
         previous_sorted_opponents = sort_games_by_opponent(previous_games_by_opponent)
-        games = games_vs_opponent(previous_sorted_opponents, opponent)
-        
-        games_list = games[1]  # this is the list of dicts
-        latest_game = next(
-            (g for g in reversed(games_list)
-            if g["home_score"] is not None and g["away_score"] is not None),
-            None
-        )
+        latest_game = latest_completed_game(games_vs_opponent(previous_sorted_opponents, opponent))
 
     return latest_game
 
+def latest_completed_game(opponent_games):
+    if opponent_games is None:
+        return None
+    games_list = opponent_games[1]
+    return next(
+        (g for g in reversed(games_list)
+         if g["home_score"] is not None and g["away_score"] is not None),
+        None)

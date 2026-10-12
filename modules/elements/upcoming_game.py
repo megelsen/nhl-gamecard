@@ -9,7 +9,6 @@ def get_upcoming_opponent(games_by_date,n=1):
     current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
     # Filter and get the first upcoming game
     upcoming_games = sorted([game for game in games_by_date if game['game_date'] >= current_date], key=lambda x: x['game_date'])
-    print(upcoming_games)
     next_games = upcoming_games[:n] if upcoming_games else None
     return next_games
 

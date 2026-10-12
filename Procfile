@@ -1,1 +1,1 @@
-web: gunicorn nhl-gamecard:app
+web: gunicorn app:app
