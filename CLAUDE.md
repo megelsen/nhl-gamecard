@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Roadmap
 
 1. [x] Plan and fix the known bugs
-2. [ ] Find out why the team summary (Rank, PP, PK) isn't working
+2. [x] Find out why the team summary (Rank, PP, PK) isn't working
 3. [ ] League-wide standings: switch between East and West in the standings card
 4. [ ] Roster overview: a "Roster" button in the title row opens a modal (like the topscorer modal) with the full roster and relevant stats, split into Goalies, Defense, and Forwards
 5. [ ] Slanted-split comparison bar below each stat line in the player (topscorer, goalie) and team comparisons
@@ -51,6 +51,10 @@ Useful routes: `/refresh` (force-refresh the cache in a background thread), `/de
 **Caching** — Every fetch goes through `_safe_get_json(url, cache_name, force)`: today's cache → fetch (3 retries for network errors/5xx, none for 4xx) → newest older cache file (`load_latest_cache`) → `None`. After a failed fetch, the URL is skipped for 5 minutes (stale data or `None` is returned immediately) so an outage doesn't stall every request. Cache files live in `cache/<name>_<YYYY-MM-DD>.json` (`cache_utils.py`), so "fresh" means "from today"; `prune_cache` removes files older than 3 days. Callers must handle `None`; `team_page` returns a 503 only when core data (schedule, season, standings, team stats) is missing and degrades the opponent/playoff sections otherwise. `scheduler.py` force-refreshes through the same fetch functions (so keys always match) at 06:00 and 12:00 UTC, and in a background thread at startup if there's no cache for today; a lock prevents overlapping refreshes. `modules/cache.py` / `cached_data.pkl` is an unused legacy pickle cache.
 
 **Dynamic CSS** — Layout constants (widths, gaps, team colors) are computed in `team_page`, stored in the Flask `session`, and served by routes like `/body.css` and `/cards.css` that render `templates/dynamic/styles/*.css.jinja`. Those stylesheets depend on a `team_page` request having populated the session first. Static CSS/JS lives in `static/styles` and `static/js`; the JS handles timezone formatting, modals, the team dropdown, spoiler hiding and width syncing.
+
+**Season phase** — `season_data['currentDate']` is the latest date with standings: it trails today by a day during the season, so don't compare it to today to detect the post-season. Standings are requested for `min(today, currentDate)` (the scheduler warms the same date). Post-season means the playoff team summary (`get_team_summary(season, 1)`) has rows; `get_special_teams_for` uses a team's playoff stats if it has any, else regular season. Team rows from the stats API are matched to standings by exact full name (`teamFullName` == standings `teamName.default`).
+
+**Summary circles** — `templates/index.html` reads `Conf Rank` / `Conf Name` / `Conf Rank Pct` from `team_summary()` and `PP%` / `PK%` / `* Rank` / `* Rank Pct` from `get_special_teams()`. Keep those keys when changing either function.
 
 **No next game** — In the off-season there's no upcoming opponent: `next_game`/`next_opponent` are `None`, opponent dicts are empty, and the template and `goalieCarousel.js` render blanks/dashes. Keep that path working when touching opponent features. `TEAM_LIST` lives in `scheduler.py` and `app.py` imports it.
 

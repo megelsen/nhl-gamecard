@@ -39,9 +39,12 @@ def update_daily_cache():
         current_date = datetime.now().strftime("%Y-%m-%d")
         season_id = get_season_id()
 
-        get_season_data(force=True)
-        get_current_standings(current_date, force=True)
+        season_data = get_season_data(force=True) or {}
+        # Same date the app requests standings for
+        standings_date = min(current_date, season_data.get("currentDate") or current_date)
+        get_current_standings(standings_date, force=True)
         get_team_summary(season_id, 0, force=True)
+        get_team_summary(season_id, 1, force=True)
         get_playoff_series(season_id, force=True)
 
         for team in TEAM_LIST:

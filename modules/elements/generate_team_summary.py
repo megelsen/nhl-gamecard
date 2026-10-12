@@ -1,7 +1,12 @@
 from modules.fetch_nhl_api import get_logo
 import pandas as pd
 
-__all__ = ['team_summary', 'get_special_teams', 'generate_team_summary_table']
+__all__ = ['team_summary', 'get_special_teams', 'get_special_teams_for', 'generate_team_summary_table']
+
+NO_RANK = {
+  "Div Rank": "-", "Div Name": "", "Div Rank Pct": 0,
+  "Conf Rank": "-", "Conf Name": "", "Conf Rank Pct": 0,
+}
 
 
 def team_summary(team_abbr, standings_data):
@@ -22,6 +27,9 @@ def team_summary(team_abbr, standings_data):
 
     if not games_played:
       return [{
+        **NO_RANK,
+        "Div Name": team.get("divisionName", ""),
+        "Conf Name": team.get("conferenceName", ""),
         "NHL Rank": "-",
         "GP": 0,
         "PTS": "-",
@@ -41,11 +49,13 @@ def team_summary(team_abbr, standings_data):
     )
 
     streak = (
-      f"{team.get('streakCode', '-')}"
-      f"{team.get('streakCount', '-')}"
+      f"{team.get('streakCode') or '-'}"
+      f"{team.get('streakCount') or ''}"
     )
 
     team_summary_list.append({
+      **group_rank(standings, team, "division"),
+      **group_rank(standings, team, "conference"),
       "NHL Rank": team.get("leagueSequence", "-"),
       "GP": games_played,
       "PTS": team.get("points", 0),
@@ -53,13 +63,36 @@ def team_summary(team_abbr, standings_data):
       "L": team.get("losses", 0),
       "OTL": team.get("otLosses", 0),
       "P%": f"<b>{round(points_pct, 2)}</b>" if points_pct is not None else "-",
-      "L10": l10,
-      "Streak": streak,
+      "L10": spoiler(l10),
+      "Streak": spoiler(streak),
     })
 
     break
 
   return team_summary_list
+
+
+def group_rank(standings, team, group):
+  """Rank of `team` within its division or conference, e.g. {"Conf Rank": "2nd", "Conf Name": "Eastern", "Conf Rank Pct": 93.3}."""
+  prefix = "Div" if group == "division" else "Conf"
+  name = team.get(f"{group}Name", "")
+  sequence = team.get(f"{group}Sequence")
+  if not sequence:
+    return {f"{prefix} Rank": "-", f"{prefix} Name": name, f"{prefix} Rank Pct": 0}
+  group_size = sum(1 for t in standings if t.get(f"{group}Name") == name)
+  return {
+    f"{prefix} Rank": ordinal(sequence),
+    f"{prefix} Name": name,
+    f"{prefix} Rank Pct": rank_to_pct(sequence, group_size),
+  }
+
+
+def spoiler(text):
+  return (
+    '<div class="spoiler-wrapper"><button class="toggle-spoiler">'
+    '<span class="material-symbols-outlined">visibility</span></button>'
+    f'<span class="hide-spoiler">{text}</span></div>'
+  )
 
 
 def generate_team_summary_table(team_summary_list):
@@ -103,7 +136,7 @@ def get_special_teams(all_teams_summary_data, team_name):
     }
 
   team = next(
-    (team for team in teams if team_name in team.get("teamFullName", "")),
+    (team for team in teams if team.get("teamFullName") == team_name),
     None
   )
 
@@ -150,6 +183,14 @@ def get_special_teams(all_teams_summary_data, team_name):
     "PP Rank Pct": rank_to_pct(pp_rank_unformatted, len(pp_values)),
     "PK Rank Pct": rank_to_pct(pk_rank_unformatted, len(pk_values)),
   }
+
+
+def get_special_teams_for(team_name, regular_season_summary, playoff_summary=None):
+  """Playoff special teams if the team has playoff stats, otherwise regular season."""
+  playoff_teams = (playoff_summary or {}).get("data", []) if isinstance(playoff_summary, dict) else []
+  if any(t.get("teamFullName") == team_name for t in playoff_teams):
+    return get_special_teams(playoff_summary, team_name)
+  return get_special_teams(regular_season_summary, team_name)
 
 
 def ordinal(n: int) -> str:

@@ -80,16 +80,10 @@ def team_page(team_abbr):
     current_season_id = get_season_id()
     season_start = get_season_start(season_data,current_season_id)
     season_end = get_season_end(current_season_id)
-    # Check whether current date is past last game of regular season:
-    current_date_format = datetime.strptime(current_date, "%Y-%m-%d")
-    last_reg_season_format = datetime.strptime(season_data['currentDate'], "%Y-%m-%d")
-    if current_date_format > last_reg_season_format:
-        current_date = last_reg_season_format
-        post_season = 1
-        standings_data = get_current_standings(last_reg_season_format.strftime("%Y-%m-%d"))
-    else: 
-        post_season = 0
-        standings_data = get_current_standings(current_date)    
+    # season_data['currentDate'] is the latest date with standings (it trails today by a
+    # day during the season, and stays on the last regular-season day afterwards)
+    standings_date = min(current_date, season_data.get('currentDate') or current_date)
+    standings_data = get_current_standings(standings_date)
     team_stats_data = get_team_stats(team_abbr)
 
     if standings_data is None or team_stats_data is None:
@@ -99,9 +93,10 @@ def team_page(team_abbr):
             status=503,
         )
 
-    # Get Team overview
-    
-    all_teams_summary_data = get_team_summary(current_season_id,post_season) # get team summary of all teams
+    # Team overview of all teams. Playoff stats are empty until the playoffs start;
+    # teams that aren't in the playoffs keep their regular-season special teams.
+    regular_season_summary = get_team_summary(current_season_id, 0)
+    playoff_summary = get_team_summary(current_season_id, 1)
 
 
     # Load Team info
@@ -138,7 +133,7 @@ def team_page(team_abbr):
     team_summary_list = team_summary(team_abbr,standings_data)
     html_team_summary = generate_team_summary_table(team_summary_list)
     # Special Teams
-    special_teams = get_special_teams(all_teams_summary_data,team_info['team_name'])
+    special_teams = get_special_teams_for(team_info['team_name'], regular_season_summary, playoff_summary)
     # Team Stats:
     
 
@@ -172,7 +167,8 @@ def team_page(team_abbr):
     opponent_summary_list = team_summary(next_opponent,standings_data)
     html_next_opponent_summary = generate_team_summary_table(opponent_summary_list)
 
-    opponent_special_teams = get_special_teams(all_teams_summary_data, next_game['opponent'] if next_game else None)
+    opponent_info = get_team_info(standings_data, next_opponent) if next_opponent else None
+    opponent_special_teams = get_special_teams_for(opponent_info['team_name'] if opponent_info else None, regular_season_summary, playoff_summary)
     # Opponent colors
     opponent_colors = get_team_color(next_game['opponent_name']) if next_game else {"primary": "#d1d1d1"}
 
