@@ -9,6 +9,15 @@
 .compare-card .headshot-img-opponent {
     min-width: 0;
     white-space: normal;
+    align-self: center;
+    padding: 0 6px;
+    box-sizing: border-box;
+}
+
+.compare-card .headshot-img > img,
+.compare-card .headshot-img-opponent > img {
+    width: 88%;
+    max-width: 124px;
 }
 
 /* Last meeting: use the card width (capped so it doesn't stretch too far) */
@@ -90,6 +99,8 @@
     white-space: nowrap;
 }
 
+/* The one bar style for every comparison row. Only the colors (--left-color /
+   --right-color on .compare) and the split (--split, set per row) vary. */
 .compare-bar {
     --slant: 4px;
     --gap: 3px;
@@ -97,13 +108,14 @@
     position: relative;
     height: 6px;
     margin-top: 5px;
+    /* Rounded ends on the bar itself, so both halves are clipped the same way */
+    border-radius: 999px;
+    overflow: hidden;
 }
 
 .compare-bar span {
     position: absolute;
     inset: 0;
-    /* Rounded outer ends; the clip-path keeps the slanted split sharp */
-    border-radius: 3px;
 }
 
 .compare-bar .bar-left {
