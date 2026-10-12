@@ -3,7 +3,7 @@ import time
 import logging
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_series','get_team_summary','get_game_stats']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_series','get_team_summary','get_game_stats','get_roster','get_boxscore']
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +123,18 @@ def get_team_stats(team_abbr, force=False):
     cache_name = f"team_stats_{team_abbr}"
     url = f"https://api-web.nhle.com/v1/club-stats/{team_abbr}/now"
     return _safe_get_json(url, cache_name, force)
+
+
+def get_roster(team_abbr, force=False):
+    cache_name = f"roster_{team_abbr}"
+    url = f"https://api-web.nhle.com/v1/roster/{team_abbr}/current"
+    return _safe_get_json(url, cache_name, force)
+
+
+def get_boxscore(gameID):
+    cache_name = f"boxscore_{gameID}"
+    url = f"https://api-web.nhle.com/v1/gamecenter/{gameID}/boxscore"
+    return _safe_get_json(url, cache_name)
 
 
 def get_season_data(force=False):

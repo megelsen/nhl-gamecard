@@ -20,8 +20,8 @@
     }
 
     // When the user clicks anywhere outside the modal, close it
-    window.onclick = function(event) {
+    window.addEventListener("click", function(event) {
         if (event.target === modalUpcoming) {
             modalUpcoming.style.display = "none"; // Hide the modal
         }
-    }
+    });

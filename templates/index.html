@@ -32,6 +32,7 @@
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/team_compare.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/arrow_buttons.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/standings.css') }}">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/roster.css') }}">
 
     <!-- Load Dynamic CSS -->
     <link rel="stylesheet" type="text/css" href="/body.css">
@@ -71,6 +72,23 @@
             </div>                      
         </div>
     </div>
+    <!-- ROSTER MODAL -->
+    <div id="rosterPopUp" class="stats-popup">
+        <div class="stats-popup-content card_display roster-popup-content">
+            <span class="close" id="closeBtnRoster">&times;</span>
+            <div class="tabs-container roster-tabs-container">
+                {% for label in roster_tables %}
+                <div class="roster-tab {% if loop.first %}active{% endif %}" data-group="{{ label }}">{{ label }}</div>
+                {% endfor %}
+            </div>
+            {% for label, table_html in roster_tables.items() %}
+            <div class="roster-table-wrapper" data-group="{{ label }}" {% if not loop.first %}hidden{% endif %}>
+                {{ table_html | safe }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
     <!-- Hidden data for modal population -->
     <div id="team-tables" style="display: none;">
         <div id="team-points">{{ html_pts_leader_table | safe }}</div>
@@ -91,11 +109,14 @@
                 <h1>
                     {{team_info['team_name']}}
                 </h1>
-                <form class="dropdown_wrapper" id="team_form" method="POST">
-                    <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleTeamChange()">
-                        {{dropdown_html | safe }}
-                    </select>        
-                </form>
+                <div class="title_actions">
+                    <button type="button" class="primary_button roster_button" id="rosterBtn">Roster</button>
+                    <form class="dropdown_wrapper" id="team_form" method="POST">
+                        <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleTeamChange()">
+                            {{dropdown_html | safe }}
+                        </select>        
+                    </form>
+                </div>
             </div>
         </div>
   <!--  TEAM SUMMARY ------------------------------------------------------------------------>
@@ -419,6 +440,7 @@
     <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/rosterModal.js') }}"></script>
     <script>
         window.goalies = {{ goalies | tojson }};
         window.goaliesOpponent = {{ goalies_opponent | tojson }};

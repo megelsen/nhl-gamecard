@@ -1,0 +1,67 @@
+/* Title row: Roster button next to the team dropdown */
+.title_actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.roster_button {
+    margin-top: 0;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Roster modal */
+/* Two classes to beat .card_display's fill-available width and grid layout */
+.stats-popup-content.roster-popup-content {
+    display: block;
+    box-sizing: border-box;
+    width: min(520px, 95vw);
+    min-width: 0;
+    max-width: 95vw;
+    overflow-y: auto;
+}
+
+.roster-tabs-container {
+    margin-bottom: 8px;
+}
+
+.roster-table-wrapper {
+    overflow-x: auto;
+}
+
+.roster-table {
+    width: 100%;
+    white-space: nowrap;
+    margin: 0 auto;
+}
+
+.roster-table td:nth-child(2) {
+    text-align: left;
+}
+
+.roster-headshot {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: solid 1px #d1d1d1;
+    background: #f2f2f2;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
+.roster-position {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.roster-table tr.roster-group th {
+    text-align: left;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 10px;
+    border-bottom: 1px solid lightgrey;
+}

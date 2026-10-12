@@ -12,6 +12,7 @@ from modules import (
     get_playoff_series,
     get_team_summary,
     get_season_id,
+    get_roster,
 )
 from cache_utils import is_cache_fresh, prune_cache
 
@@ -51,6 +52,7 @@ def update_daily_cache():
             logging.info(f"Updating cache for {team}")
             get_schedule(team, force=True)
             get_team_stats(team, force=True)
+            get_roster(team, force=True)
 
         prune_cache()
         logging.info("Cache refresh complete.")

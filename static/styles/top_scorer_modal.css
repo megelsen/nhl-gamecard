@@ -59,7 +59,7 @@
 }
 
 /* Styling for individual tabs (also used by the standings card) */
-.tab, .standings-tab {
+.tab, .standings-tab, .roster-tab {
     padding: 10px 20px;
     border-radius: 8px 8px 0 0; /* Rounded top corners like Chrome */
     background: #f3f3f3;
@@ -72,13 +72,13 @@
 }
 
 /* Active tab style */
-.tab.active, .standings-tab.active {
+.tab.active, .standings-tab.active, .roster-tab.active {
     background: white;
     color: black;
     margin-bottom: -1px;
 }
 
 /* Hover effect on tabs */
-.tab:hover, .standings-tab:hover {
+.tab:hover, .standings-tab:hover, .roster-tab:hover {
     background: #d6d6d6;
 }

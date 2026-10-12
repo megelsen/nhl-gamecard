@@ -86,9 +86,10 @@ document.addEventListener("DOMContentLoaded", function() {
         modal.style.display = "none";
     };
 
-    window.onclick = function(event) {
+    // addEventListener (not window.onclick) so the other modals' outside-click handlers survive
+    window.addEventListener("click", function(event) {
         if (event.target === modal) {
             modal.style.display = "none";
         }
-    };
+    });
 });

@@ -114,6 +114,7 @@ def team_page(team_abbr):
 
 
     games_by_date, games_by_opponent =  get_games_data(team_info,schedule_data,season_data,current_season_id)
+    roster_tables = build_roster_tables(team_abbr, get_roster(team_abbr), team_stats_data, games_by_date)
     # Playoff Data
     # Not every season has playoff data (e.g. before the playoffs start), so this may be None
     playoff_series_data = get_playoff_series(current_season_id)
@@ -244,6 +245,7 @@ def team_page(team_abbr):
         "html_goals_leader_table": html_goals_leader_table,
         "html_assists_leader_table": html_assists_leader_table,
         "standings_tables": standings_tables,
+        "roster_tables": roster_tables,
         "standings_highlight": standings_highlight,
         "html_next_game": html_next_game,
         "next_games_data": next_games_data,
