@@ -44,18 +44,18 @@
 .compare-team {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding-bottom: 2px;
+    gap: 6px;
+    padding-bottom: 3px;
     border-bottom: 3px solid var(--team-color);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: bold;
     letter-spacing: 0.05em;
     color: #333;
 }
 
 .compare-team img {
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
 }
 
 /* Value | label | value, with the bar underneath across the full width */
@@ -131,6 +131,10 @@
     .compare-label {
         font-size: 0.6rem;
         letter-spacing: 0.04em;
+    }
+    .compare-team img {
+        width: 26px;
+        height: 26px;
     }
     .compare-card .primary_button {
         padding: 5px 8px;
