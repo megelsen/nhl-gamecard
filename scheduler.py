@@ -1,6 +1,7 @@
 # scheduler.py
 import logging
 import threading
+import time
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -13,6 +14,7 @@ from modules import (
     get_team_summary,
     get_season_id,
     get_roster,
+    track_fetch_failures,
 )
 from cache_utils import is_cache_fresh, prune_cache
 
@@ -24,6 +26,8 @@ TEAM_LIST = [
     "OTT", "PHI", "PIT", "SEA", "SJS", "STL", "TBL", "UTA", "TOR", "VAN", "VGK",
     "WPG", "WSH",
 ]
+
+REQUEST_PAUSE_SECONDS = 0.5  # between requests during a refresh, to go easy on the NHL API
 
 _refresh_lock = threading.Lock()
 
@@ -37,25 +41,37 @@ def update_daily_cache():
 
     try:
         logging.info("Starting NHL data cache refresh...")
+        started = time.time()
         current_date = datetime.now().strftime("%Y-%m-%d")
         season_id = get_season_id()
 
-        season_data = get_season_data(force=True) or {}
-        # Same date the app requests standings for
-        standings_date = min(current_date, season_data.get("currentDate") or current_date)
-        get_current_standings(standings_date, force=True)
-        get_team_summary(season_id, 0, force=True)
-        get_team_summary(season_id, 1, force=True)
-        get_playoff_bracket(season_id, force=True)
+        with track_fetch_failures() as failed:
+            season_data = get_season_data(force=True) or {}
+            # Same date the app requests standings for
+            standings_date = min(current_date, season_data.get("currentDate") or current_date)
+            jobs = [
+                (get_current_standings, standings_date),
+                (get_team_summary, season_id, 0),
+                (get_team_summary, season_id, 1),
+                (get_playoff_bracket, season_id),
+            ]
+            for team in TEAM_LIST:
+                jobs += [(get_schedule, team), (get_team_stats, team), (get_roster, team)]
 
-        for team in TEAM_LIST:
-            logging.info(f"Updating cache for {team}")
-            get_schedule(team, force=True)
-            get_team_stats(team, force=True)
-            get_roster(team, force=True)
+            for fetch, *args in jobs:
+                time.sleep(REQUEST_PAUSE_SECONDS)
+                fetch(*args, force=True)
 
         prune_cache()
-        logging.info("Cache refresh complete.")
+        total = len(jobs) + 1  # + season data
+        elapsed = time.time() - started
+        if failed:
+            logging.warning(
+                f"Cache refresh finished in {elapsed:.0f}s: {total - len(failed)}/{total} updated, "
+                f"{len(failed)} failed (previous cache kept, if any): {', '.join(failed)}"
+            )
+        else:
+            logging.info(f"Cache refresh complete in {elapsed:.0f}s: all {total} entries updated.")
     finally:
         _refresh_lock.release()
 

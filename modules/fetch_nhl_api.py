@@ -1,18 +1,40 @@
 import requests
+import random
+import threading
 import time
 import logging
+from contextlib import contextmanager
+from email.utils import parsedate_to_datetime
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','track_fetch_failures']
 
 logger = logging.getLogger(__name__)
 
 MAX_ATTEMPTS = 3
-RETRY_DELAY_SECONDS = 1.5  # multiplied by attempt number (1.5s, 3s, ...)
+RETRY_DELAYS_SECONDS = (1, 4)  # before the 2nd and 3rd attempt, plus up to 1s of jitter
+# Longest wait (e.g. from a Retry-After header) before a retry: short while a visitor is
+# waiting on the page, longer for a forced refresh running in the background.
+MAX_RETRY_WAIT_SECONDS = 5
+MAX_RETRY_WAIT_SECONDS_FORCED = 30
 FAILURE_BACKOFF_SECONDS = 300  # after a failed fetch, serve stale cache for this long before retrying
 
 # url -> time of the last failed fetch, so an outage doesn't make every request wait on retries
 _recent_failures = {}
+
+# Per-thread list of failed fetches, set while inside track_fetch_failures()
+_tracker = threading.local()
+
+
+@contextmanager
+def track_fetch_failures():
+    """Collects a description of every fetch in this thread that fails inside the block
+    (the caller got stale cache or None instead of fresh data)."""
+    _tracker.failures = []
+    try:
+        yield _tracker.failures
+    finally:
+        _tracker.failures = None
 
 
 def _fetch_once(url):
@@ -22,33 +44,55 @@ def _fetch_once(url):
     return res.json()
 
 
-def _fetch_with_retries(url):
-    """Retries a few times on transient failures. Returns None if all attempts fail."""
-    data = None
+def _retry_after_seconds(response):
+    """Seconds requested by a Retry-After header (delta-seconds or HTTP date), or None."""
+    value = response.headers.get("Retry-After") if response is not None else None
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except ValueError:
+        pass
+    try:
+        return max(0.0, parsedate_to_datetime(value).timestamp() - time.time())
+    except (TypeError, ValueError):
+        return None
+
+
+def _fetch_with_retries(url, max_wait=MAX_RETRY_WAIT_SECONDS):
+    """Retries transient failures with exponential backoff and jitter, honoring Retry-After.
+    Returns (data, None) on success, or (None, short error description)."""
     last_error = None
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
+        retry_after = None
         try:
-            data = _fetch_once(url)
-            break
+            return _fetch_once(url), None
         except requests.exceptions.RequestException as e:
-            last_error = e
-            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS} failed for {url}: {e}")
             status = getattr(e.response, "status_code", None)
+            last_error = f"HTTP {status}" if status is not None else type(e).__name__
+            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS} failed for {url}: {e}")
             if status is not None and 400 <= status < 500 and status != 429:
                 break  # e.g. 404 for a season without playoffs yet: retrying won't help
+            retry_after = _retry_after_seconds(e.response)
         except ValueError as e:
             # includes requests' JSONDecodeError, which subclasses ValueError
-            last_error = e
+            last_error = "non-JSON response"
             logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS}: non-JSON response from {url}: {e}")
 
-        if attempt < MAX_ATTEMPTS:
-            time.sleep(RETRY_DELAY_SECONDS * attempt)
+        if attempt == MAX_ATTEMPTS:
+            break
+        if retry_after is not None:
+            if retry_after > max_wait:
+                logger.warning(f"[fetch_nhl_api] {url} asks to retry after {retry_after:.0f}s — giving up for now.")
+                break
+            delay = retry_after
+        else:
+            delay = min(RETRY_DELAYS_SECONDS[attempt - 1] + random.uniform(0, 1), max_wait)
+        time.sleep(delay)
 
-    if data is None:
-        logger.warning(f"[fetch_nhl_api] All {MAX_ATTEMPTS} attempts failed for {url}: {last_error}")
-
-    return data
+    logger.warning(f"[fetch_nhl_api] Fetch failed for {url} after {attempt} attempt(s): {last_error}")
+    return None, last_error
 
 
 def _get_cached_json(cache_name):
@@ -90,7 +134,7 @@ def _safe_get_json(url, cache_name, force=False):
     if not force and last_failure and time.time() - last_failure < FAILURE_BACKOFF_SECONDS:
         return stale
 
-    data = _fetch_with_retries(url)
+    data, error = _fetch_with_retries(url, MAX_RETRY_WAIT_SECONDS_FORCED if force else MAX_RETRY_WAIT_SECONDS)
 
     if data is not None:
         _recent_failures.pop(url, None)
@@ -98,6 +142,9 @@ def _safe_get_json(url, cache_name, force=False):
         return data
 
     _recent_failures[url] = time.time()
+    failures = getattr(_tracker, "failures", None)
+    if failures is not None:
+        failures.append(f"{cache_name} ({error})")
     if stale:
         logger.warning(f"[fetch_nhl_api] Using stale cache for {cache_name} after fetch failure.")
     return stale

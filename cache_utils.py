@@ -1,4 +1,4 @@
-import os, json, re
+import os, json, re, tempfile
 from datetime import datetime, timedelta
 
 
@@ -38,9 +38,20 @@ def load_latest_cache(name):
     return None
 
 def save_cache(name, data):
+    """Write to a temp file and rename it into place, so a crash mid-write can't leave a
+    truncated cache file behind."""
     path = get_cache_path(name)
-    with open(path, "w") as f:
-        json.dump(data, f)
+    fd, tmp_path = tempfile.mkstemp(dir=CACHE_DIR, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(data, f)
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
 
 def is_cache_fresh(name):
     path = get_cache_path(name)
