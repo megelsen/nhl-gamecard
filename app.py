@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from flask import Flask, request, render_template, Response, send_from_directory, redirect, url_for, abort
 from werkzeug.exceptions import HTTPException
+import hashlib
 import hmac
 import os
 import re
@@ -46,6 +47,25 @@ def css_team_color():
     # Validated so the query string can't inject anything into the stylesheet
     color = request.args.get("color", "")
     return f"#{color}" if HEX_COLOR.fullmatch(color) else DEFAULT_COLORS["primary"]
+
+# Cache busting: browsers and Cloudflare keep static files for hours, so every
+# url_for('static', ...) gets ?v=<content hash> and a deploy changes the URL.
+_static_versions = {}
+
+@app.url_defaults
+def static_version(endpoint, values):
+    if endpoint != "static" or "v" in values:
+        return
+    path = os.path.join(app.static_folder, values.get("filename", ""))
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return
+    key = (path, mtime)
+    if key not in _static_versions:
+        with open(path, "rb") as f:
+            _static_versions[key] = hashlib.md5(f.read()).hexdigest()[:10]
+    values["v"] = _static_versions[key]
 
 @app.errorhandler(Exception)
 def handle_internal_error(e):
