@@ -35,11 +35,11 @@
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/comparison.css') }}">
 
     <!-- Load Dynamic CSS -->
-    <link rel="stylesheet" type="text/css" href="/body.css">
+    <link rel="stylesheet" type="text/css" href="/body.css?color={{ css_color }}">
     <link rel="stylesheet" type="text/css" href="/cards.css">
     <link rel="stylesheet" type="text/css" href="/container.css">
     <link rel="stylesheet" type="text/css" href="/previous_games.css">
-    <link rel="stylesheet" type="text/css" href="/team_dropdown.css">
+    <link rel="stylesheet" type="text/css" href="/team_dropdown.css?color={{ css_color }}">
     <link rel="stylesheet" type="text/css" href="/title_card.css">    
     <link rel="stylesheet" type="text/css" href="/media_scaling.css">
 
@@ -133,17 +133,17 @@
                 </h2>      
                 <div class="stats-circle">
                     <span> Rank in {{team_summary_list["Conf Name"] }} </span>
-                    {{ circles.rank_circle(team_summary_list['Conf Rank'], pct=team_summary_list['Conf Rank Pct'], color=session['team_color']) }}
+                    {{ circles.rank_circle(team_summary_list['Conf Rank'], pct=team_summary_list['Conf Rank Pct'], color=team_color) }}
  
                 </div>
                 <div class="stats-circle">
                     <span> Power Play </span>
-                    {{ circles.rank_circle(special_teams['PP%'], special_teams['PP Rank'], special_teams['PP Rank Pct'], session['team_color']) }}
+                    {{ circles.rank_circle(special_teams['PP%'], special_teams['PP Rank'], special_teams['PP Rank Pct'], team_color) }}
 
                 </div>    
                 <div class="stats-circle">
                     <span>Penalty Kill </span>
-                    {{ circles.rank_circle(special_teams['PK%'], special_teams['PK Rank'], special_teams['PK Rank Pct'], session['team_color']) }}
+                    {{ circles.rank_circle(special_teams['PK%'], special_teams['PK Rank'], special_teams['PK Rank Pct'], team_color) }}
 
                 </div>
                 <div class="team-summary">
@@ -161,17 +161,17 @@
 
                 <div class="stats-circle">
                     <span> Rank in {{opponent_summary_list["Conf Name"] }} </span>
-                    {{ circles.rank_circle(opponent_summary_list['Conf Rank'], pct=opponent_summary_list['Conf Rank Pct'], color=session['opponent_color']) }}
+                    {{ circles.rank_circle(opponent_summary_list['Conf Rank'], pct=opponent_summary_list['Conf Rank Pct'], color=opponent_color) }}
  
                 </div>
                 <div class="stats-circle">
                     <span> Power Play </span>
-                    {{ circles.rank_circle(opponent_special_teams['PP%'], opponent_special_teams['PP Rank'], opponent_special_teams['PP Rank Pct'], session['opponent_color']) }}
+                    {{ circles.rank_circle(opponent_special_teams['PP%'], opponent_special_teams['PP Rank'], opponent_special_teams['PP Rank Pct'], opponent_color) }}
 
                 </div>    
                 <div class="stats-circle">
                     <span>Penalty Kill </span>
-                    {{ circles.rank_circle(opponent_special_teams['PK%'], opponent_special_teams['PK Rank'], opponent_special_teams['PK Rank Pct'], session['opponent_color']) }}
+                    {{ circles.rank_circle(opponent_special_teams['PK%'], opponent_special_teams['PK Rank'], opponent_special_teams['PK Rank Pct'], opponent_color) }}
 
                 </div>
 
@@ -322,7 +322,7 @@
                  
   <!-- STANDINGS --------------------------------------------->
         <div class="container widthTargetElement">
-            <div class="table card_display table_card standings-card" style="--standings-accent: {{ session['team_color'] }}; --standings-highlight: {{ standings_highlight }};">
+            <div class="table card_display table_card standings-card" style="--standings-accent: {{ team_color }}; --standings-highlight: {{ standings_highlight }};">
                 <h2  class="top_card_header">
                 Standings
                 </h2>
@@ -352,7 +352,7 @@
                 {{ record_table_2 | safe }}
             </div>
             <!-- PLAYOFFS -->
-            <div class="card_display table_card playoff-card" style="--standings-accent: {{ session['team_color'] }}; --standings-highlight: {{ standings_highlight }};">
+            <div class="card_display table_card playoff-card" style="--standings-accent: {{ team_color }}; --standings-highlight: {{ standings_highlight }};">
                 <h2 class="top_card_header">{{ playoff_picture.title }}</h2>
                 <p class="playoff-subtitle">{{ playoff_picture.subtitle }}</p>
                 {% set playoff_tables = playoff_picture.tables %}

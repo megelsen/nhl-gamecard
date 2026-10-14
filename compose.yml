@@ -1,0 +1,69 @@
+# Self-hosted deployment (replaces Render). Run from this directory:
+#   docker compose up -d --build
+# Always on: no Sablier labels, and not part of /home/pi/docker's compose project.
+# Public at https://hockey.${DOMAIN} through a Cloudflare Tunnel: no inbound ports are
+# opened, the DNS record points at Cloudflare, and the home IP is never published.
+name: nhl-gamecard
+
+services:
+  nhl-gamecard:
+    build: .
+    image: nhl-gamecard:local
+    container_name: nhl-gamecard
+    restart: unless-stopped
+    env_file: .env            # REFRESH_TOKEN, DEBUG_ROUTES (see .env.example)
+    cpus: "1.0"
+    mem_limit: 512m
+    memswap_limit: 512m
+    pids_limit: 100
+    cpu_shares: 512
+    read_only: true
+    tmpfs:
+      - /tmp                  # gunicorn worker heartbeat files
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - nhl-cache:/app/cache
+    ports:
+      - "127.0.0.1:8000:8000" # host-only, for local checks; public traffic comes via cloudflared
+    networks:
+      - public
+
+  # Outbound-only connector to Cloudflare (QUIC/HTTP2 on port 7844). The public
+  # hostname and its target (http://nhl-gamecard:8000) are set in the Cloudflare
+  # dashboard for this token-based tunnel.
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.0   # entrypoint: cloudflared --no-autoupdate
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN:?set CF_TUNNEL_TOKEN in .env}
+    hostname: cloudflared     # connector name shown in the dashboard
+    depends_on:
+      - nhl-gamecard
+    cpus: "0.5"
+    mem_limit: 128m
+    memswap_limit: 128m
+    pids_limit: 50
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - public                # only network: can reach nhl-gamecard and the internet, not the LAN
+
+networks:
+  # Isolated: only nhl-gamecard and cloudflared join it. Fixed subnet so a
+  # host firewall rule can block it from reaching the LAN / host services.
+  public:
+    name: public
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  nhl-cache:

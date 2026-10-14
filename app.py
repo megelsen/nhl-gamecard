@@ -1,9 +1,11 @@
 import requests
 from datetime import datetime
 from urllib.parse import urlparse
-from flask import Flask, request, render_template, Response, session, send_from_directory, redirect, url_for, abort
+from flask import Flask, request, render_template, Response, send_from_directory, redirect, url_for, abort
 from werkzeug.exceptions import HTTPException
+import hmac
 import os
+import re
 from threading import Thread
 
 
@@ -12,8 +14,6 @@ from modules import *
 from scheduler import start_scheduler, update_daily_cache, TEAM_LIST
 
 app = Flask(__name__)
-# A fixed key keeps sessions (which the dynamic CSS routes read) valid across restarts
-app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 
 if os.environ.get("RUN_SCHEDULER", "true") == "true":
     try:
@@ -25,6 +25,27 @@ if os.environ.get("RUN_SCHEDULER", "true") == "true":
 
 team_abbr_list = TEAM_LIST
 DEFAULT_TEAM = "NYR"
+
+# Layout constants for the dynamic CSS (px). Nothing here depends on the visitor, so
+# every response is cacheable: no session cookie. The team color travels in the
+# stylesheet URL instead (?color=rrggbb), which keeps edge-cache entries per team.
+LAYOUT = {
+    "min_width_team_summary": 515,
+    "min_width_previous_games": 300,
+    "outer_margin": 12,
+    "card_gap": 24,
+    "card_padding": 8,
+}
+LAYOUT["max_width_medium_screen"] = 2*LAYOUT["min_width_team_summary"] + LAYOUT["min_width_previous_games"] + 2*LAYOUT["outer_margin"] + 4*LAYOUT["card_gap"]
+LAYOUT["max_width_small_screen"] = 2*LAYOUT["min_width_team_summary"] + 2*LAYOUT["outer_margin"]
+LAYOUT["max_width_smallest_screen"] = LAYOUT["min_width_team_summary"] + 2*LAYOUT["outer_margin"]
+
+HEX_COLOR = re.compile(r"[0-9a-fA-F]{6}")
+
+def css_team_color():
+    # Validated so the query string can't inject anything into the stylesheet
+    color = request.args.get("color", "")
+    return f"#{color}" if HEX_COLOR.fullmatch(color) else DEFAULT_COLORS["primary"]
 
 @app.errorhandler(Exception)
 def handle_internal_error(e):
@@ -107,7 +128,6 @@ def team_page(team_abbr):
             status=503,
         )
     team_colors = get_team_color(team_info["team_name"])  
-    light_color = lighten_hex_color(team_colors['primary'],0.25)
     standings_highlight = lighten_hex_color(team_colors['primary'], 0.8)
 
     # Read Schedule
@@ -218,32 +238,6 @@ def team_page(team_abbr):
     # Current playoff round: projected from standings until the playoffs start
     playoff_picture = build_playoff_picture(team_abbr, standings_data, get_playoff_bracket(current_season_id))
     
-    # Some styling variables:
-    min_width_team_summary = 515
-    min_width_previous_games = 300
-    outer_margin = 12
-    card_gap = 24
-    card_padding = 8
-
-    max_width_medium_screen = 2*min_width_team_summary + min_width_previous_games + 2*outer_margin + 4*card_gap
-    max_width_small_screen = 2*min_width_team_summary + 2*outer_margin
-    max_width_smallest_screen = min_width_team_summary + 2*outer_margin
-
-    # Store variables in session
-    session["team_color"] = team_colors['primary']
-    session["secondary_color"] = team_colors['secondary']
-    session["opponent_color"] = opponent_colors['primary']
-    session["card_gap"] = card_gap
-    session["light_color"] = light_color
-    session["max_width_medium_screen"] = max_width_medium_screen
-    session["max_width_small_screen"] = max_width_small_screen
-    session["max_width_smallest_screen"] = max_width_smallest_screen
-    session["outer_margin"] = outer_margin
-    session["card_padding"] = card_padding
-    session["card_gap"] = card_gap
-    session["min_width_previous_games"] = min_width_previous_games
-    session["min_width_team_summary"] = min_width_team_summary
-
     vars = {
         "team_info": team_info,  # Pass it directly
         "dropdown_html": dropdown_html,
@@ -271,7 +265,10 @@ def team_page(team_abbr):
         "record_table_1": record_table_html_1,
         "record_table_2": record_table_html_2,
         "utc_starttime": utc_starttime,
-        "max_width_smallest_screen": max_width_smallest_screen,
+        "max_width_smallest_screen": LAYOUT["max_width_smallest_screen"],
+        "team_color": team_colors['primary'],
+        "opponent_color": opponent_colors['primary'],
+        "css_color": team_colors['primary'].lstrip('#'),
         "goalies": goalies,
         "html_goalie_table": html_goalie_table,        
         "goalies_opponent": goalies_opponent,
@@ -291,47 +288,32 @@ def team_page(team_abbr):
 # Dynamic CSS files
 @app.route('/body.css')
 def dynamic_body_css():
-    team_color = session.get("team_color", "white")
-    outer_margin = session.get("outer_margin", "12px")
-    return Response(render_template("dynamic/styles/body.css.jinja", team_color=team_color, outer_margin=outer_margin), mimetype="text/css")
+    return Response(render_template("dynamic/styles/body.css.jinja", team_color=css_team_color(), **LAYOUT), mimetype="text/css")
 
 @app.route('/cards.css')
 def dynamic_card_css():
-    card_padding = session.get("card_padding","8px")
-    min_width_team_summary = session.get("min_width_team_summary","515px")
-    return Response(render_template("dynamic/styles/cards.css.jinja", card_padding=card_padding,min_width_team_summary=min_width_team_summary), mimetype="text/css")
+    return Response(render_template("dynamic/styles/cards.css.jinja", **LAYOUT), mimetype="text/css")
 
 @app.route('/container.css')
 def dynamic_container_css():
-    card_gap = session.get("card_gap", "4px")
-    min_width_team_summary = session.get("min_width_team_summary","515px")
-    min_width_previous_games = session.get("min_width_previous_games","300px")
-    return Response(render_template("dynamic/styles/container.css.jinja", card_gap=card_gap,min_width_team_summary=min_width_team_summary,min_width_previous_games=min_width_previous_games,), mimetype="text/css")
+    return Response(render_template("dynamic/styles/container.css.jinja", **LAYOUT), mimetype="text/css")
 
 @app.route('/media_scaling.css')
 def dynamic_media_scaling_css():
-    max_width_medium_screen = session.get("max_width_medium_screen","1400px")
-    max_width_small_screen = session.get("max_width_small_screen","1000px")
-    max_width_smallest_screen = session.get("max_width_smallest_screen","515px")
-    min_width_team_summary = session.get("min_width_team_summary", 515)
-    return Response(render_template("dynamic/styles/media_scaling.css.jinja", max_width_medium_screen=max_width_medium_screen,max_width_small_screen=max_width_small_screen,max_width_smallest_screen=max_width_smallest_screen,min_width_team_summary=min_width_team_summary,), mimetype="text/css")
+    return Response(render_template("dynamic/styles/media_scaling.css.jinja", **LAYOUT), mimetype="text/css")
 
 @app.route('/previous_games.css')
 def dynamic__prevGame_css():
-    min_width_team_summary = session.get("min_width_team_summary","515px")
-    min_width_previous_games = session.get("min_width_previous_games","300px")
-    return Response(render_template("dynamic/styles/previous_games.css.jinja", min_width_team_summary=min_width_team_summary,min_width_previous_games=min_width_previous_games,), mimetype="text/css")
+    return Response(render_template("dynamic/styles/previous_games.css.jinja", **LAYOUT), mimetype="text/css")
 
 @app.route('/team_dropdown.css')
 def dynamic_dropdown_css():
-    light_color = session.get("light_color", "white")
-    outer_margin = session.get("outer_margin", "12px")
-    return Response(render_template("dynamic/styles/team_dropdown.css.jinja", outer_margin=outer_margin,light_color=light_color), mimetype="text/css")
+    light_color = lighten_hex_color(css_team_color(), 0.25)
+    return Response(render_template("dynamic/styles/team_dropdown.css.jinja", light_color=light_color, **LAYOUT), mimetype="text/css")
 
 @app.route('/title_card.css')
 def dynamic_titleCard_css():
-    card_gap = session.get("card_gap", "4px")
-    return Response(render_template("dynamic/styles/title_card.css.jinja", card_gap=card_gap,), mimetype="text/css")
+    return Response(render_template("dynamic/styles/title_card.css.jinja", **LAYOUT), mimetype="text/css")
 
 @app.route("/player/<int:player_id>/card")
 def player_card(player_id):
@@ -349,7 +331,12 @@ def player_card(player_id):
 
 @app.route("/refresh")
 def manual_refresh():
-  
+    # Public site: a refresh costs ~100 NHL API requests, so it needs the token from
+    # REFRESH_TOKEN in an X-Refresh-Token header. Unset token = route disabled.
+    token = os.environ.get("REFRESH_TOKEN", "")
+    if not token or not hmac.compare_digest(request.headers.get("X-Refresh-Token", ""), token):
+        abort(404)
+
     def run_refresh():
         try:
             update_daily_cache()
@@ -361,6 +348,9 @@ def manual_refresh():
 
 @app.route('/debug-nhl')
 def debug_nhl():
+    # Uncached proxy to the NHL API: off unless DEBUG_ROUTES=true (keep it off on the public site)
+    if os.environ.get("DEBUG_ROUTES", "false") != "true":
+        abort(404)
     url = request.args.get(
         "url",
         "https://api-web.nhle.com/v1/standings/now",
