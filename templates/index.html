@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NHL Gamecard</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='stick-64x64.ico') }}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" />
-    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    <!-- crossorigin: lets the PNG export (exportPng.js) read the font CSS to embed the fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=block" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 
      <!-- Static CSS -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styling.css') }}">
@@ -418,6 +419,9 @@
                     <option value="imperial">Imperial (mph, ft, lb)</option>
                 </select>
             </label>
+            <button type="button" class="settings-export" id="exportPngBtn">
+                <span class="material-symbols-outlined">download</span> Export PNG
+            </button>
         </div>
         <p>
             This site is an independent project and is not affiliated with, endorsed, or sponsored by 
@@ -441,6 +445,7 @@
     <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
     <script src="{{ url_for('static', filename='js/rosterModal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/playerCard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/exportPng.js') }}"></script>
     <script>
         window.compareColors = {{ compare_colors | tojson }};
         window.compareTeams = {{ {"left": team_abbr, "right": next_opponent} | tojson }};

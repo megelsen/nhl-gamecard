@@ -313,7 +313,8 @@ def dynamic_media_scaling_css():
     max_width_medium_screen = session.get("max_width_medium_screen","1400px")
     max_width_small_screen = session.get("max_width_small_screen","1000px")
     max_width_smallest_screen = session.get("max_width_smallest_screen","515px")
-    return Response(render_template("dynamic/styles/media_scaling.css.jinja", max_width_medium_screen=max_width_medium_screen,max_width_small_screen=max_width_small_screen,max_width_smallest_screen=max_width_smallest_screen,), mimetype="text/css")
+    min_width_team_summary = session.get("min_width_team_summary", 515)
+    return Response(render_template("dynamic/styles/media_scaling.css.jinja", max_width_medium_screen=max_width_medium_screen,max_width_small_screen=max_width_small_screen,max_width_smallest_screen=max_width_smallest_screen,min_width_team_summary=min_width_team_summary,), mimetype="text/css")
 
 @app.route('/previous_games.css')
 def dynamic__prevGame_css():
@@ -379,6 +380,26 @@ def debug_nhl():
         }
     except Exception as e:
         return {"url": url, "error": str(e)}
+
+# NHL images for the PNG export (static/js/exportPng.js): assets.nhle.com sends no CORS headers,
+# so the browser can only draw them into a canvas when they come from our own origin.
+IMAGE_PROXY_HOSTS = {"assets.nhle.com"}
+IMAGE_PROXY_TYPES = ("image/png", "image/jpeg", "image/svg+xml", "image/webp", "image/gif")
+
+@app.route('/img-proxy')
+def image_proxy():
+    url = request.args.get("url", "")
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in IMAGE_PROXY_HOSTS:
+        abort(400)
+    try:
+        res = requests.get(url, timeout=10)
+    except requests.RequestException:
+        abort(502)
+    content_type = res.headers.get("Content-Type", "").split(";")[0].strip()
+    if res.status_code != 200 or content_type not in IMAGE_PROXY_TYPES:
+        abort(502)
+    return Response(res.content, mimetype=content_type, headers={"Cache-Control": "public, max-age=86400"})
 
 @app.route('/health')
 def health():

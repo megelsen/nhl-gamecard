@@ -1,6 +1,17 @@
 
 @media (max-width: {{max_width_medium_screen}}px) {
 
+    /* Playoff card: a normal card again (spans all 3 columns only in the widest layout, standings.css) */
+    .card_display.playoff-card {
+        grid-column: auto;
+        max-width: {{ min_width_team_summary }}px;
+    }
+    .card_display.playoff-card .playoff-conferences {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        justify-content: normal;
+        column-gap: 8px;
+    }
+
     .title_card {
         grid-column: span 2;
     }

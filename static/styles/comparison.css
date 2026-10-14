@@ -5,20 +5,24 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
 }
 
-/* Top scorers and Goalies: the photo sits at the vertical middle of the card, so both cards
-   line up. The caption hangs below the photo (out of flow); the content row reserves room for it. */
+/* Top scorers and Goalies: the photo's top lines up with the team tags above the stat rows,
+   name/number/buttons underneath; both cards match since their headers are the same height. */
 .top_row_element.compare-card {
-    --caption-height: 96px;
-    grid-template-rows: auto minmax(calc(124px + 2 * var(--caption-height)), 1fr);
+    grid-template-rows: auto auto;
+    align-content: start;
+}
+
+.compare-card .headshot-img,
+.compare-card .headshot-img-opponent,
+.compare-card .top-scorer-info-opponent {
+    align-self: start;
 }
 
 .compare-card .headshot-img,
 .compare-card .headshot-img-opponent {
-    position: relative;
     min-width: 0;
     width: 100%;
     white-space: normal;
-    align-self: center;
     padding: 0 6px;
     box-sizing: border-box;
 }
@@ -29,14 +33,6 @@
     width: 88%;
     max-width: 124px;
     margin: 0 auto;
-}
-
-.compare-card .headshot-caption {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    padding: 0 6px;
 }
 
 .compare-card .headshot-caption > p:first-child {

@@ -58,3 +58,34 @@ h1, h2, h3 {
     color: #222;
 }
 
+/* While exporting a PNG (exportPng.js): the copy can overflow by a pixel, which would draw scrollbars */
+.exporting .content * {
+    scrollbar-width: none;
+}
+
+.settings-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fcfcfc;
+    color: #222;
+    font: inherit;
+    cursor: pointer;
+}
+
+.settings-export:hover {
+    background: #f2f2f2;
+}
+
+.settings-export:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+.settings-export .material-symbols-outlined {
+    font-size: 18px;
+}
+
