@@ -2,7 +2,7 @@
 
 function formatEventTime(utcStartTime) {
     const utcDate = new Date(utcStartTime); // Convert UTC string to Date object
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;   
+    const userTimeZone = settingsTimeZone(); // footer setting (userSettings.js), browser zone by default   
     
     const options = {
         month: "short",  // Get abbreviated month (e.g., "Mar")
@@ -161,17 +161,20 @@ function formatEventTime(utcStartTime) {
     return `${eventDay}, ${eventMonth} ${eventDate},<br> at  ${hour}:${minute}${ampm} ${timezoneAbbr}`;
 }
 
-// Get the event time from the HTML element
-const eventElements = document.querySelectorAll(".event-time");
-for (let eventElement of eventElements) {
-    const utcStartTime = eventElement.getAttribute("data-utc-time");
-    if (utcStartTime) {
-        const formattedTime = formatEventTime(utcStartTime);
-        // const currentContent = eventElement.innerHTML.trim();
-        
-        eventElement.innerHTML = `${eventElement.innerHTML} ${formattedTime}`;
-    } else if (!eventElement.textContent.trim()) {
-        eventElement.innerHTML = "Time unavailable";
+// Append the local time to every .event-time; re-run when the timezone setting changes
+function renderEventTimes() {
+    for (const eventElement of document.querySelectorAll(".event-time")) {
+        if (eventElement.dataset.baseHtml === undefined) eventElement.dataset.baseHtml = eventElement.innerHTML;
+        const utcStartTime = eventElement.getAttribute("data-utc-time");
+        if (utcStartTime) {
+            eventElement.innerHTML = `${eventElement.dataset.baseHtml} ${formatEventTime(utcStartTime)}`;
+        } else if (!eventElement.dataset.baseHtml.trim()) {
+            eventElement.innerHTML = "Time unavailable";
+        }
     }
 }
 
+renderEventTimes();
+document.addEventListener("settingschange", event => {
+    if (event.detail.name === "timezone") renderEventTimes();
+});

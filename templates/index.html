@@ -410,6 +410,15 @@
     </div>     
 
     <footer class="disclaimer">
+        <div class="settings-bar">
+            <label>Timezone <select id="setting-timezone"><option value="auto">Auto</option></select></label>
+            <label>Units
+                <select id="setting-units">
+                    <option value="metric">Metric (km/h, cm, kg)</option>
+                    <option value="imperial">Imperial (mph, ft, lb)</option>
+                </select>
+            </label>
+        </div>
         <p>
             This site is an independent project and is not affiliated with, endorsed, or sponsored by 
             the National Hockey League (NHL) or any of its teams. All logos and trademarks are the 
@@ -418,6 +427,7 @@
     </footer>
 
     <!-- 🔹 Static JavaScript -->
+    <script src="{{ url_for('static', filename='js/userSettings.js') }}"></script>
     <script src="{{ url_for('static', filename='js/timezoneMap.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/eventListeners.js') }}"></script>
     <script src="{{ url_for('static', filename='js/formatEventTime.js') }}"></script>

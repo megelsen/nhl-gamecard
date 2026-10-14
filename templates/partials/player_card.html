@@ -12,7 +12,7 @@
     <table class="hockey-card-bio">
         <tr><th>Born</th><td>{{ card.born }}</td></tr>
         <tr><th>Birthplace</th><td>{{ card.birthplace }}{% if card.flag_url %} <img class="hockey-card-flag-inline" src="{{ card.flag_url }}" alt="">{% endif %}</td></tr>
-        <tr><th>Size</th><td>{{ card.size }}</td></tr>
+        <tr><th>Size</th><td><span class="unit-value" data-metric="{{ card.size.metric }}" data-imperial="{{ card.size.imperial }}">{{ card.size.metric }}</span></td></tr>
         <tr><th>{{ card.hand_label }}</th><td>{{ card.hand }}</td></tr>
         <tr><th>Draft</th><td>{{ card.draft }}</td></tr>
     </table>

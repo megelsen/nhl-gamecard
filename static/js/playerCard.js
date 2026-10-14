@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         modal.style.display = "flex";
         if (cache.has(playerId)) {
             content.innerHTML = cache.get(playerId);
+            applyUnits(content);
             return;
         }
         content.innerHTML = '<div class="player-card-loading"><div class="spinner"></div></div>';
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const html = await res.text();
             cache.set(playerId, html);
             content.innerHTML = html;
+            applyUnits(content);
         } catch (e) {
             content.innerHTML = '<p class="hockey-card-empty">Player info is unavailable right now.</p>';
         }

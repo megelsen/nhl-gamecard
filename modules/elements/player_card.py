@@ -150,13 +150,16 @@ def born(birth_date):
 
 
 def size(landing):
+    """Height and weight in both unit systems; the footer's units setting picks one (userSettings.js)."""
     inches = landing.get("heightInInches")
-    parts = []
+    metric, imperial = [], []
     if inches:
-        parts.append(f"{inches // 12}'{inches % 12}\" ({landing.get('heightInCentimeters', '-')} cm)")
+        imperial.append(f"{inches // 12}'{inches % 12}\"")
+        metric.append(f"{landing.get('heightInCentimeters', '-')} cm")
     if landing.get("weightInPounds"):
-        parts.append(f"{landing['weightInPounds']} lb ({landing.get('weightInKilograms', '-')} kg)")
-    return ", ".join(parts) or "-"
+        imperial.append(f"{landing['weightInPounds']} lb")
+        metric.append(f"{landing.get('weightInKilograms', '-')} kg")
+    return {"metric": ", ".join(metric) or "-", "imperial": ", ".join(imperial) or "-"}
 
 
 def draft(details):

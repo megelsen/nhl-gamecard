@@ -1,7 +1,7 @@
 // Shared stat comparison: one component for Top scorers, Goalies and Last meeting.
 // Data: {left: "NYR", right: "TBL", rows: [{key, left, right, leftText?, rightText?}]} with raw numbers.
 // Labels, number formats and bar rules for every row key live here, in COMPARE_SPECS.
-// Colors: window.compareColors = {ABBR: color}.
+// Colors: window.compareColors = {ABBR: color}. Speeds follow the footer's units setting (userSettings.js).
 
 const COMPARE_SPECS = {
     GP: { label: "GP" },
@@ -11,8 +11,8 @@ const COMPARE_SPECS = {
     W: { label: "W" },
     SO: { label: "SO" },
     TOI: { label: "TOI/GP", format: "time" },
-    SHOT: { label: "Shot km/h", format: "fixed1", spread: 10 },
-    SPEED: { label: "Speed km/h", format: "fixed1", spread: 3 },
+    SHOT: { label: "Shot", unit: "speed", format: "fixed1", spread: 10 },
+    SPEED: { label: "Speed", unit: "speed", format: "fixed1" },
     GAA: { label: "GAA", format: "fixed2", spread: 1.5, lowerIsBetter: true },
     "SV%": { label: "SV%", format: "svpct", spread: 0.05 },
     "HDSV%": { label: "HD SV%", format: "svpct", spread: 0.08 },
@@ -23,6 +23,19 @@ const COMPARE_SPECS = {
     Hits: { label: "Hits" },
 };
 const COMPARE_MAX_SHIFT = 40; // the split stays within 10%..90%
+const KMH_TO_MPH = 0.621371;
+
+// Values come in km/h; convert when the viewer picked imperial units
+function compareUnit(spec) {
+    if (spec.unit !== "speed") return { label: spec.label, factor: 1 };
+    return (window.userSettings || {}).units === "imperial"
+        ? { label: `${spec.label} mph`, factor: KMH_TO_MPH }
+        : { label: `${spec.label} km/h`, factor: 1 };
+}
+
+function scaleValue(value, factor) {
+    return value === null || value === undefined ? value : value * factor;
+}
 
 function formatCompareValue(value, format) {
     if (value === null || value === undefined || Number.isNaN(value)) return "-";
@@ -59,6 +72,7 @@ function compareLogo(abbrev) {
 
 function renderComparison(container, data) {
     if (!container || !data) return;
+    container.compareData = data; // re-rendered when the units change
     const colors = window.compareColors || {};
     const leftColor = colors[data.left] || "#555";
     const rightColor = colors[data.right] || "#bbb";
@@ -69,17 +83,20 @@ function renderComparison(container, data) {
 
     const rows = data.rows.map(row => {
         const spec = COMPARE_SPECS[row.key] || { label: row.key };
-        const leftText = row.leftText ?? formatCompareValue(row.left, spec.format);
-        const rightText = row.rightText ?? formatCompareValue(row.right, spec.format);
+        const unit = compareUnit(spec);
+        const left = scaleValue(row.left, unit.factor);
+        const right = scaleValue(row.right, unit.factor);
+        const leftText = row.leftText ?? formatCompareValue(left, spec.format);
+        const rightText = row.rightText ?? formatCompareValue(right, spec.format);
         let bar = "";
         if (spec.bar !== false) {
-            const split = compareSplit(spec, row.left, row.right);
+            const split = compareSplit({ ...spec, spread: spec.spread && spec.spread * unit.factor }, left, right);
             bar = `<div class="compare-bar${split === null ? " even" : ""}" style="--split: ${split ?? 50}%;">
                        <span class="bar-left"></span><span class="bar-right"></span></div>`;
         }
         return `<div class="compare-row">
                     <span class="compare-value left">${leftText}</span>
-                    <span class="compare-label">${spec.label}</span>
+                    <span class="compare-label">${unit.label}</span>
                     <span class="compare-value right">${rightText}</span>
                     ${bar}
                 </div>`;
@@ -98,5 +115,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             mount.textContent = "Comparison unavailable";
         }
+    });
+});
+
+document.addEventListener("settingschange", event => {
+    if (event.detail.name !== "units") return;
+    document.querySelectorAll(".compare-mount, #goalie-compare").forEach(container => {
+        if (container.compareData) renderComparison(container, container.compareData);
     });
 });
