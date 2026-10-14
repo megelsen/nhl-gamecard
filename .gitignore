@@ -17,3 +17,4 @@ modules/elements/__pycache__/upcoming_game.cpython-310.pyc
 /cache
 *.json
 *.json
+.env

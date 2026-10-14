@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from flask import Flask, request, render_template, Response, session, send_from_directory, redirect, url_for, abort
 from werkzeug.exceptions import HTTPException
+import hmac
 import os
 from threading import Thread
 
@@ -348,7 +349,12 @@ def player_card(player_id):
 
 @app.route("/refresh")
 def manual_refresh():
-  
+    # Public site: a refresh costs ~100 NHL API requests, so it needs the token from
+    # REFRESH_TOKEN in an X-Refresh-Token header. Unset token = route disabled.
+    token = os.environ.get("REFRESH_TOKEN", "")
+    if not token or not hmac.compare_digest(request.headers.get("X-Refresh-Token", ""), token):
+        abort(404)
+
     def run_refresh():
         try:
             update_daily_cache()
@@ -360,6 +366,9 @@ def manual_refresh():
 
 @app.route('/debug-nhl')
 def debug_nhl():
+    # Uncached proxy to the NHL API: off unless DEBUG_ROUTES=true (keep it off on the public site)
+    if os.environ.get("DEBUG_ROUTES", "false") != "true":
+        abort(404)
     url = request.args.get(
         "url",
         "https://api-web.nhle.com/v1/standings/now",

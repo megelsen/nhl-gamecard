@@ -1,0 +1,13 @@
+[Unit]
+Description=Firewall rules isolating the docker "public" network from the host and LAN
+After=docker.service ufw.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/public-net-isolation.sh
+
+[Install]
+WantedBy=multi-user.target docker.service

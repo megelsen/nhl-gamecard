@@ -1,0 +1,42 @@
+# Self-hosted deployment (replaces Render). Run from this directory:
+#   docker compose up -d --build
+# Always on: no Sablier labels, and not part of /home/pi/docker's compose project.
+name: nhl-gamecard
+
+services:
+  nhl-gamecard:
+    build: .
+    image: nhl-gamecard:local
+    container_name: nhl-gamecard
+    restart: unless-stopped
+    env_file: .env            # SECRET_KEY (see .env.example)
+    cpus: "1.0"
+    mem_limit: 512m
+    memswap_limit: 512m
+    pids_limit: 100
+    cpu_shares: 512
+    read_only: true
+    tmpfs:
+      - /tmp                  # gunicorn worker heartbeat files
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - nhl-cache:/app/cache
+    ports:
+      - "127.0.0.1:8000:8000" # host-only, for local checks; public traffic comes via cloudflared (phase 3)
+    networks:
+      - public
+
+networks:
+  # Isolated: only nhl-gamecard (and later cloudflared) join it. Fixed subnet so a
+  # host firewall rule can block it from reaching the LAN / host services.
+  public:
+    name: public
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  nhl-cache:

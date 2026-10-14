@@ -37,7 +37,9 @@ For visual checks, run the app on a spare port and screenshot with headless Chro
 
 Set `SECRET_KEY` in production, otherwise sessions (and therefore the dynamic CSS) reset on every restart.
 
-Useful routes: `/player/<id>/card` (player card HTML fragment), `/refresh` (force-refresh the cache in a background thread), `/debug-nhl?url=...` (proxy an `https://*.nhle.com` URL and show status/headers/body preview), `/health`. Unknown team codes return 404; lowercase codes redirect to uppercase.
+Useful routes: `/player/<id>/card` (player card HTML fragment), `/refresh` (force-refresh the cache in a background thread; returns 404 unless the request has an `X-Refresh-Token` header matching `REFRESH_TOKEN`), `/debug-nhl?url=...` (proxy an `https://*.nhle.com` URL and show status/headers/body preview; returns 404 unless `DEBUG_ROUTES=true`), `/health`. Unknown team codes return 404; lowercase codes redirect to uppercase. Both gated routes are gated because the site is public and every call hits the NHL API from the host's IP.
+
+Self-hosting: `compose.yml` runs the app on the host (`docker compose up -d --build`, env from `.env`, see `.env.example`), on an isolated `public` network. `deploy/` has the host firewall rules that keep that network off the LAN.
 
 ## Architecture
 

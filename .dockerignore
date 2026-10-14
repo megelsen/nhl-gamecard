@@ -1,0 +1,11 @@
+.git
+.github
+.env
+.env.*
+cache/
+__pycache__/
+*.pyc
+*.pkl
+compose.yml
+gamecard-debug.py
+output.html
