@@ -320,20 +320,14 @@
                 Standings
                 </h2>
                 <div class="tabs-container standings-tabs-container">
-                    {% for conference, label in [("Eastern", "East"), ("Western", "West")] %}
-                    <div class="standings-tab {% if conference == team_info['team_conference'] %}active{% endif %}" data-conference="{{ conference }}">{{ label }}</div>
+                    {% for conference in standings_tables %}
+                    <div class="standings-tab {% if conference == team_info['team_conference'] %}active{% endif %}" data-conference="{{ conference }}">{{ conference[:4] }}</div>
                     {% endfor %}
                 </div>
-                <div class="standings-view-toggle">
-                    <button class="standings-view active" data-view="conference">Conference</button>
-                    <button class="standings-view" data-view="wildcard">Wild Card</button>
+                {% for conference, table_html in standings_tables.items() %}
+                <div class="standings-table-wrapper" data-conference="{{ conference }}" {% if conference != team_info['team_conference'] %}hidden{% endif %}>
+                    {{ table_html | safe }}
                 </div>
-                {% for conference, views in standings_tables.items() %}
-                    {% for view, table_html in views.items() %}
-                    <div class="standings-table-wrapper" data-conference="{{ conference }}" data-view="{{ view }}" {% if not (conference == team_info['team_conference'] and view == 'conference') %}hidden{% endif %}>
-                        {{ table_html | safe }}
-                    </div>
-                    {% endfor %}
                 {% endfor %}
             </div>
             <div class="card_display table_card">
@@ -355,18 +349,14 @@
                 <h2 class="top_card_header">{{ playoff_picture.title }}</h2>
                 <p class="playoff-subtitle">{{ playoff_picture.subtitle }}</p>
                 {% set playoff_tables = playoff_picture.tables %}
-                {% if playoff_tables | length > 1 %}
-                <div class="tabs-container standings-tabs-container">
-                    {% for conference in playoff_tables %}
-                    <div class="standings-tab {% if conference == team_info['team_conference'] %}active{% endif %}" data-conference="{{ conference }}">{{ conference[:4] }}</div>
+                <div class="playoff-conferences">
+                    {% for conference, table_html in playoff_tables.items() %}
+                    <div class="playoff-conference">
+                        {% if playoff_tables | length > 1 %}<h3 class="playoff-conference-title">{{ conference[:4] }}</h3>{% endif %}
+                        {{ table_html | safe }}
+                    </div>
                     {% endfor %}
                 </div>
-                {% endif %}
-                {% for conference, table_html in playoff_tables.items() %}
-                <div class="standings-table-wrapper" data-conference="{{ conference }}" data-view="conference" {% if playoff_tables | length > 1 and conference != team_info['team_conference'] %}hidden{% endif %}>
-                    {{ table_html | safe }}
-                </div>
-                {% endfor %}
             </div>
         </div>  
 <!--- BETA --------------------------------------------------------------->

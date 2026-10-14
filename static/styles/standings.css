@@ -1,41 +1,6 @@
-/* Standings card: tabs, view toggle, group rows, own team, playoff cut line */
+/* Standings card: tabs, own team, playoff cut line */
 .standings-tabs-container {
     margin-bottom: 8px;
-}
-
-.standings-view-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 8px;
-}
-
-.standings-view {
-    padding: 2px 10px;
-    border-radius: 12px;
-    border: solid lightgrey 1px;
-    background: #f3f3f3;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-.standings-view:hover {
-    background: #d6d6d6;
-}
-
-.standings-view.active {
-    background: var(--standings-accent, #555);
-    border-color: var(--standings-accent, #555);
-    color: white;
-}
-
-.standings-table tr.standings-group th {
-    text-align: left;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding-top: 10px;
-    border-bottom: 1px solid lightgrey;
 }
 
 .standings-table tr.own-team td {
@@ -55,6 +20,22 @@
     margin: 0 0 8px 0;
     color: #666;
     text-align: center;
+}
+
+/* West and East side by side (like on a map), stacked when the card is too narrow */
+.playoff-conferences {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.playoff-conference-title {
+    margin: 0 0 2px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
 }
 
 .bracket {
@@ -117,10 +98,10 @@
 
 .bracket-team {
     display: grid;
-    grid-template-columns: 2.6em 36px 1fr auto;
+    grid-template-columns: 2.4em 28px 1fr auto;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
+    gap: 5px;
+    padding: 4px 8px;
 }
 
 .bracket-team + .bracket-team {
@@ -141,8 +122,8 @@
 }
 
 .bracket-team img {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     vertical-align: middle;
 }
 

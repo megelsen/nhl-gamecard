@@ -3,23 +3,17 @@ from modules.fetch_nhl_api import get_logo
 __all__ =['build_standings_tables','get_standings','format_team_standings','bold','build_playoff_picture']
 
 STANDINGS_COLUMNS = ["Team", "Rank", "GP", "PTS", "W", "L", "OTL", "P%"]
-PLAYOFF_SPOTS_PER_DIVISION = 3
+# West first, like on a map
+CONFERENCES = ("Western", "Eastern")
 
 
 def build_standings_tables(team_abbr, standings_data):
-    """
-    Standings tables for both conferences, in two views each:
-    {"Eastern": {"conference": html, "wildcard": html}, "Western": {...}}
-    """
+    """Conference standings tables, West first: {"Western": html, "Eastern": html}"""
     standings = standings_data.get("standings", [])
-    tables = {}
-    for conference in ("Eastern", "Western"):
-        teams = [t for t in standings if t.get("conferenceName") == conference]
-        tables[conference] = {
-            "conference": build_conference_table(teams, team_abbr),
-            "wildcard": build_wildcard_table(teams, team_abbr),
-        }
-    return tables
+    return {
+        conference: build_conference_table([t for t in standings if t.get("conferenceName") == conference], team_abbr)
+        for conference in CONFERENCES
+    }
 
 
 def build_conference_table(teams, team_abbr):
@@ -29,29 +23,6 @@ def build_conference_table(teams, team_abbr):
     # the top 8 by conference rank: only draw the cut line when they are.
     cut_after = len(playoff_teams) - 1 if teams[:len(playoff_teams)] == playoff_teams else None
     rows = [standings_row(t, team_abbr, cut_line=(i == cut_after)) for i, t in enumerate(teams)]
-    return standings_table(rows)
-
-
-def build_wildcard_table(teams, team_abbr):
-    """NHL.com style: top 3 of each division, then the wild card race."""
-    divisions = {}
-    for t in teams:
-        divisions.setdefault(t.get("divisionName", ""), []).append(t)
-    # Division with the conference leader first
-    division_order = sorted(divisions, key=lambda d: min(t.get("conferenceSequence", 99) for t in divisions[d]))
-
-    rows = []
-    for division in division_order:
-        leaders = sorted(divisions[division], key=lambda t: t.get("divisionSequence", 99))[:PLAYOFF_SPOTS_PER_DIVISION]
-        rows.append(group_row(division))
-        rows += [standings_row(t, team_abbr) for t in leaders]
-
-    wildcard = sorted(
-        (t for t in teams if t.get("wildcardSequence", 0) > 0),
-        key=lambda t: t["wildcardSequence"],
-    )
-    rows.append(group_row("Wild Card"))
-    rows += [standings_row(t, team_abbr, cut_line=(t["wildcardSequence"] == 2)) for t in wildcard]
     return standings_table(rows)
 
 
@@ -65,10 +36,6 @@ def standings_row(team, team_abbr, cut_line=False):
     class_attr = f' class="{" ".join(classes)}"' if classes else ""
     cells = "".join(f"<td>{stats[col]}</td>" for col in STANDINGS_COLUMNS)
     return f"<tr{class_attr}>{cells}</tr>"
-
-
-def group_row(label):
-    return f'<tr class="standings-group"><th colspan="{len(STANDINGS_COLUMNS)}">{label}</th></tr>'
 
 
 def standings_table(rows):
@@ -137,7 +104,7 @@ def build_playoff_picture(team_abbr, standings_data, bracket_data):
     """
     Matchups of the current playoff round. Before the playoffs: round 1 projected from
     standings ("if the season ended today"); during/after them: the real series.
-    Returns {"title": str, "subtitle": str, "tables": {"Eastern": html, "Western": html} or {"Final": html}}.
+    Returns {"title": str, "subtitle": str, "tables": {"Western": html, "Eastern": html} or {"Final": html}}.
     """
     standings = {t["teamAbbrev"]["default"]: t for t in standings_data.get("standings", [])}
     series = [s for s in (bracket_data or {}).get("series", []) if s.get("topSeedTeam") and s.get("bottomSeedTeam")]
@@ -153,7 +120,7 @@ def projected_picture(team_abbr, standings):
         picture["subtitle"] = "Projected matchups appear after the first games"
         return picture
 
-    for conference in ("Eastern", "Western"):
+    for conference in CONFERENCES:
         teams = [t for t in standings.values() if t.get("conferenceName") == conference]
         leaders = sorted((t for t in teams if t.get("divisionSequence") == 1), key=lambda t: t.get("conferenceSequence", 99))
         wildcards = {t.get("wildcardSequence"): t for t in teams}
@@ -191,7 +158,7 @@ def live_picture(team_abbr, standings, series):
     if current_round >= 4:
         picture["tables"]["Final"] = bracket([series_row(team_abbr, standings, s) for s in round_series])
         return picture
-    for conference in ("Eastern", "Western"):
+    for conference in CONFERENCES:
         rows = [series_row(team_abbr, standings, s) for s in round_series
                 if standings.get(s["topSeedTeam"]["abbrev"], {}).get("conferenceName") == conference]
         if rows:
