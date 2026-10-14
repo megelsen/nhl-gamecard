@@ -135,7 +135,7 @@ def projected_picture(team_abbr, standings):
             if 2 in by_seq and 3 in by_seq:
                 matchups.append((by_seq[2], by_seq[3]))
         boxes = [series_box(team_abbr, projected_side(top), projected_side(bottom)) for top, bottom in matchups]
-        picture["tables"][conference] = bracket(boxes)
+        picture["tables"][conference] = bracket(boxes, mirrored=(conference == "Eastern"))
     return picture
 
 
@@ -162,7 +162,7 @@ def live_picture(team_abbr, standings, series):
         rows = [series_row(team_abbr, standings, s) for s in round_series
                 if standings.get(s["topSeedTeam"]["abbrev"], {}).get("conferenceName") == conference]
         if rows:
-            picture["tables"][conference] = bracket(rows)
+            picture["tables"][conference] = bracket(rows, mirrored=(conference == "Eastern"))
     return picture
 
 
@@ -215,11 +215,14 @@ def series_box(team_abbr, top, bottom, status=None):
     return f'<div class="bracket-series">{team_row(top)}{team_row(bottom)}{status_html}</div>'
 
 
-def bracket(boxes):
-    """Series in pairs (their winners meet next round), joined by connector lines."""
+def bracket(boxes, mirrored=False):
+    """
+    Series in pairs (their winners meet next round), joined by connector lines.
+    mirrored: lines on the left (East, so both conferences open towards the middle).
+    """
     pairs = [boxes[i:i + 2] for i in range(0, len(boxes), 2)]
     html = "".join(
         f'<div class="bracket-pair{" single" if len(pair) == 1 else ""}">{"".join(pair)}</div>'
         for pair in pairs
     )
-    return f'<div class="bracket">{html}</div>'
+    return f'<div class="bracket{" mirrored" if mirrored else ""}">{html}</div>'

@@ -28,6 +28,7 @@
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 8px;
     width: 100%;
+    container-type: inline-size;
 }
 
 .playoff-conference-title {
@@ -76,6 +77,36 @@
     top: 50%;
     width: var(--connector);
     border-top: 2px solid var(--line);
+}
+
+/* Side by side, the East bracket is mirrored so both open towards the middle */
+@container (min-width: 408px) {
+    .playoff-conference:has(.bracket.mirrored) .playoff-conference-title {
+        text-align: right;
+    }
+
+    .bracket.mirrored .bracket-pair {
+        padding-right: 0;
+        padding-left: calc(2 * var(--connector));
+    }
+
+    .bracket.mirrored .bracket-pair:not(.single)::before {
+        right: auto;
+        left: var(--connector);
+        border-right: none;
+        border-left: 2px solid var(--line);
+        border-radius: 4px 0 0 4px;
+    }
+
+    .bracket.mirrored .bracket-pair:not(.single)::after {
+        right: auto;
+        left: 0;
+    }
+
+    .bracket.mirrored .bracket-pair:not(.single) .bracket-series::after {
+        right: auto;
+        left: calc(-1 * var(--connector) - 1px);
+    }
 }
 
 .bracket-series {
