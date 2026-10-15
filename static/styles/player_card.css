@@ -530,3 +530,9 @@
     padding: 4px 14px 0;
     box-sizing: border-box;
 }
+
+.player-compare-change {
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}

@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- Comparison: both players side by side -----------------------------------------------
 
-    function playerSide(player) {
+    function playerSide(player, changeable = false) {
         return `<div class="player-compare-side" style="--team-color: ${player.color};">
                     <img class="player-compare-headshot" src="${escapeHtml(player.headshot)}" alt="${escapeHtml(player.name)}"
                          data-player-id="${escapeHtml(player.id)}" title="Open player card">
@@ -198,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${player.flag_url ? `<img class="player-compare-flag" src="${escapeHtml(player.flag_url)}" alt="" title="${escapeHtml(player.country)}">` : ""}
                         ${escapeHtml(player.team)}
                     </span>
+                    ${changeable ? '<button type="button" class="primary_button player-compare-change" data-card-action="change">Change player</button>' : ""}
                 </div>`;
     }
 
@@ -209,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const right = await getJson(`/player/${rightId}/compare.json?against=${left.color.slice(1)}`);
             const keys = left.is_goalie ? COMPARE_KEYS.goalie : COMPARE_KEYS.skater;
             content.innerHTML = compareShell(`${escapeHtml(left.season)} regular season`, `
-                <div class="player-compare-players">${playerSide(left)}${playerSide(right)}</div>
+                <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
                 <div class="compare-mount player-compare-mount"></div>
                 <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>`);
             renderComparison(content.querySelector(".player-compare-mount"), {
@@ -233,6 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const action = target.dataset.cardAction;
         if (action === "flip") flip(target.closest(".hockey-card-flip"));
         else if (action === "compare") openCompare(target.closest(".hockey-card-flip"));
+        else if (action === "change") showPicker();
         else if (action === "back") {
             // Comparison -> picker -> card
             if (content.dataset.view === "comparison") showPicker();
