@@ -146,6 +146,11 @@
     white-space: nowrap;
 }
 
+/* Keeps the x of xGF/xGA lowercase */
+.compare-label .compare-case {
+    text-transform: none;
+}
+
 /* The one bar style for every comparison row. Only the colors (--left-color /
    --right-color on .compare) and the split (--split, set per row) vary. */
 .compare-bar {

@@ -85,7 +85,9 @@
             {% for row in card.percentiles.rows %}
             <div class="compare-row">
                 <span class="compare-value left">{{ unit(row.value) }}</span>
-                <span class="compare-label">{{ unit(row.label) }} · {{ row.rank }}</span>
+                <span class="compare-label">
+                    {%- if row.label is string and row.label[:1] == 'x' -%}<span class="compare-case">x</span>{{ row.label[1:] }}
+                    {%- else -%}{{ unit(row.label) }}{%- endif %} · {{ row.rank }}</span>
                 <span class="compare-value right">{{ unit(row.avg) }}</span>
                 <div class="compare-bar" style="--split: {{ row.split }}%;"><span class="bar-left"></span><span class="bar-right"></span></div>
             </div>

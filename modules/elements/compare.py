@@ -6,7 +6,7 @@ from modules.fetch_nhl_api import get_skater_edge, get_goalie_edge
 __all__ = ['skater_edge_stats', 'skater_xg_stats', 'goalie_edge_stats', 'skater_comparison', 'game_comparison', 'compare_mount']
 
 # Row keys understood by static/js/comparison.js (labels, formats and bar rules live there)
-SKATER_ROWS = ["GP", "G", "A", "P", "TOI", "XGF60", "XGA60", "SHOT", "SPEED"]
+SKATER_ROWS = ["GP", "G", "A", "P", "XGF60", "SPEED", "TOI"]
 GAME_ROWS = ["Score", "SOG", "SV%", "FO%", "PP", "Hits"]
 
 
@@ -43,8 +43,6 @@ def skater_comparison(left, right, left_team, right_team):
             "P": player.get("points"),
             "TOI": player.get("toi_seconds"),
             "XGF60": player.get("xgf_60"),
-            "XGA60": player.get("xga_60"),
-            "SHOT": player.get("shot_speed"),
             "SPEED": player.get("skate_speed"),
         }
     left_values, right_values = values(left), values(right)
