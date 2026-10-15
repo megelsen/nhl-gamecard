@@ -390,6 +390,11 @@ def team_roster_json(team_abbr):
     ]
     return jsonify(players)
 
+@app.route("/players/ranking.json")
+def player_ranking_json():
+    # Sort key for the comparison picker: {playerId: points (skaters) or games played (goalies)}
+    return jsonify(get_player_ranking(get_season_id()))
+
 @app.route("/refresh")
 def manual_refresh():
     # Public site: a refresh costs ~100 NHL API requests, so it needs the token from

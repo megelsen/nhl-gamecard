@@ -1,3 +1,4 @@
+import json
 import requests
 import random
 import threading
@@ -7,7 +8,7 @@ from contextlib import contextmanager
 from email.utils import parsedate_to_datetime
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','track_fetch_failures']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','track_fetch_failures']
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,21 @@ def get_player_season_report(playerID, goalie=False):
     cache_name = f"season_report_{playerID}"
     url = f"https://api.nhle.com/stats/rest/en/{report}?cayenneExp=playerId={playerID}%20and%20gameTypeId=2"
     return _safe_get_json(url, cache_name)
+
+
+def _ranking(text, key):
+    # {playerId: value} from a league-wide stats report, so the cache stays small
+    return {str(row["playerId"]): row.get(key) or 0 for row in json.loads(text).get("data", [])}
+
+
+def get_player_ranking(season_id, force=False):
+    """Every player's {playerId: value} for sorting player lists: points for skaters, games
+    played for goalies (regular season, whole league, one request each)."""
+    ranking = {}
+    for report, key in (("skater", "points"), ("goalie", "gamesPlayed")):
+        url = f"https://api.nhle.com/stats/rest/en/{report}/summary?limit=-1&cayenneExp=seasonId={season_id}%20and%20gameTypeId=2"
+        ranking.update(_safe_get_json(url, f"ranking_{report}_{season_id}", force, parse=lambda text, key=key: _ranking(text, key)) or {})
+    return ranking
 
 
 def get_boxscore(gameID):

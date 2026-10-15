@@ -4,8 +4,9 @@
 // name search or from a team roster), shown with the shared comparison bars (comparison.js).
 const PLAYER_SEARCH_URL = "https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=20&active=true&q=";
 const COMPARE_KEYS = {
-    skater: ["GP", "G", "A", "P", "PM", "TOI", "XGF60", "XGA60", "SHOT", "SPEED"],
-    goalie: ["GP", "W", "GAA", "SV%", "SO", "HDSV%", "GSAX"],
+    // Same order as the Top scorers and Goalies cards, then the extra rows
+    skater: ["GP", "G", "A", "P", "XGF60", "SPEED", "TOI", "XGA60", "SHOT", "PM"],
+    goalie: ["GP", "W", "GAA", "SV%", "HDSV%", "SO", "GSAX"],
 };
 const FLIP_MS = 600; // matches the transition in player_card.css
 
@@ -168,15 +169,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // null = loading; only players of the same kind (skaters or goalies) can be compared
-    function renderResults(players, emptyText = "No players.") {
+    // {playerId: points (skaters) or games played (goalies)}; lists stay unsorted without it
+    function loadRanking() {
+        return getJson("/players/ranking.json").catch(() => ({}));
+    }
+
+    // null = loading; only players of the same kind (skaters or goalies) can be compared.
+    // Best first: most points, or for goalies most games (the sort keeps the order on ties).
+    async function renderResults(players, emptyText = "No players.") {
         const list = content.querySelector(".player-compare-results");
         if (!list) return;
         if (players === null) {
             list.innerHTML = '<li class="player-compare-note"><div class="spinner"></div></li>';
             return;
         }
-        const matching = players.filter(p => String(p.id) !== String(compareLeft.id) && (p.position === "G") === compareLeft.goalie);
+        const token = searchToken;
+        const ranking = await loadRanking();
+        if (token !== searchToken) return;
+        const rank = p => ranking[p.id] ?? -1;
+        const matching = players
+            .filter(p => String(p.id) !== String(compareLeft.id) && (p.position === "G") === compareLeft.goalie)
+            .sort((a, b) => rank(b) - rank(a));
         list.innerHTML = matching.length ? matching.map(p => `
             <li><button type="button" class="player-compare-option" data-pick="${escapeHtml(p.id)}">
                 <img src="${escapeHtml(p.headshot)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
