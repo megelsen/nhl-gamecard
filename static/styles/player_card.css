@@ -216,6 +216,150 @@
     background: white;
 }
 
+/* Flip card: front (bio, career) and back (percentiles) share one grid cell, so the
+   card takes the taller face's height; playerCard.js toggles .flipped */
+.hockey-card-flip {
+    width: min(400px, 94vw);
+    perspective: 1400px;
+}
+
+.hockey-card-flipper {
+    display: grid;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+
+.hockey-card-flip.flipped .hockey-card-flipper {
+    transform: rotateY(180deg);
+}
+
+.hockey-card-flipper > .hockey-card {
+    grid-area: 1 / 1;
+    position: relative;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.hockey-card-back {
+    transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hockey-card-flipper {
+        transition: none;
+    }
+}
+
+/* Left of the modal's close button */
+.hockey-card-flip-btn {
+    position: absolute;
+    top: 6px;
+    right: 40px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--card-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+.hockey-card-flip-btn:hover,
+.hockey-card-flip-btn:focus-visible {
+    background: white;
+    outline: 2px solid var(--card-accent);
+}
+
+.hockey-card-back-banner {
+    margin-top: 0;
+    padding: 14px 84px 10px 14px;
+    clip-path: none;
+}
+
+.hockey-card-pct {
+    list-style: none;
+    margin: 0;
+    padding: 6px 12px 0;
+}
+
+.hockey-card-pct li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.hockey-card-back-banner .nowrap {
+    white-space: nowrap;
+}
+
+.pct-label {
+    font-size: 0.85rem;
+}
+
+.pct-value {
+    font-size: 0.9rem;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.pct-bar {
+    grid-column: 1 / -1;
+    position: relative;
+    height: 10px;
+    margin: 6px 14px 2px 12px;
+    border-radius: 5px;
+    background: #e6e6e6;
+}
+
+.pct-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--pct) * 1%);
+    border-radius: 5px;
+    background: var(--card-primary);
+}
+
+/* Percentile in a bubble at the end of the fill */
+.pct-rank {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--pct) * 1%);
+    transform: translate(-50%, -50%);
+    min-width: 24px;
+    padding: 2px 3px;
+    box-sizing: border-box;
+    border: 2px solid var(--card-accent);
+    border-radius: 12px;
+    background: var(--card-primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    line-height: 1.1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.pct-avg {
+    grid-column: 1 / -1;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.hockey-card-source {
+    margin: 8px 12px 10px;
+    font-size: 0.7rem;
+    color: #666;
+}
+
 @media (max-width: 500px) {
     .hockey-card-stats {
         font-size: 0.72rem;

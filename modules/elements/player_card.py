@@ -1,8 +1,9 @@
 from datetime import date, datetime
 
-from modules.fetch_nhl_api import get_logo
+from modules.fetch_nhl_api import get_logo, get_skater_edge, get_goalie_edge
+from modules.fetch_moneypuck import get_moneypuck_skaters, get_moneypuck_goalies
 
-__all__ = ['build_player_card']
+__all__ = ['build_player_card', 'build_percentiles']
 
 POSITIONS = {"C": "C", "L": "LW", "R": "RW", "D": "D", "G": "G"}
 
@@ -169,3 +170,131 @@ def draft(details):
         f"{details.get('year')}, {details.get('teamAbbrev', '')}, "
         f"round {details.get('round')}, #{details.get('overallPick')} overall"
     )
+
+
+# Back of the card: percentiles vs. the player's position group, oriented so higher = better.
+# NHL EDGE ships its own percentiles; MoneyPuck xG percentiles are computed here.
+MP_QUALIFY_SHARE = 0.25  # MoneyPuck percentiles count players with >= 25% of the group's most games
+POSITION_GROUPS = {"G": "goalies", "D": "defensemen"}
+
+
+def build_percentiles(landing, season_id):
+    """{"group": "forwards", "season": "2026-27", "rows": [{label, value, avg, pct}]} or None.
+    `value`/`avg` are strings or {"metric", "imperial"} dicts (unit-value spans in the template)."""
+    player_id = landing.get("playerId")
+    position = landing.get("position")
+    if position == "G":
+        rows = goalie_percentiles(get_goalie_edge(player_id) or {}, player_id, get_moneypuck_goalies(season_id))
+    else:
+        rows = skater_percentiles(get_skater_edge(player_id) or {}, player_id, position, get_moneypuck_skaters(season_id))
+    rows = [row for row in rows if row["pct"] is not None and row["value"] is not None]
+    if not rows:
+        return None
+    season = str(season_id)
+    return {
+        "group": POSITION_GROUPS.get(position, "forwards"),
+        "season": f"{season[:4]}-{season[-2:]}",
+        "rows": rows,
+    }
+
+
+def skater_percentiles(edge, player_id, position, moneypuck):
+    speed = (edge.get("skatingSpeed") or {})
+    shots = {s.get("locationCode"): s for s in edge.get("sogSummary", [])}
+    zone = edge.get("zoneTimeDetails") or {}
+    rows = [
+        measured("Top shot speed", edge.get("topShotSpeed"), "km/h", "mph"),
+        measured("Max skating speed", speed.get("speedMax"), "km/h", "mph"),
+        row({"metric": "Bursts over 32 km/h", "imperial": "Bursts over 20 mph"}, (speed.get("burstsOver20") or {}).get("value"),
+            (speed.get("burstsOver20") or {}).get("leagueAvg", {}).get("value"),
+            (speed.get("burstsOver20") or {}).get("percentile"), "{:.0f}"),
+        measured("Distance skated", edge.get("totalDistanceSkated"), "km", "mi"),
+        row("Shots on goal", shots.get("all", {}).get("shots"), shots.get("all", {}).get("shotsLeagueAvg"),
+            shots.get("all", {}).get("shotsPercentile"), "{:.0f}"),
+        row("High-danger shots", shots.get("high", {}).get("shots"), shots.get("high", {}).get("shotsLeagueAvg"),
+            shots.get("high", {}).get("shotsPercentile"), "{:.0f}"),
+        row("Shooting %", shots.get("all", {}).get("shootingPctg"), shots.get("all", {}).get("shootingPctgLeagueAvg"),
+            shots.get("all", {}).get("shootingPctgPercentile"), "pct"),
+        row("Offensive-zone time", zone.get("offensiveZonePctg"), zone.get("offensiveZoneLeagueAvg"),
+            zone.get("offensiveZonePercentile"), "pct"),
+    ]
+    # 5v5 on-ice share of expected goals, vs. forwards or defensemen
+    def xgf_share(entry):
+        total = (entry.get("xgf") or 0) + (entry.get("xga") or 0)
+        return entry["xgf"] / total if total else None
+    group = (lambda pos: pos == "D") if position == "D" else (lambda pos: pos != "D")
+    value, avg, pct = moneypuck_percentile(moneypuck, player_id, lambda e: group(e.get("pos")), xgf_share)
+    rows.append(row("xGF% (5v5)", value, avg, pct, "pct"))
+    return rows
+
+
+def goalie_percentiles(edge, player_id, moneypuck):
+    stats = edge.get("stats") or {}
+    saves = {s.get("locationCode"): s for s in edge.get("shotLocationSummary", [])}
+
+    def stat(label, key, fmt):
+        item = stats.get(key) or {}
+        return row(label, item.get("value"), item.get("leagueAvg"), item.get("percentile"), fmt)
+
+    rows = [
+        stat("GAA", "goalsAgainstAvg", "{:.2f}"),
+        row("SV%", saves.get("all", {}).get("savePctg"), saves.get("all", {}).get("savePctgLeagueAvg"),
+            saves.get("all", {}).get("savePctgPercentile"), "svpct"),
+        row("High-danger SV%", saves.get("high", {}).get("savePctg"), saves.get("high", {}).get("savePctgLeagueAvg"),
+            saves.get("high", {}).get("savePctgPercentile"), "svpct"),
+        stat("Goal differential/60", "goalDifferentialPer60", "{:+.2f}"),
+        stat("Games with SV% .900+", "gamesAbove900", "pct"),
+    ]
+    gsax = lambda e: e["xga"] - e["ga"] if e.get("xga") is not None and e.get("ga") is not None else None
+    value, avg, pct = moneypuck_percentile(moneypuck, player_id, lambda e: True, gsax)
+    rows.append(row("Goals saved above expected", value, avg, pct, "{:+.1f}"))
+    return rows
+
+
+def moneypuck_percentile(players, player_id, in_group, metric):
+    """(value, group average, percentile) of `metric` among qualified players of the same group."""
+    players = players or {}
+    entry = players.get(str(player_id))
+    value = metric(entry) if entry else None
+    if value is None:
+        return None, None, None
+    group = [e for e in players.values() if in_group(e) and e.get("gp")]
+    min_games = MP_QUALIFY_SHARE * max((e["gp"] for e in group), default=0)
+    values = [v for v in (metric(e) for e in group if e["gp"] >= min_games) if v is not None]
+    if not values:
+        return value, None, None
+    below = sum(v < value for v in values) + 0.5 * sum(v == value for v in values)
+    return value, sum(values) / len(values), below / len(values)
+
+
+def measured(label, item, metric_unit, imperial_unit):
+    """EDGE value with metric and imperial numbers (speeds, distances)."""
+    item = item or {}
+    avg = item.get("leagueAvg") or {}
+    if item.get("metric") is None:
+        return row(label, None, None, None, None)
+
+    def both(source):
+        if source.get("metric") is None:
+            return None
+        return {"metric": f"{source['metric']:.1f} {metric_unit}", "imperial": f"{source['imperial']:.1f} {imperial_unit}"}
+    return {"label": label, "value": both(item), "avg": both(avg), "pct": percent(item.get("percentile"))}
+
+
+def row(label, value, avg, percentile, fmt):
+    return {"label": label, "value": format_value(value, fmt), "avg": format_value(avg, fmt), "pct": percent(percentile)}
+
+
+def format_value(value, fmt):
+    if value is None:
+        return None
+    if fmt == "pct":
+        return f"{value * 100:.1f}%"
+    if fmt == "svpct":
+        return f"{value:.3f}".lstrip("0")
+    return fmt.format(value)
+
+
+def percent(percentile):
+    # 0.9967 -> 99 (rounded down, so only the very top shows 100)
+    return None if percentile is None else max(0, min(100, int(percentile * 100)))

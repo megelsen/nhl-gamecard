@@ -1,4 +1,17 @@
-<div class="hockey-card" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};">
+{# Values are plain strings, or {metric, imperial} for the footer's units setting (userSettings.js) #}
+{% macro unit(value) -%}
+{%- if value is mapping -%}<span class="unit-value" data-metric="{{ value.metric }}" data-imperial="{{ value.imperial }}">{{ value.metric }}</span>
+{%- else -%}{{ value }}{%- endif -%}
+{%- endmacro %}
+{% macro flip_button(label) -%}
+{%- if card.percentiles -%}
+<button type="button" class="hockey-card-flip-btn" aria-label="{{ label }}" title="{{ label }}"><span class="material-symbols-outlined">360</span></button>
+{%- endif -%}
+{%- endmacro %}
+<div class="hockey-card-flip" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};">
+<div class="hockey-card-flipper">
+<div class="hockey-card hockey-card-front">
+    {{ flip_button("Show league percentiles") }}
     <div class="hockey-card-image">
         <img class="hockey-card-hero" src="{{ card.hero_image }}" alt="{{ card.name }}">
         {% if card.team_logo %}<img class="hockey-card-logo" src="{{ card.team_logo }}" alt="">{% endif %}
@@ -42,4 +55,27 @@
     {% else %}
     <p class="hockey-card-empty">No NHL games played yet.</p>
     {% endif %}
+</div>
+{% if card.percentiles %}
+<div class="hockey-card hockey-card-back" inert>
+    {{ flip_button("Show player info") }}
+    <div class="hockey-card-banner hockey-card-back-banner">
+        <span class="hockey-card-number">#{{ card.number }}</span>
+        <span class="hockey-card-name">{{ card.name }}</span>
+        <span class="hockey-card-team">Percentile vs. NHL {{ card.percentiles.group }}, <span class="nowrap">{{ card.percentiles.season }}</span></span>
+    </div>
+    <ul class="hockey-card-pct">
+        {% for row in card.percentiles.rows %}
+        <li style="--pct: {{ row.pct }};">
+            <span class="pct-label">{{ unit(row.label) }}</span>
+            <span class="pct-value">{{ unit(row.value) }}</span>
+            <span class="pct-bar"><span class="pct-fill"></span><span class="pct-rank">{{ row.pct }}</span></span>
+            {% if row.avg %}<span class="pct-avg">League avg {{ unit(row.avg) }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>
+</div>
+{% endif %}
+</div>
 </div>

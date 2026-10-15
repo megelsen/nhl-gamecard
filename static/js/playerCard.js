@@ -1,4 +1,5 @@
 // Player card modal: click any headshot with data-player-id (top scorers, goalies, Top 5, roster).
+// The flip icon turns the card to its back with league percentiles.
 // One delegated listener, so headshots rendered later (modals, goalie carousel) work too.
 document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("playerCardPopUp");
@@ -33,6 +34,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!target) return;
         const playerId = target.dataset.playerId;
         if (/^\d+$/.test(playerId || "")) openCard(playerId);
+    });
+
+    // Flip between the front (bio, career) and the back (percentiles); the hidden face is inert
+    content.addEventListener("click", event => {
+        if (!event.target.closest(".hockey-card-flip-btn")) return;
+        const card = content.querySelector(".hockey-card-flip");
+        const flipped = card.classList.toggle("flipped");
+        card.querySelector(".hockey-card-front").inert = flipped;
+        card.querySelector(".hockey-card-back").inert = !flipped;
+        card.querySelector(flipped ? ".hockey-card-back .hockey-card-flip-btn" : ".hockey-card-front .hockey-card-flip-btn").focus();
     });
 
     closeBtn.addEventListener("click", () => {

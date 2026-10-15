@@ -344,6 +344,7 @@ def player_card(player_id):
     if not landing or "firstName" not in landing:
         abort(404)
     card = build_player_card(landing, get_player_season_report(player_id, goalie=landing.get("position") == "G"))
+    card["percentiles"] = build_percentiles(landing, get_season_id())
     colors = get_team_color(card["team_name"]) if card["team_name"] else DEFAULT_COLORS
     card["primary_color"] = colors.get("primary") or DEFAULT_COLORS["primary"]
     card["accent_color"] = pick_contrasting_color(
