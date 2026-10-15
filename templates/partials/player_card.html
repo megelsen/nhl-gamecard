@@ -3,15 +3,19 @@
 {%- if value is mapping -%}<span class="unit-value" data-metric="{{ value.metric }}" data-imperial="{{ value.imperial }}">{{ value.metric }}</span>
 {%- else -%}{{ value }}{%- endif -%}
 {%- endmacro %}
-{% macro flip_button(label) -%}
-{%- if card.percentiles -%}
-<button type="button" class="hockey-card-flip-btn" aria-label="{{ label }}" title="{{ label }}"><span class="material-symbols-outlined">360</span></button>
-{%- endif -%}
-{%- endmacro %}
-<div class="hockey-card-flip" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};">
+<div class="hockey-card-flip" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};"
+     data-player="{{ card.player_id }}" data-goalie="{{ 'true' if card.is_goalie else 'false' }}" data-color="{{ card.primary_color }}" data-accent="{{ card.accent_color }}">
+    {# Lean icons next to the modal's close cross (static/js/playerCard.js) #}
+    <div class="hockey-card-icons">
+        <span class="card-icon material-symbols-outlined" role="button" tabindex="0" data-card-action="compare"
+              title="Compare with another player" aria-label="Compare with another player">compare_arrows</span>
+        {% if card.percentiles %}
+        <span class="card-icon material-symbols-outlined" role="button" tabindex="0" data-card-action="flip"
+              title="Flip card" aria-label="Flip card">cached</span>
+        {% endif %}
+    </div>
 <div class="hockey-card-flipper">
 <div class="hockey-card hockey-card-front">
-    {{ flip_button("Show league percentiles") }}
     <div class="hockey-card-image">
         <img class="hockey-card-hero" src="{{ card.hero_image }}" alt="{{ card.name }}">
         {% if card.team_logo %}<img class="hockey-card-logo" src="{{ card.team_logo }}" alt="">{% endif %}
@@ -57,23 +61,37 @@
     {% endif %}
 </div>
 {% if card.percentiles %}
-<div class="hockey-card hockey-card-back" inert>
-    {{ flip_button("Show player info") }}
-    <div class="hockey-card-banner hockey-card-back-banner">
-        <span class="hockey-card-number">#{{ card.number }}</span>
-        <span class="hockey-card-name">{{ card.name }}</span>
-        <span class="hockey-card-team">Percentile vs. NHL {{ card.percentiles.group }}, <span class="nowrap">{{ card.percentiles.season }}</span></span>
+{# Hidden until flipped, so it never shows below the front, even without the stylesheet #}
+<div class="hockey-card hockey-card-back" hidden>
+    <div class="hockey-card-back-head">
+        {% if card.headshot %}<img class="hockey-card-headshot" src="{{ card.headshot }}" alt="{{ card.name }}">{% endif %}
+        <div class="hockey-card-back-id">
+            <span class="hockey-card-name"><span class="hockey-card-back-number">#{{ card.number }}</span> {{ card.name }}</span>
+            <span class="hockey-card-team">
+                {% if card.team_logo %}<img src="{{ card.team_logo }}" alt="">{% endif %}{{ card.position }} – {{ card.team_name }}
+            </span>
+            {% if card.flag_url %}<span class="hockey-card-team"><img class="hockey-card-flag-small" src="{{ card.flag_url }}" alt="">{{ card.country }}</span>{% endif %}
+        </div>
     </div>
-    <ul class="hockey-card-pct">
-        {% for row in card.percentiles.rows %}
-        <li style="--pct: {{ row.pct }};">
-            <span class="pct-label">{{ unit(row.label) }}</span>
-            <span class="pct-value">{{ unit(row.value) }}</span>
-            <span class="pct-bar"><span class="pct-fill"></span><span class="pct-rank">{{ row.pct }}</span></span>
-            {% if row.avg %}<span class="pct-avg">League avg {{ unit(row.avg) }}</span>{% endif %}
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="hockey-card-pct">
+        <p class="hockey-card-pct-title">Percentile vs. NHL {{ card.percentiles.group }}, {{ card.percentiles.season }}</p>
+        <div class="compare" style="--left-color: var(--card-primary); --right-color: #c8c8c8;">
+            <div class="compare-teams">
+                <span class="compare-team left" style="--team-color: var(--card-primary);">
+                    {% if card.team_abbrev %}<img src="https://assets.nhle.com/logos/nhl/svg/{{ card.team_abbrev }}_light.svg" alt="">{% endif %}#{{ card.number }}
+                </span>
+                <span class="compare-team right" style="--team-color: #c8c8c8;"><img src="https://assets.nhle.com/logos/nhl/svg/NHL_light.svg" alt="">NHL avg</span>
+            </div>
+            {% for row in card.percentiles.rows %}
+            <div class="compare-row">
+                <span class="compare-value left">{{ unit(row.value) }}</span>
+                <span class="compare-label">{{ unit(row.label) }} · {{ row.rank }}</span>
+                <span class="compare-value right">{{ unit(row.avg) }}</span>
+                <div class="compare-bar" style="--split: {{ row.split }}%;"><span class="bar-left"></span><span class="bar-right"></span></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>
 </div>
 {% endif %}

@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 from urllib.parse import urlparse
-from flask import Flask, request, render_template, Response, send_from_directory, redirect, url_for, abort
+from flask import Flask, request, render_template, Response, send_from_directory, redirect, url_for, abort, jsonify
 from werkzeug.exceptions import HTTPException
 import hashlib
 import hmac
@@ -273,6 +273,7 @@ def team_page(team_abbr):
         "topscorer_compare": topscorer_compare,
         "playoff_picture": playoff_picture,
         "compare_colors": compare_colors,
+        "team_list": team_abbr_list,
         "team_abbr": team_abbr,
         "next_opponent": next_opponent,
         "standings_highlight": standings_highlight,
@@ -351,6 +352,43 @@ def player_card(player_id):
         card["primary_color"], [colors.get("secondary"), colors.get("accent")], min_distance=80, fallback="#d1d1d1"
     )
     return render_template("partials/player_card.html", card=card)
+
+@app.route("/player/<int:player_id>/compare.json")
+def player_compare(player_id):
+    # One side of a player comparison (static/js/playerCard.js). `against` is the other
+    # side's color: the team color is swapped for a contrasting one when they're too close.
+    landing = get_player_stats(player_id)
+    if not landing or "firstName" not in landing:
+        abort(404)
+    data = build_compare_player(landing, get_season_id())
+    colors = get_team_color(data["team_name"]) if data["team_name"] else DEFAULT_COLORS
+    data["color"] = colors.get("primary") or DEFAULT_COLORS["primary"]
+    against = request.args.get("against", "")
+    if HEX_COLOR.fullmatch(against):
+        data["color"] = pick_contrasting_color(
+            f"#{against}", [data["color"], colors.get("secondary"), colors.get("accent")], min_distance=80
+        )
+    return jsonify(data)
+
+@app.route("/team/<team_abbr>/roster.json")
+def team_roster_json(team_abbr):
+    # Player picker for comparisons: everyone on a team's current roster
+    if team_abbr not in team_abbr_list:
+        abort(404)
+    roster = get_roster(team_abbr) or {}
+    players = [
+        {
+            "id": player.get("id"),
+            "name": f"{player['firstName']['default']} {player['lastName']['default']}",
+            "number": player.get("sweaterNumber"),
+            "position": player.get("positionCode"),
+            "team": team_abbr,
+            "headshot": player.get("headshot"),
+        }
+        for group in ("forwards", "defensemen", "goalies")
+        for player in roster.get(group, [])
+    ]
+    return jsonify(players)
 
 @app.route("/refresh")
 def manual_refresh():

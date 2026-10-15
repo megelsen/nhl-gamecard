@@ -1,5 +1,6 @@
 // Shared stat comparison: one component for Top scorers, Goalies and Last meeting.
-// Data: {left: "NYR", right: "TBL", rows: [{key, left, right, leftText?, rightText?}]} with raw numbers.
+// Data: {left: "NYR", right: "TBL", rows: [{key, left, right, leftText?, rightText?}]} with raw numbers;
+// optional leftColor/rightColor override the team colors (player comparison, playerCard.js).
 // Labels, number formats and bar rules for every row key live here, in COMPARE_SPECS.
 // Colors: window.compareColors = {ABBR: color}. Speeds follow the footer's units setting (userSettings.js).
 
@@ -8,6 +9,7 @@ const COMPARE_SPECS = {
     G: { label: "G" },
     A: { label: "A" },
     P: { label: "P" },
+    PM: { label: "+/-", format: "signed", spread: 10 },
     W: { label: "W" },
     SO: { label: "SO" },
     TOI: { label: "TOI/GP", format: "time" },
@@ -19,6 +21,7 @@ const COMPARE_SPECS = {
     GAA: { label: "GAA", format: "fixed2", spread: 1.5, lowerIsBetter: true },
     "SV%": { label: "SV%", format: "svpct", spread: 0.05 },
     "HDSV%": { label: "HD SV%", format: "svpct", spread: 0.08 },
+    GSAX: { label: "GSAx", format: "signed1", spread: 10 },
     "FO%": { label: "FO%", format: "pct", spread: 0.3 },
     Score: { label: "Score" },
     SOG: { label: "SOG" },
@@ -49,6 +52,8 @@ function formatCompareValue(value, format) {
         }
         case "fixed1": return value.toFixed(1);
         case "fixed2": return value.toFixed(2);
+        case "signed": return value > 0 ? `+${value}` : String(value);
+        case "signed1": return `${value > 0 ? "+" : ""}${value.toFixed(1)}`;
         case "svpct": return value.toFixed(3).replace(/^0/, "");
         case "pct": return `${Math.round(value * 100)}%`;
         default: return String(value);
@@ -77,8 +82,8 @@ function renderComparison(container, data) {
     if (!container || !data) return;
     container.compareData = data; // re-rendered when the units change
     const colors = window.compareColors || {};
-    const leftColor = colors[data.left] || "#555";
-    const rightColor = colors[data.right] || "#bbb";
+    const leftColor = data.leftColor || colors[data.left] || "#555";
+    const rightColor = data.rightColor || colors[data.right] || "#bbb";
 
     const teamTag = (abbrev, color, side) => abbrev
         ? `<span class="compare-team ${side}" style="--team-color: ${color};"><img src="${compareLogo(abbrev)}" alt="">${abbrev}</span>`

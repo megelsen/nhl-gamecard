@@ -216,9 +216,10 @@
     background: white;
 }
 
-/* Flip card: front (bio, career) and back (percentiles) share one grid cell, so the
-   card takes the taller face's height; playerCard.js toggles .flipped */
+/* Flip card: front (bio, career) and back (percentiles) share one grid cell. The hidden face
+   has the `hidden` attribute; playerCard.js shows both while turning and toggles .flipped */
 .hockey-card-flip {
+    position: relative;
     width: min(400px, 94vw);
     perspective: 1400px;
 }
@@ -235,9 +236,12 @@
 
 .hockey-card-flipper > .hockey-card {
     grid-area: 1 / 1;
-    position: relative;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+}
+
+.hockey-card-flipper > .hockey-card[hidden] {
+    display: none;
 }
 
 .hockey-card-back {
@@ -250,112 +254,104 @@
     }
 }
 
-/* Left of the modal's close button */
-.hockey-card-flip-btn {
+/* Plain white icons left of the modal's close cross, styled like it */
+.hockey-card-icons {
     position: absolute;
-    top: 6px;
-    right: 40px;
+    top: 14px;
+    right: 48px;
     z-index: 3;
-    width: 34px;
-    height: 34px;
-    padding: 0;
+    display: flex;
+    gap: 8px;
+}
+
+.card-icon {
+    font-size: 26px;
+    line-height: 32px;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-icon:hover,
+.card-icon:focus-visible {
+    color: var(--card-accent);
+    outline: none;
+}
+
+/* Back: headshot, name, team and nationality on the team color */
+.hockey-card-back {
+    display: flex;
+    flex-direction: column;
+}
+
+.hockey-card-back-head {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border: none;
+    gap: 12px;
+    padding: 12px 14px;
+    padding-top: 48px;
+    background: var(--card-primary);
+    border-bottom: 5px solid var(--card-accent);
+    color: white;
+}
+
+.hockey-card-headshot {
+    width: 84px;
+    height: 84px;
+    flex: none;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--card-primary);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
+    border: 3px solid var(--card-accent);
+    background: #f2f2f2;
+    object-fit: cover;
 }
 
-.hockey-card-flip-btn:hover,
-.hockey-card-flip-btn:focus-visible {
+.hockey-card-back-id {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.hockey-card-back-number {
+    font-size: 1.4rem;
+}
+
+.hockey-card-back-id .hockey-card-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hockey-card-back-id .hockey-card-team img {
+    width: 22px;
+    height: 22px;
+    padding: 1px;
     background: white;
-    outline: 2px solid var(--card-accent);
+    border-radius: 50%;
 }
 
-.hockey-card-back-banner {
-    margin-top: 0;
-    padding: 14px 84px 10px 14px;
-    clip-path: none;
+.hockey-card-back-id .hockey-card-team img.hockey-card-flag-small {
+    width: 22px;
+    height: auto;
+    padding: 0;
+    border-radius: 2px;
 }
 
 .hockey-card-pct {
-    list-style: none;
-    margin: 0;
-    padding: 6px 12px 0;
+    padding: 4px 14px 0;
 }
 
-.hockey-card-pct li {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.hockey-card-back-banner .nowrap {
-    white-space: nowrap;
-}
-
-.pct-label {
-    font-size: 0.85rem;
-}
-
-.pct-value {
-    font-size: 0.9rem;
-    font-weight: bold;
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-}
-
-.pct-bar {
-    grid-column: 1 / -1;
-    position: relative;
-    height: 10px;
-    margin: 6px 14px 2px 12px;
-    border-radius: 5px;
-    background: #e6e6e6;
-}
-
-.pct-fill {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: calc(var(--pct) * 1%);
-    border-radius: 5px;
-    background: var(--card-primary);
-}
-
-/* Percentile in a bubble at the end of the fill */
-.pct-rank {
-    position: absolute;
-    top: 50%;
-    left: calc(var(--pct) * 1%);
-    transform: translate(-50%, -50%);
-    min-width: 24px;
-    padding: 2px 3px;
-    box-sizing: border-box;
-    border: 2px solid var(--card-accent);
-    border-radius: 12px;
-    background: var(--card-primary);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: bold;
-    line-height: 1.1;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-}
-
-.pct-avg {
-    grid-column: 1 / -1;
-    font-size: 0.7rem;
+.hockey-card-pct-title {
+    margin: 8px 0 10px;
+    font-size: 0.75rem;
     color: #666;
+    text-align: center;
 }
 
 .hockey-card-source {
-    margin: 8px 12px 10px;
+    margin: auto 12px 10px;
+    padding-top: 10px;
     font-size: 0.7rem;
     color: #666;
 }
@@ -372,4 +368,165 @@
         width: 16px;
         height: 16px;
     }
+}
+
+/* Player comparison in the card modal (playerCard.js): a card-sized panel with a team-color
+   header, so the white close cross and icons stay visible */
+.player-compare {
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+}
+
+.player-compare-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 84px 10px 12px;
+    background: var(--card-primary);
+    border-bottom: 5px solid var(--card-accent, #d1d1d1);
+    color: white;
+}
+
+.player-compare-head h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.player-compare-picker {
+    padding: 12px;
+}
+
+.player-compare-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.player-compare-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0 6px;
+}
+
+.picker-tab,
+.picker-team-select {
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 0.85rem;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+}
+
+.picker-tab.active {
+    background: var(--card-primary);
+    border-color: var(--card-primary);
+    color: white;
+}
+
+.player-compare-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.player-compare-option {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 4px 6px;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.player-compare-option:hover,
+.player-compare-option:focus-visible {
+    background: #f2f2f2;
+    outline: none;
+}
+
+.player-compare-option img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f2f2f2;
+    object-fit: cover;
+}
+
+.option-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.option-meta {
+    font-size: 0.75rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+.player-compare-note {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.player-compare-players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 12px 0;
+}
+
+.player-compare-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    min-width: 0;
+}
+
+.player-compare-headshot {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 4px;
+    border-radius: 50%;
+    border: 3px solid var(--team-color);
+    background: #f2f2f2;
+    object-fit: cover;
+}
+
+.player-compare-side .option-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.player-compare-flag {
+    width: 18px;
+    border: 1px solid #ddd;
+}
+
+.player-compare-mount {
+    padding: 4px 14px 0;
+    box-sizing: border-box;
 }
