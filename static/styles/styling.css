@@ -36,6 +36,11 @@ h1, h2, h3 {
             font-family: 'DINPro', sans-serif;
         }
 
+        .disclaimer a {
+            color: inherit;
+            text-decoration: underline;
+        }
+
 /* Footer settings: timezone and units (static/js/userSettings.js) */
 .settings-bar {
     display: flex;

@@ -11,6 +11,9 @@ const COMPARE_SPECS = {
     W: { label: "W" },
     SO: { label: "SO" },
     TOI: { label: "TOI/GP", format: "time" },
+    // On-ice expected goals per 60 min at 5v5 (MoneyPuck)
+    XGF60: { label: "xGF/60", format: "fixed2", spread: 1 },
+    XGA60: { label: "xGA/60", format: "fixed2", spread: 1, lowerIsBetter: true },
     SHOT: { label: "Shot", unit: "speed", format: "fixed1", spread: 10 },
     SPEED: { label: "Speed", unit: "speed", format: "fixed1" },
     GAA: { label: "GAA", format: "fixed2", spread: 1.5, lowerIsBetter: true },

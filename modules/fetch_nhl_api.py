@@ -37,11 +37,11 @@ def track_fetch_failures():
         _tracker.failures = None
 
 
-def _fetch_once(url):
-    """Single attempt. Returns parsed JSON, or raises on failure/bad response."""
+def _fetch_once(url, parse=None):
+    """Single attempt. Returns parsed JSON (or `parse(text)`), or raises on failure/bad response."""
     res = requests.get(url, timeout=10)
     res.raise_for_status()
-    return res.json()
+    return parse(res.text) if parse else res.json()
 
 
 def _retry_after_seconds(response):
@@ -59,7 +59,7 @@ def _retry_after_seconds(response):
         return None
 
 
-def _fetch_with_retries(url, max_wait=MAX_RETRY_WAIT_SECONDS):
+def _fetch_with_retries(url, max_wait=MAX_RETRY_WAIT_SECONDS, parse=None):
     """Retries transient failures with exponential backoff and jitter, honoring Retry-After.
     Returns (data, None) on success, or (None, short error description)."""
     last_error = None
@@ -67,7 +67,7 @@ def _fetch_with_retries(url, max_wait=MAX_RETRY_WAIT_SECONDS):
     for attempt in range(1, MAX_ATTEMPTS + 1):
         retry_after = None
         try:
-            return _fetch_once(url), None
+            return _fetch_once(url, parse), None
         except requests.exceptions.RequestException as e:
             status = getattr(e.response, "status_code", None)
             last_error = f"HTTP {status}" if status is not None else type(e).__name__
@@ -77,8 +77,8 @@ def _fetch_with_retries(url, max_wait=MAX_RETRY_WAIT_SECONDS):
             retry_after = _retry_after_seconds(e.response)
         except ValueError as e:
             # includes requests' JSONDecodeError, which subclasses ValueError
-            last_error = "non-JSON response"
-            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS}: non-JSON response from {url}: {e}")
+            last_error = "unparseable response"
+            logger.warning(f"[fetch_nhl_api] Attempt {attempt}/{MAX_ATTEMPTS}: unparseable response from {url}: {e}")
 
         if attempt == MAX_ATTEMPTS:
             break
@@ -114,12 +114,12 @@ def _get_cached_json(cache_name):
     return cached
 
 
-def _safe_get_json(url, cache_name, force=False):
+def _safe_get_json(url, cache_name, force=False, parse=None):
     """
     Fetch JSON from `url` (using a valid fresh cache entry if one exists, unless `force`),
     retrying a few times on transient failures before falling back to the newest stale
     cache entry from a previous day. Never raises. Returns None only if there is no
-    usable data anywhere.
+    usable data anywhere. `parse` turns a non-JSON body (e.g. CSV) into JSON-serializable data.
     """
     if not force:
         cached = _get_cached_json(cache_name)
@@ -134,7 +134,7 @@ def _safe_get_json(url, cache_name, force=False):
     if not force and last_failure and time.time() - last_failure < FAILURE_BACKOFF_SECONDS:
         return stale
 
-    data, error = _fetch_with_retries(url, MAX_RETRY_WAIT_SECONDS_FORCED if force else MAX_RETRY_WAIT_SECONDS)
+    data, error = _fetch_with_retries(url, MAX_RETRY_WAIT_SECONDS_FORCED if force else MAX_RETRY_WAIT_SECONDS, parse)
 
     if data is not None:
         _recent_failures.pop(url, None)

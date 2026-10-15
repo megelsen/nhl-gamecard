@@ -3,10 +3,10 @@ import json
 
 from modules.fetch_nhl_api import get_skater_edge, get_goalie_edge
 
-__all__ = ['skater_edge_stats', 'goalie_edge_stats', 'skater_comparison', 'game_comparison', 'compare_mount']
+__all__ = ['skater_edge_stats', 'skater_xg_stats', 'goalie_edge_stats', 'skater_comparison', 'game_comparison', 'compare_mount']
 
 # Row keys understood by static/js/comparison.js (labels, formats and bar rules live there)
-SKATER_ROWS = ["GP", "G", "A", "P", "TOI", "SHOT", "SPEED"]
+SKATER_ROWS = ["GP", "G", "A", "P", "TOI", "XGF60", "XGA60", "SHOT", "SPEED"]
 GAME_ROWS = ["Score", "SOG", "SV%", "FO%", "PP", "Hits"]
 
 
@@ -17,6 +17,14 @@ def skater_edge_stats(player_id):
         "shot_speed": (edge.get("topShotSpeed") or {}).get("metric"),
         "skate_speed": ((edge.get("skatingSpeed") or {}).get("speedMax") or {}).get("metric"),
     }
+
+
+def skater_xg_stats(player_id, moneypuck):
+    """5-on-5 on-ice expected goals for/against per 60 minutes (MoneyPuck; None when missing)."""
+    row = (moneypuck or {}).get(str(player_id)) or {}
+    hours = (row.get("toi") or 0) / 3600
+    per_60 = lambda value: value / hours if hours and value is not None else None
+    return {"xgf_60": per_60(row.get("xgf")), "xga_60": per_60(row.get("xga"))}
 
 
 def goalie_edge_stats(player_id):
@@ -34,6 +42,8 @@ def skater_comparison(left, right, left_team, right_team):
             "A": player.get("assists"),
             "P": player.get("points"),
             "TOI": player.get("toi_seconds"),
+            "XGF60": player.get("xgf_60"),
+            "XGA60": player.get("xga_60"),
             "SHOT": player.get("shot_speed"),
             "SPEED": player.get("skate_speed"),
         }

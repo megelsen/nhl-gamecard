@@ -14,6 +14,8 @@ from modules import (
     get_team_summary,
     get_season_id,
     get_roster,
+    get_moneypuck_skaters,
+    get_moneypuck_goalies,
     track_fetch_failures,
 )
 from cache_utils import is_cache_fresh, prune_cache
@@ -54,6 +56,8 @@ def update_daily_cache():
                 (get_team_summary, season_id, 0),
                 (get_team_summary, season_id, 1),
                 (get_playoff_bracket, season_id),
+                (get_moneypuck_skaters, season_id),
+                (get_moneypuck_goalies, season_id),
             ]
             for team in TEAM_LIST:
                 jobs += [(get_schedule, team), (get_team_stats, team), (get_roster, team)]
