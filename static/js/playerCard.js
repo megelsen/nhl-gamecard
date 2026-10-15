@@ -198,7 +198,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${player.flag_url ? `<img class="player-compare-flag" src="${escapeHtml(player.flag_url)}" alt="" title="${escapeHtml(player.country)}">` : ""}
                         ${escapeHtml(player.team)}
                     </span>
-                    ${changeable ? '<button type="button" class="primary_button player-compare-change" data-card-action="change">Change player</button>' : ""}
+                    ${changeable ? `<span class="player-compare-change material-symbols-outlined" role="button" tabindex="0"
+                          data-card-action="change" title="Change player" aria-label="Change player">compare_arrows</span>` : ""}
                 </div>`;
     }
 

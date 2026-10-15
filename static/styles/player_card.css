@@ -531,8 +531,17 @@
     box-sizing: border-box;
 }
 
+/* Same compare icon as on the card, in the player's team color */
 .player-compare-change {
-    margin-top: 6px;
-    padding: 4px 10px;
-    font-size: 0.75rem;
+    margin-top: 4px;
+    font-size: 26px;
+    color: var(--team-color);
+    cursor: pointer;
+    user-select: none;
+}
+
+.player-compare-change:hover,
+.player-compare-change:focus-visible {
+    opacity: 0.7;
+    outline: none;
 }
