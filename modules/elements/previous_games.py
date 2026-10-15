@@ -4,6 +4,9 @@ from modules.elements.compare import compare_mount, game_comparison
 from datetime import timedelta
 __all__ = ['display_game_result', 'get_previous_games','display_latest_game_result','display_previous_matchup']
 
+def short_date(date):
+    return f"{date:%b} {date.day}"  # e.g. "Oct 13"
+
 def display_game_result(game):
     opponent_logo = get_logo(game['opponent_abr'])
     game_disp = f"""
@@ -11,7 +14,10 @@ def display_game_result(game):
                 <a href="javascript:void(0);" class="team-link">
                 <img src="{opponent_logo}" style="width: 85px">
                 </a>
-                {game['home_score']} -  {game['away_score']} ({game['result']})
+                <span class="game-score">
+                    <span>{game['home_score']} -  {game['away_score']} ({game['result']})</span>
+                    <span class="game-date">{short_date(game['game_date'])}</span>
+                </span>
                 <a href={game["gamecenterURL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
@@ -27,14 +33,17 @@ def display_latest_game_result(game):
                 <a href="javascript:void(0);" class="team-link">
                 <img src="{opponent_logo}" style="width: 85px">
                 </a>
-                <div class="spoiler-wrapper">
-                    <button class="toggle-spoiler">
-                        <span class="material-symbols-outlined">
-                            visibility
-                        </span>
-                    </button>  
-                    <span class="hide-spoiler"> {game['home_score']} -  {game['away_score']} ({game['result']}) </span>
-                </div>
+                <span class="game-score">
+                    <div class="spoiler-wrapper">
+                        <button class="toggle-spoiler">
+                            <span class="material-symbols-outlined">
+                                visibility
+                            </span>
+                        </button>
+                        <span class="hide-spoiler"> {game['home_score']} -  {game['away_score']} ({game['result']}) </span>
+                    </div>
+                    <span class="game-date">{short_date(game['game_date'])}</span>
+                </span>
                 <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
