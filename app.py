@@ -52,6 +52,17 @@ def css_team_color():
 # url_for('static', ...) gets ?v=<content hash> and a deploy changes the URL.
 _static_versions = {}
 
+# Same for the player card fragment: Cloudflare has browsers keep /player/<id>/card for hours,
+# so playerCard.js asks for ?v=<hash of the card's template and builder> and a deploy changes the URL
+def _files_hash(*paths):
+    digest = hashlib.md5()
+    for path in paths:
+        with open(os.path.join(app.root_path, path), "rb") as f:
+            digest.update(f.read())
+    return digest.hexdigest()[:10]
+
+PLAYER_CARD_VERSION = _files_hash("templates/partials/player_card.html", "modules/elements/player_card.py")
+
 @app.url_defaults
 def static_version(endpoint, values):
     if endpoint != "static" or "v" in values:
@@ -289,6 +300,7 @@ def team_page(team_abbr):
         "record_table_2": record_table_html_2,
         "utc_starttime": utc_starttime,
         "max_width_smallest_screen": LAYOUT["max_width_smallest_screen"],
+        "player_card_version": PLAYER_CARD_VERSION,
         "team_color": team_colors['primary'],
         "opponent_color": opponent_colors['primary'],
         "css_color": team_colors['primary'].lstrip('#'),

@@ -56,7 +56,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         content.innerHTML = spinner;
         try {
-            const res = await fetch(`/player/${playerId}/card`);
+            // Versioned, so browsers don't keep showing a card from before a deploy
+            const res = await fetch(`/player/${playerId}/card?v=${encodeURIComponent(window.playerCardVersion || "")}`);
             if (!res.ok) throw new Error(res.status);
             const html = await res.text();
             cardCache.set(playerId, html);
@@ -259,6 +260,9 @@ document.addEventListener("DOMContentLoaded", function () {
     content.addEventListener("click", event => {
         const action = event.target.closest("[data-card-action]");
         if (action) return handleAction(action);
+        // Any other click on the card flips it, unless it ends a text selection or opens a stat definition
+        const flipper = event.target.closest(".hockey-card-flipper");
+        if (flipper && !String(window.getSelection()) && !event.target.closest("[data-stat-info]") && !statInfoOpen()) return flip(flipper.closest(".hockey-card-flip"));
         const tab = event.target.closest(".picker-tab");
         if (tab) return showRoster(tab.dataset.team);
         const option = event.target.closest("[data-pick]");

@@ -2,6 +2,7 @@
 // Data: {left: "NYR", right: "TBL", rows: [{key, left, right, leftText?, rightText?}]} with raw numbers;
 // optional leftColor/rightColor override the team colors (player comparison, playerCard.js).
 // Labels, number formats and bar rules for every row key live here, in COMPARE_SPECS.
+// Labels of stats with a definition in STAT_INFO (statInfo.js) show it on hover/tap.
 // Colors: window.compareColors = {ABBR: color}. Speeds follow the footer's units setting (userSettings.js).
 
 const COMPARE_SPECS = {
@@ -105,7 +106,7 @@ function renderComparison(container, data) {
         }
         return `<div class="compare-row">
                     <span class="compare-value left">${leftText}</span>
-                    <span class="compare-label">${unit.label}</span>
+                    <span class="compare-label"${STAT_INFO[row.key] ? ` data-stat-info="${row.key}" tabindex="0"` : ""}>${unit.label}</span>
                     <span class="compare-value right">${rightText}</span>
                     ${bar}
                 </div>`;

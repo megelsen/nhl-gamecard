@@ -451,7 +451,9 @@
         window.compareColors = {{ compare_colors | tojson }};
         window.compareTeams = {{ {"left": team_abbr, "right": next_opponent} | tojson }};
         window.teamList = {{ team_list | tojson }};
+        window.playerCardVersion = {{ player_card_version | tojson }};
     </script>
+    <script src="{{ url_for('static', filename='js/statInfo.js') }}"></script>
     <script src="{{ url_for('static', filename='js/comparison.js') }}"></script>
     <script>
         window.goalies = {{ goalies | tojson }};

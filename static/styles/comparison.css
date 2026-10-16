@@ -212,3 +212,40 @@
         font-size: 18px;
     }
 }
+
+/* Stat labels with a definition (statInfo.js): dotted underline, info box on hover/tap */
+[data-stat-info] {
+    cursor: help;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+[data-stat-info]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.stat-info-box {
+    position: fixed;
+    z-index: 300; /* above the player card modal */
+    max-width: min(280px, calc(100vw - 16px));
+    padding: 8px 10px;
+    box-sizing: border-box;
+    background: #222;
+    color: #f2f2f2;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    font-size: 0.78rem;
+    font-weight: normal;
+    line-height: 1.4;
+    letter-spacing: normal;
+    text-transform: none;
+    text-align: left;
+    pointer-events: none;
+}
+
+.stat-info-box[hidden] {
+    display: none;
+}

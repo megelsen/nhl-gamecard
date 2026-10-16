@@ -261,7 +261,38 @@
     right: 48px;
     z-index: 3;
     display: flex;
-    gap: 8px;
+    gap: 10px;
+}
+
+/* Icon with a small caption underneath (Compare, Flip) */
+.hockey-card-icons .card-icon-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-icon-caption {
+    margin-top: -3px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.card-icon-button:hover,
+.card-icon-button:focus-visible,
+.card-icon-button:hover .card-icon,
+.card-icon-button:focus-visible .card-icon {
+    color: var(--card-accent);
+    outline: none;
+}
+
+.hockey-card-flip:has(.hockey-card-back) .hockey-card-flipper {
+    cursor: pointer;
 }
 
 .card-icon {
@@ -290,7 +321,7 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    padding-top: 48px;
+    padding-top: 60px; /* room for the captioned icons */
     background: var(--card-primary);
     border-bottom: 5px solid var(--card-accent);
     color: white;

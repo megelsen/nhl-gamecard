@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from email.utils import parsedate_to_datetime
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','track_fetch_failures']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','get_skater_summary','track_fetch_failures']
 
 logger = logging.getLogger(__name__)
 
@@ -206,13 +206,29 @@ def _ranking(text, key):
     return {str(row["playerId"]): row.get(key) or 0 for row in json.loads(text).get("data", [])}
 
 
+def _summary_url(report, season_id):
+    return f"https://api.nhle.com/stats/rest/en/{report}/summary?limit=-1&cayenneExp=seasonId={season_id}%20and%20gameTypeId=2"
+
+
+def _skater_summary(text):
+    return {str(row["playerId"]): {"pos": row.get("positionCode"), "gp": row.get("gamesPlayed") or 0,
+                                   "g": row.get("goals") or 0, "a": row.get("assists") or 0, "p": row.get("points") or 0}
+            for row in json.loads(text).get("data", [])}
+
+
+def get_skater_summary(season_id, force=False):
+    """Every skater's regular-season {playerId: {pos, gp, g, a, p}} (whole league, one request),
+    for the player card percentiles and for sorting player lists."""
+    return _safe_get_json(_summary_url("skater", season_id), f"skater_summary_{season_id}", force, parse=_skater_summary)
+
+
 def get_player_ranking(season_id, force=False):
     """Every player's {playerId: value} for sorting player lists: points for skaters, games
     played for goalies (regular season, whole league, one request each)."""
-    ranking = {}
-    for report, key in (("skater", "points"), ("goalie", "gamesPlayed")):
-        url = f"https://api.nhle.com/stats/rest/en/{report}/summary?limit=-1&cayenneExp=seasonId={season_id}%20and%20gameTypeId=2"
-        ranking.update(_safe_get_json(url, f"ranking_{report}_{season_id}", force, parse=lambda text, key=key: _ranking(text, key)) or {})
+    ranking = {player_id: row["p"] for player_id, row in (get_skater_summary(season_id, force) or {}).items()}
+    goalies = _safe_get_json(_summary_url("goalie", season_id), f"ranking_goalie_{season_id}", force,
+                             parse=lambda text: _ranking(text, "gamesPlayed"))
+    ranking.update(goalies or {})
     return ranking
 
 
