@@ -68,6 +68,11 @@ h1, h2, h3 {
     scrollbar-width: none;
 }
 
+/* ...and the stat labels' dotted "has a definition" underline (statInfo.js) is left out */
+.exporting .content [data-stat-info] {
+    text-decoration: none;
+}
+
 .settings-export {
     display: inline-flex;
     align-items: center;

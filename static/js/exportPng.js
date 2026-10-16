@@ -13,6 +13,7 @@ const EXPORT_EXCLUDE = [
     ".recap-link > .material-symbols-outlined",  // link icons (the record table pills are links too)
     "[hidden]", ".stats-popup",   // the other standings conference, closed modals
 ].join(", ");
+const EXPORT_FRAME = 24; // px of team color left and right of the cards, at most (the card gap)
 
 let exportLibraryPromise = null;
 
@@ -46,6 +47,24 @@ async function proxyImages(root) {
     return () => swapped.forEach(([img, src]) => img.setAttribute("src", src));
 }
 
+// .content spans the window and centers the card rows, so a wide window leaves wide side margins.
+// Width that fits the cards with at most EXPORT_FRAME on either side (null = already narrow enough).
+function exportWidth(root) {
+    const box = root.getBoundingClientRect();
+    let left = Infinity, right = -Infinity;
+    for (const child of root.children) {
+        if (child.matches(EXPORT_EXCLUDE)) continue;
+        const rect = child.getBoundingClientRect();
+        if (!rect.width) continue;
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+    }
+    if (left === Infinity) return null;
+    const margin = Math.min(left - box.left, box.right - right, EXPORT_FRAME);
+    const width = Math.ceil(right - left + 2 * Math.max(0, margin));
+    return width < box.width ? width : null;
+}
+
 function exportFileName() {
     const team = document.getElementById("team_abbr")?.value || "team";
     const day = new Date().toISOString().slice(0, 10);
@@ -63,8 +82,11 @@ async function exportPng(button) {
         await loadExportLibrary();
         restoreImages = await proxyImages(root);
         document.body.classList.add("exporting");
+        const width = exportWidth(root);
         const dataUrl = await window.modernScreenshot.domToPng(root, {
             scale: 2,
+            // The cards stay centered, so the narrower copy only loses the extra margin
+            ...(width ? { width, style: { width: `${width}px` } } : {}),
             backgroundColor: getComputedStyle(document.body).backgroundColor,
             filter: node => !(node instanceof Element && node.matches(EXPORT_EXCLUDE)),
         });
