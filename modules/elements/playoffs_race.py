@@ -105,6 +105,7 @@ def build_playoff_picture(team_abbr, standings_data, bracket_data):
     Matchups of the current playoff round. Before the playoffs: round 1 projected from
     standings ("if the season ended today"); during/after them: the real series.
     Returns {"title": str, "subtitle": str, "tables": {"Western": html, "Eastern": html} or {"Final": html}}.
+    The subtitle only shows when there are no tables (why the card is empty).
     """
     standings = {t["teamAbbrev"]["default"]: t for t in standings_data.get("standings", [])}
     series = [s for s in (bracket_data or {}).get("series", []) if s.get("topSeedTeam") and s.get("bottomSeedTeam")]
@@ -115,7 +116,7 @@ def build_playoff_picture(team_abbr, standings_data, bracket_data):
 
 
 def projected_picture(team_abbr, standings):
-    picture = {"title": "Playoff Picture", "subtitle": "1st round if the season ended today", "tables": {}}
+    picture = {"title": "Playoff Picture", "subtitle": "", "tables": {}}
     if not any(t.get("gamesPlayed") for t in standings.values()):
         picture["subtitle"] = "Projected matchups appear after the first games"
         return picture
@@ -153,7 +154,7 @@ def live_picture(team_abbr, standings, series):
     unfinished = [s["playoffRound"] for s in series if not s.get("winningTeamId")]
     current_round = min(unfinished) if unfinished else max(s["playoffRound"] for s in series)
     round_series = sorted((s for s in series if s["playoffRound"] == current_round), key=lambda s: s.get("seriesLetter", ""))
-    picture = {"title": "Playoffs", "subtitle": ROUND_LABELS.get(current_round, f"Round {current_round}"), "tables": {}}
+    picture = {"title": f"Playoffs · {ROUND_LABELS.get(current_round, f'Round {current_round}')}", "subtitle": "", "tables": {}}
 
     if current_round >= 4:
         picture["tables"]["Final"] = bracket([series_row(team_abbr, standings, s) for s in round_series])

@@ -44,22 +44,57 @@
     container-type: inline-size;
 }
 
+/* Conference label written vertically on the outer side: West on the left (read bottom to top),
+   East on the right (top to bottom) */
+.playoff-conference {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+}
+
+.playoff-conference.east {
+    flex-direction: row-reverse;
+}
+
+.playoff-conference .bracket {
+    flex: 1;
+    min-width: 0;
+}
+
 .playoff-conference-title {
-    margin: 0 0 2px;
-    font-size: 0.9rem;
+    margin: 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: center;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.2em;
     color: #666;
+}
+
+.playoff-conference.east .playoff-conference-title {
+    transform: none;
+}
+
+/* Stacked (phones): both labels on the left, so the two brackets line up */
+@container (max-width: 407px) {
+    .playoff-conference.east {
+        flex-direction: row;
+    }
+
+    .playoff-conference.east .playoff-conference-title {
+        transform: rotate(180deg);
+    }
 }
 
 .bracket {
     --line: #bdbdbd;
-    --pair-gap: 10px;
+    --pair-gap: 6px;
     --connector: 14px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    padding: 4px 4px 8px;
+    gap: 12px;
+    padding: 2px 4px 4px;
 }
 
 /* Two series whose winners meet next round, joined by a bracket line on the right */
@@ -94,10 +129,6 @@
 
 /* Side by side, the East bracket is mirrored so both open towards the middle */
 @container (min-width: 408px) {
-    .playoff-conference:has(.bracket.mirrored) .playoff-conference-title {
-        text-align: right;
-    }
-
     .bracket.mirrored .bracket-pair {
         padding-right: 0;
         padding-left: calc(2 * var(--connector));
@@ -142,10 +173,10 @@
 
 .bracket-team {
     display: grid;
-    grid-template-columns: 2.4em 28px 1fr auto;
+    grid-template-columns: 2.4em 24px 1fr auto;
     align-items: center;
     gap: 5px;
-    padding: 4px 8px;
+    padding: 2px 8px;
 }
 
 .bracket-team + .bracket-team {
@@ -166,8 +197,8 @@
 }
 
 .bracket-team img {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     vertical-align: middle;
 }
 

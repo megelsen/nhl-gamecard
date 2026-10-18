@@ -354,11 +354,12 @@
             <!-- PLAYOFFS -->
             <div class="card_display table_card playoff-card" style="--standings-accent: {{ team_color }}; --standings-highlight: {{ standings_highlight }};">
                 <h2 class="top_card_header">{{ playoff_picture.title }}</h2>
-                <p class="playoff-subtitle">{{ playoff_picture.subtitle }}</p>
+                {% if not playoff_picture.tables %}<p class="playoff-subtitle">{{ playoff_picture.subtitle }}</p>{% endif %}
                 {% set playoff_tables = playoff_picture.tables %}
                 <div class="playoff-conferences">
                     {% for conference, table_html in playoff_tables.items() %}
-                    <div class="playoff-conference">
+                    {# West label on the bracket's left, East on its right (vertical, standings.css) #}
+                    <div class="playoff-conference{% if conference == 'Eastern' %} east{% endif %}">
                         {% if playoff_tables | length > 1 %}<h3 class="playoff-conference-title">{{ conference[:4] }}</h3>{% endif %}
                         {{ table_html | safe }}
                     </div>
