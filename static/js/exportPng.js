@@ -82,11 +82,18 @@ async function exportPng(button) {
         await loadExportLibrary();
         restoreImages = await proxyImages(root);
         document.body.classList.add("exporting");
+        // Narrow the real .content (centered, so the cards don't move on screen) rather than the
+        // copy: modern-screenshot freezes computed margins, so a narrower copy isn't re-centered
         const width = exportWidth(root);
+        if (width) {
+            root.style.width = `${width}px`;
+            root.style.marginInline = "auto";
+        }
         const dataUrl = await window.modernScreenshot.domToPng(root, {
             scale: 2,
-            // The cards stay centered, so the narrower copy only loses the extra margin
-            ...(width ? { width, style: { width: `${width}px` } } : {}),
+            // Same frame above the title card as beside and below the cards (padding is safe on the copy)
+            height: root.offsetHeight + EXPORT_FRAME,
+            style: { paddingTop: `${EXPORT_FRAME}px` },
             backgroundColor: getComputedStyle(document.body).backgroundColor,
             filter: node => !(node instanceof Element && node.matches(EXPORT_EXCLUDE)),
         });
@@ -99,6 +106,7 @@ async function exportPng(button) {
         alert("Sorry, the export failed. Please try again.");
     } finally {
         restoreImages();
+        root.style.width = root.style.marginInline = "";
         document.body.classList.remove("exporting");
         button.disabled = false;
         button.innerHTML = label;
