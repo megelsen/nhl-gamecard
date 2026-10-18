@@ -210,9 +210,11 @@ def skater_percentiles(edge, player_id, position, summary, moneypuck):
     speed = edge.get("skatingSpeed") or {}
     shots = {s.get("locationCode"): s for s in edge.get("sogSummary", [])}
     all_shots = shots.get("all", {})
-    # Goals, assists, points (stats API) and 5v5 on-ice xG per 60 (MoneyPuck), vs. forwards or defensemen
+    # Goals, assists, points (stats API) and 5v5 on-ice xG per 60 (MoneyPuck), vs. forwards or defensemen.
+    # Goals, assists and points show the player's NHL rank (all skaters); the bar still splits at the percentile.
     group = (lambda e: e.get("pos") == "D") if position == "D" else (lambda e: e.get("pos") != "D")
-    rows = [row(label, *league_percentile(summary, player_id, group, lambda e, key=key: e.get(key)), "{:.0f}", "{:.1f}")
+    rows = [with_nhl_rank(row(label, *league_percentile(summary, player_id, group, lambda e, key=key: e.get(key)),
+                              "{:.0f}", "{:.1f}"), summary, player_id, key)
             for label, key in (("Goals", "g"), ("Assists", "a"), ("Points", "p"))]
     rows += [
         info("SHOT", measured("Top shot", edge.get("topShotSpeed"), "km/h", "mph")),
@@ -228,6 +230,16 @@ def skater_percentiles(edge, player_id, position, summary, moneypuck):
     rows.append(info("XGA60", row("xGA/60 5v5", *league_percentile(moneypuck, player_id, group, lambda e: per_60(e, "xga"),
                                                                    lower_is_better=True), "{:.2f}")))
     return rows
+
+
+def with_nhl_rank(entry, summary, player_id, key):
+    # 1 + skaters with more, so ties share a rank (like NHL.com)
+    value = ((summary or {}).get(str(player_id)) or {}).get(key)
+    if value is not None and entry["pct"] is not None:
+        rank = 1 + sum(1 for e in summary.values() if (e.get(key) or 0) > value)
+        entry["rank"] = f"{ordinal(rank)} in NHL"
+        entry["rank_info"] = "RANK"
+    return entry
 
 
 def per_60(entry, key):
@@ -311,7 +323,8 @@ def with_percentile(entry, percentile):
     # within 4..96% so the slanted edge is always visible.
     pct = None if percentile is None else max(0, min(100, int(percentile * 100)))
     entry["pct"] = pct
-    entry["rank"] = None if pct is None else ordinal(pct)
+    entry["rank"] = None if pct is None else f"{ordinal(pct)} pctl"
+    entry["rank_info"] = "PCT"
     entry["split"] = None if pct is None else max(4, min(96, pct))
     return entry
 

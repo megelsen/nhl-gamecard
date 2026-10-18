@@ -370,14 +370,7 @@
 }
 
 .hockey-card-pct {
-    padding: 4px 14px 0;
-}
-
-.hockey-card-pct-title {
-    margin: 8px 0 10px;
-    font-size: 0.75rem;
-    color: #666;
-    text-align: center;
+    padding: 14px 14px 0;
 }
 
 .hockey-card-source {
@@ -575,4 +568,9 @@
 .player-compare-change:focus-visible {
     opacity: 0.7;
     outline: none;
+}
+
+/* "· 6th in NHL" / "· 82nd pctl" after a card-back stat label */
+.hockey-card-rank {
+    margin-left: 0.2em;
 }

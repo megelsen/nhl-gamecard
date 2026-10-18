@@ -2,9 +2,13 @@
 // with data-stat-info="<key>": comparison rows (comparison.js) and the player card back.
 // One floating box on <body>, so the cards' overflow never clips it.
 const STAT_INFO = {
-    PCT: "Percentile among NHL players of the same position this season: 90th = better than 90% of them. " +
-         "NHL EDGE ranks its own stats; goals, assists, points, xG and GSAx are ranked among players with at least " +
-         "25% of the group's most games. The bar splits at the percentile; the right-hand value is the NHL average.",
+    PCT: "Percentile (pctl) among NHL players of the same position (forwards, defensemen or goalies) this season: " +
+         "90th = better than 90% of them. NHL EDGE ranks its own stats; xG and GSAx are ranked among players with " +
+         "at least 25% of the group's most games. The bar splits at the percentile; the right-hand value is the " +
+         "NHL average for the position.",
+    RANK: "Rank among all NHL skaters this season (tied players share a rank). The bar shows the percentile among " +
+          "players of the same position with at least 25% of the group's most games; the right-hand value is " +
+          "their average.",
     XGF60: "Expected goals for per 60 minutes at 5-on-5 while the player is on the ice. Every shot attempt is weighted " +
            "by its chance to score (distance, angle, shot type, rebound, rush), so this measures the quality of chances " +
            "the team creates with the player out there. Higher is better. Source: MoneyPuck.com.",

@@ -81,7 +81,6 @@
         </div>
     </div>
     <div class="hockey-card-pct">
-        <p class="hockey-card-pct-title"><span data-stat-info="PCT" tabindex="0">Percentile vs. NHL {{ card.percentiles.group }}, {{ card.percentiles.season }}</span></p>
         <div class="compare" style="--left-color: var(--card-primary); --right-color: #c8c8c8;">
             <div class="compare-teams">
                 <span class="compare-team left" style="--team-color: var(--card-primary);">
@@ -94,14 +93,14 @@
                 <span class="compare-value left">{{ unit(row.value) }}</span>
                 <span class="compare-label"{% if row.info %} data-stat-info="{{ row.info }}" tabindex="0"{% endif %}>
                     {%- if row.label is string and row.label[:1] == 'x' -%}<span class="compare-case">x</span>{{ row.label[1:] }}
-                    {%- else -%}{{ unit(row.label) }}{%- endif %} · {{ row.rank }}</span>
+                    {%- else -%}{{ unit(row.label) }}{%- endif %} &middot;&nbsp;<span class="hockey-card-rank" data-stat-info="{{ row.rank_info }}" tabindex="0">{{ row.rank }}</span></span>
                 <span class="compare-value right">{{ unit(row.avg) }}</span>
                 <div class="compare-bar" style="--split: {{ row.split }}%;"><span class="bar-left"></span><span class="bar-right"></span></div>
             </div>
             {% endfor %}
         </div>
     </div>
-    <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>
+    <p class="hockey-card-source">{{ card.percentiles.season }} regular season · Tracking: NHL EDGE · xG: MoneyPuck.com</p>
 </div>
 {% endif %}
 </div>
