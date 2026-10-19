@@ -14,7 +14,7 @@ def colorize_result(game):
     game_venue = game['game_venue']
     home_score = game['home_score']
     away_score = game['away_score']
-    game_date = game['game_date'].strftime('%m/%d/%y')
+    game_date = game['game_date'].strftime('%b %d')
 
     # Formating the game detail string
     game_detail = f"{game_venue} {home_score} - {away_score}"
