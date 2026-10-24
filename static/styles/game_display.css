@@ -1,7 +1,11 @@
+/* Last games rows: venue | logo | score + date | recap link. Fixed tracks, so every row is the
+   same width and the logos line up whether the venue is "@" or "vs" */
 .game_display {
     display: grid;
-    grid-template-columns: min-content 90px 3fr 1fr;
-    /* align-items: center; */
+    grid-template-columns: 2em 90px 7em 24px;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
     gap: 4px;
     align-self: stretch;
 }

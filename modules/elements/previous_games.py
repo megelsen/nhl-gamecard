@@ -10,18 +10,18 @@ def short_date(date):
 def display_game_result(game):
     opponent_logo = get_logo(game['opponent_abr'])
     game_disp = f"""
-                {game['game_venue']}
+                <span class="game-venue">{game['game_venue']}</span>
                 <a href="javascript:void(0);" class="team-link">
                 <img src="{opponent_logo}" style="width: 85px">
                 </a>
                 <span class="game-score">
-                    <span>{game['home_score']} -  {game['away_score']} ({game['result']})</span>
+                    <span>{game['home_score']} - {game['away_score']} ({game['result']})</span>
                     <span class="game-date">{short_date(game['game_date'])}</span>
                 </span>
                 <a href={game["gamecenterURL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
-                </span></a> <br>
+                </span></a>
                 """
 
     return game_disp
@@ -29,7 +29,7 @@ def display_game_result(game):
 def display_latest_game_result(game):
     opponent_logo = get_logo(game['opponent_abr'])
     game_disp = f"""
-                {game['game_venue']}
+                <span class="game-venue">{game['game_venue']}</span>
                 <a href="javascript:void(0);" class="team-link">
                 <img src="{opponent_logo}" style="width: 85px">
                 </a>
@@ -40,14 +40,14 @@ def display_latest_game_result(game):
                                 visibility
                             </span>
                         </button>
-                        <span class="hide-spoiler"> {game['home_score']} -  {game['away_score']} ({game['result']}) </span>
+                        <span class="hide-spoiler">{game['home_score']} - {game['away_score']} ({game['result']})</span>
                     </div>
                     <span class="game-date">{short_date(game['game_date'])}</span>
                 </span>
                 <a href={game["recap_URL"]} target="_blank" rel="noopener noreferrer" class="recap-link">                
                 <span class="material-symbols-outlined">
                     open_in_new
-                </span></a> <br>
+                </span></a>
                 """
 
     return game_disp

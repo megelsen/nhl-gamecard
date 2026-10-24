@@ -19,8 +19,6 @@
     min-width: fit-content;
     /*max-width: {{min_width_team_summary}};*/
     justify-content: center;
-    display: flex;
-    align-items: center;
 }
 
 
@@ -30,6 +28,7 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
+    white-space: nowrap; /* "4 - 3 (OTL)" stays on one line (it wrapped under the date in the PNG export) */
 }
 
 .game-date{

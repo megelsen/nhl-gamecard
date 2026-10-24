@@ -22,6 +22,7 @@
 
 .previous-matchup-date{
     align-content: center;
+    white-space: nowrap;
     grid-row: 1;
     grid-column: 2;
 }

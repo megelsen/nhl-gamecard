@@ -14,4 +14,5 @@
     text-align: left;
     justify-self: left;
     margin-left: 12px;
+    white-space: nowrap; /* the PNG export renders text a bit wider; a wrapped header overlapped the content below */
 }
