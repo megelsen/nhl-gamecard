@@ -185,3 +185,45 @@
 }
 
 
+
+
+/* Browser Print / Save as PDF: the page width decides the layout like a window would, but the
+   widths synchronizeWidths.js set for the screen stay, so cards overlap. Print one column instead,
+   with no card split across pages and no controls. */
+@media print {
+    body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    #loading-wheel, .stats-popup, .settings-bar, .roster_button, #team_form,
+    .show-top5-btn, .show-top5-btn-opponent, .upcoming_games_button,
+    .standings-tabs-container, button.arrow-button, .toggle-spoiler, .stat-info-box {
+        display: none !important;
+    }
+    /* Blocks rather than grids, and nothing scrollable: browsers don't page-break grid items
+       properly and clip scroll boxes at the page edge */
+    .content, .container, .container_title {
+        display: block !important;
+        width: auto !important;
+        max-width: 100%;
+        margin-bottom: 0;
+        overflow: visible !important;
+    }
+    .container > *, .container_title > * {
+        width: auto !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 auto {{card_gap}}px;
+        overflow: visible !important;
+        break-inside: avoid;
+    }
+    .previous_game_card {
+        grid-template-columns: 1fr;
+    }
+    .previous_game {
+        grid-column: 1 / -1;
+    }
+    .content_scalable {
+        transform: none !important;
+    }
+}

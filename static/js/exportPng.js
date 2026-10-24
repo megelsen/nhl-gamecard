@@ -1,5 +1,8 @@
-// "Export PNG" in the footer: captures the dashboard (.content) as it looks right now, minus the
-// controls (modal buttons, standings tabs, goalie arrows, link icons) and with spoilers revealed.
+// "Export PNG" in the footer: captures the dashboard (.content) minus the controls (modal buttons,
+// standings tabs, goalie arrows, link icons) and with spoilers revealed. The layout select next to it
+// picks "as shown" (this window) or a 1/2/3 column layout: the columns come from media queries on the
+// window width (media_scaling.css.jinja), so those load the page in a hidden iframe of a width that
+// gets that layout, copy over the standings conference and goalies shown here, and capture the copy.
 // NHL images go through /img-proxy, since assets.nhle.com sends no CORS headers and would taint the canvas.
 // modern-screenshot only writes non-default styles; html-to-image made a ~14 MB SVG Chrome refused to decode
 const EXPORT_LIBRARY = "https://cdn.jsdelivr.net/npm/modern-screenshot@4.6.8/dist/index.js";
@@ -14,20 +17,30 @@ const EXPORT_EXCLUDE = [
     "[hidden]", ".stats-popup",   // the other standings conference, closed modals
 ].join(", ");
 const EXPORT_FRAME = 24; // px of team color left and right of the cards, at most (the card gap)
+// Iframe widths per column count: 3 columns above max_width_medium_screen (1450px), 2 above
+// max_width_small_screen (1054px), 1 above max_width_smallest_screen (539px, the phone layout)
+const EXPORT_LAYOUT_WIDTHS = { 1: 640, 2: 1100, 3: 1500 };
+const EXPORT_SCALE = 2;
+const EXPORT_MAX_PIXELS = 16_000_000; // iOS Safari won't draw canvases larger than ~16.7M pixels
+const EXPORT_SETTLE_MS = 1000;        // eventListeners.js syncs widths 700 ms after DOMContentLoaded
+const EXPORT_FRAME_TIMEOUT_MS = 30000; // iframes fire no error event, so a page that never loads would hang the button
 
 let exportLibraryPromise = null;
 
-function loadExportLibrary() {
-    if (window.modernScreenshot) return Promise.resolve();
-    exportLibraryPromise ??= new Promise((resolve, reject) => {
-        const script = document.createElement("script");
+// Loads modern-screenshot into win (this window, or the iframe so it captures in its own document)
+function loadExportLibrary(win = window) {
+    if (win.modernScreenshot) return Promise.resolve();
+    const load = () => new Promise((resolve, reject) => {
+        const script = win.document.createElement("script");
         script.src = EXPORT_LIBRARY;
         script.onload = resolve;
-        script.onerror = () => {
-            exportLibraryPromise = null;
-            reject(new Error("Could not load the export library"));
-        };
-        document.head.appendChild(script);
+        script.onerror = () => reject(new Error("Could not load the export library"));
+        win.document.head.appendChild(script);
+    });
+    if (win !== window) return load();
+    exportLibraryPromise ??= load().catch(e => {
+        exportLibraryPromise = null;
+        throw e;
     });
     return exportLibraryPromise;
 }
@@ -65,23 +78,21 @@ function exportWidth(root) {
     return width < box.width ? width : null;
 }
 
-function exportFileName() {
+function exportFileName(columns) {
     const team = document.getElementById("team_abbr")?.value || "team";
     const day = new Date().toISOString().slice(0, 10);
-    return `gamecard-${team}-${day}.png`;
+    return `gamecard-${team}-${day}${columns ? `-${columns}col` : ""}.png`;
 }
 
-async function exportPng(button) {
-    const root = document.querySelector(".content");
-    if (!root) return;
-    const label = button.innerHTML;
-    button.disabled = true;
-    button.textContent = "Exporting…";
-    let restoreImages = () => {};
+// Captures .content of win's document as a PNG data URL
+async function capture(win) {
+    const doc = win.document;
+    const root = doc.querySelector(".content");
+    if (!root) throw new Error("Nothing to export");
+    await loadExportLibrary(win);
+    const restoreImages = await proxyImages(root);
+    doc.body.classList.add("exporting");
     try {
-        await loadExportLibrary();
-        restoreImages = await proxyImages(root);
-        document.body.classList.add("exporting");
         // Narrow the real .content (centered, so the cards don't move on screen) rather than the
         // copy: modern-screenshot freezes computed margins, so a narrower copy isn't re-centered
         const width = exportWidth(root);
@@ -89,25 +100,98 @@ async function exportPng(button) {
             root.style.width = `${width}px`;
             root.style.marginInline = "auto";
         }
-        const dataUrl = await window.modernScreenshot.domToPng(root, {
-            scale: 2,
-            // Same frame above the title card as beside and below the cards (padding is safe on the copy)
-            height: root.offsetHeight + EXPORT_FRAME,
+        // Same frame above the title card as beside and below the cards (padding is safe on the copy)
+        const height = root.offsetHeight + EXPORT_FRAME;
+        const pixels = root.offsetWidth * height;
+        return await win.modernScreenshot.domToPng(root, {
+            scale: Math.min(EXPORT_SCALE, Math.sqrt(EXPORT_MAX_PIXELS / pixels)),
+            height,
             style: { paddingTop: `${EXPORT_FRAME}px` },
-            backgroundColor: getComputedStyle(document.body).backgroundColor,
-            filter: node => !(node instanceof Element && node.matches(EXPORT_EXCLUDE)),
+            backgroundColor: win.getComputedStyle(doc.body).backgroundColor,
+            filter: node => !(node instanceof win.Element && node.matches(EXPORT_EXCLUDE)),
         });
+    } finally {
+        restoreImages();
+        root.style.width = root.style.marginInline = "";
+        doc.body.classList.remove("exporting");
+    }
+}
+
+// This page in a hidden iframe at the given width, loaded and settled; the caller removes it
+function loadLayoutFrame(width) {
+    let frame;
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            frame?.remove();
+            reject(new Error("The page for the export took too long to load"));
+        }, EXPORT_FRAME_TIMEOUT_MS);
+    });
+    const loaded = new Promise((resolve, reject) => {
+        frame = document.createElement("iframe");
+        frame.setAttribute("aria-hidden", "true");
+        frame.tabIndex = -1;
+        // Off screen but rendered: display:none or visibility:hidden would skip layout and images
+        frame.style.cssText = `position: fixed; top: 0; left: -${width + 100}px; width: ${width}px;
+            height: 1000px; border: 0; pointer-events: none;`;
+        frame.onload = async () => {
+            try {
+                const win = frame.contentWindow;
+                await win.document.fonts?.ready;
+                await new Promise(r => setTimeout(r, EXPORT_SETTLE_MS));
+                resolve(frame);
+            } catch (e) {
+                reject(e);
+            }
+        };
+        frame.src = location.href;
+        document.body.appendChild(frame);
+    });
+    return Promise.race([loaded, timeout]).finally(() => clearTimeout(timer));
+}
+
+// Waits for the images in doc's .content (after copyViewState, which may swap the goalie photos)
+function imagesReady(doc) {
+    const images = [...doc.querySelectorAll(".content img")];
+    return Promise.all(images.map(img => img.decode().catch(() => {})));
+}
+
+// Shows the same standings conference and goalies in the iframe as on this page
+function copyViewState(win) {
+    const conference = document.querySelector(".standings-tab.active")?.dataset.conference;
+    if (conference) win.document.querySelector(`.standings-tab[data-conference="${conference}"]`)?.click();
+    // goalieCarousel.js keeps the index in top-level lets: readable here, but not from another window
+    if (typeof homeGoalieIndex === "number") {
+        for (let i = 0; i < homeGoalieIndex; i++) win.nextHomeGoalie?.();
+    }
+    if (typeof oppGoalieIndex === "number") {
+        for (let i = 0; i < oppGoalieIndex; i++) win.nextOppGoalie?.();
+    }
+}
+
+async function exportPng(button, columns) {
+    const label = button.innerHTML;
+    button.disabled = true;
+    button.textContent = "Exporting…";
+    let frame = null;
+    try {
+        let win = window;
+        if (columns) {
+            frame = await loadLayoutFrame(EXPORT_LAYOUT_WIDTHS[columns]);
+            win = frame.contentWindow;
+            copyViewState(win);
+            await imagesReady(win.document);
+        }
+        const dataUrl = await capture(win);
         const link = document.createElement("a");
-        link.download = exportFileName();
+        link.download = exportFileName(columns);
         link.href = dataUrl;
         link.click();
     } catch (e) {
         console.error("PNG export failed", e);
         alert("Sorry, the export failed. Please try again.");
     } finally {
-        restoreImages();
-        root.style.width = root.style.marginInline = "";
-        document.body.classList.remove("exporting");
+        frame?.remove();
         button.disabled = false;
         button.innerHTML = label;
     }
@@ -115,5 +199,6 @@ async function exportPng(button) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("exportPngBtn");
-    if (button) button.addEventListener("click", () => exportPng(button));
+    const layout = document.getElementById("export-layout");
+    if (button) button.addEventListener("click", () => exportPng(button, Number(layout?.value) || 0));
 });
