@@ -14,7 +14,8 @@ def colorize_result(game):
     game_venue = game['game_venue']
     home_score = game['home_score']
     away_score = game['away_score']
-    game_date = game['game_date'].strftime('%b %d')
+    # "Feb 12": %b plus the day without a leading zero (%-d isn't portable to Windows)
+    game_date = f"{game['game_date'].strftime('%b')} {game['game_date'].day}"
 
     # Formating the game detail string
     game_detail = f"{game_venue} {home_score} - {away_score}"
@@ -29,7 +30,7 @@ def colorize_result(game):
     elif result == 'L':
         return f'<span style="background-color: {colors["red"]}; color: white; {background_padding_style};border-radius: 2px;">{game_detail} </span>'
     else:
-      return f'<span> {game_date}' # Default return if something else
+      return f'<span>{game_date} ({game_venue})</span>' # Upcoming game: date and venue
     
 def build_records_table(sorted_opponents):
     max_games_E = 0
