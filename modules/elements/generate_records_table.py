@@ -14,8 +14,7 @@ def colorize_result(game):
     game_venue = game['game_venue']
     home_score = game['home_score']
     away_score = game['away_score']
-    # "Feb 12": %b plus the day without a leading zero (%-d isn't portable to Windows)
-    game_date = f"{game['game_date'].strftime('%b')} {game['game_date'].day}"
+    game_date = game['game_date'].strftime('%b %d')
 
     # Formating the game detail string
     game_detail = f"{game_venue} {home_score} - {away_score}"
