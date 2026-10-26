@@ -19,6 +19,8 @@ from modules import (
     get_player_ranking,
     get_skater_leaders,
     get_goalie_leaders,
+    get_edge_skater_leaders,
+    EDGE_LEADER_PATHS,
     track_fetch_failures,
 )
 from cache_utils import is_cache_fresh, prune_cache
@@ -65,6 +67,7 @@ def update_daily_cache():
                 (get_skater_leaders,),
                 (get_goalie_leaders,),
             ]
+            jobs += [(get_edge_skater_leaders, name) for name in EDGE_LEADER_PATHS]
             for team in TEAM_LIST:
                 jobs += [(get_schedule, team), (get_team_stats, team), (get_roster, team)]
 

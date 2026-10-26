@@ -116,7 +116,7 @@
 }
 
 .leaders-chip-label {
-    width: 4.5em;
+    width: 5.5em;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -142,4 +142,15 @@
 
 .leaders-popup-content .leaders-list-wrapper {
     margin-top: 12px;
+}
+
+/* Advanced lists: what is measured, qualifier and source */
+.leaders-caption {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.leaders-caption a {
+    color: inherit;
 }

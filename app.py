@@ -270,7 +270,10 @@ def team_page(team_abbr):
     standings_tables = build_standings_tables(team_abbr, standings_data)
     # Current playoff round: projected from standings until the playoffs start
     playoff_picture = build_playoff_picture(team_abbr, standings_data, get_playoff_bracket(current_season_id))
-    league_leaders = build_league_leaders(team_abbr, standings_data, get_skater_leaders(), get_goalie_leaders())
+    league_leaders = build_league_leaders(
+        team_abbr, standings_data, get_skater_leaders(), get_goalie_leaders(),
+        {name: get_edge_skater_leaders(name) for name in EDGE_LEADER_PATHS},
+        moneypuck_skaters, get_moneypuck_goalies(current_season_id), current_season_id)
     
     vars = {
         "team_info": team_info,  # Pass it directly
