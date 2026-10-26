@@ -1,0 +1,145 @@
+/* League leaders card and "More stats" modal: one row per player, a stripe in the player's team color */
+.league-leaders-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.league-leaders-card .leaders-more-btn {
+    align-self: center;
+    margin-top: auto;
+    padding: 4px 12px;
+    font-size: 13px;
+}
+
+.league-leaders-card .leaders-list-wrapper {
+    margin-bottom: 8px;
+}
+
+/* Compact tabs, so five rows fit the playoff bracket's height */
+.league-leaders-card .standings-tab {
+    padding: 5px 14px;
+    font-size: 14px;
+}
+
+.leaders-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.leader-row {
+    display: grid;
+    grid-template-columns: 1.6em 34px minmax(0, 1fr) 26px auto;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 10px 2px 12px;
+    border-radius: 6px;
+    background: #f7f7f7;
+    box-shadow: inset 5px 0 0 var(--leader-color, #888);
+    text-align: left;
+}
+
+.leader-row.own-team {
+    background: var(--standings-highlight, #e8e8e8);
+}
+
+.leader-rank {
+    font-size: 0.8rem;
+    color: #777;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.leader-headshot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #d1d1d1;
+    background: #fff;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.leader-name {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-weight: 600;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.leader-name small {
+    font-size: 0.7rem;
+    font-weight: normal;
+    color: #777;
+    letter-spacing: 0.03em;
+}
+
+.leader-logo {
+    display: block;
+    width: 26px;
+    height: 26px;
+}
+
+.leader-value {
+    min-width: 2.2em;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.leaders-empty {
+    color: #666;
+    text-align: center;
+}
+
+/* Modal: category chips in two groups, then the selected list */
+.leaders-popup-content {
+    width: min(420px, 92vw);
+    overflow-y: auto;
+    text-align: left;
+}
+
+.leaders-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.leaders-chip-label {
+    width: 4.5em;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
+}
+
+.leaders-chip {
+    padding: 3px 10px;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    background: #f3f3f3;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.leaders-chip.active {
+    background: var(--standings-accent, #555);
+    border-color: var(--standings-accent, #555);
+    color: #fff;
+}
+
+.leaders-popup-content .leaders-list-wrapper {
+    margin-top: 12px;
+}

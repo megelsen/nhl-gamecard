@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from email.utils import parsedate_to_datetime
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','get_skater_summary','track_fetch_failures']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','get_skater_summary','get_skater_leaders','get_goalie_leaders','track_fetch_failures']
 
 logger = logging.getLogger(__name__)
 
@@ -253,6 +253,22 @@ def get_game_stats(gameID):
     cache_name = f"game_stats_{gameID}"
     url = f"https://api-web.nhle.com/v1/wsc/game-story/{gameID}"
     return _safe_get_json(url, cache_name)
+
+
+LEADERS_LIMIT = 15
+
+
+def get_skater_leaders(force=False):
+    # League leaders per category (goals, assists, points, plusMinus, goalsPp, goalsSh,
+    # faceoffLeaders, penaltyMins, toi), each a list of players with headshot, team and value
+    url = f"https://api-web.nhle.com/v1/skater-stats-leaders/current?limit={LEADERS_LIMIT}"
+    return _safe_get_json(url, "skater_leaders", force)
+
+
+def get_goalie_leaders(force=False):
+    # Same for goalies: wins, savePctg, goalsAgainstAverage, shutouts
+    url = f"https://api-web.nhle.com/v1/goalie-stats-leaders/current?limit={LEADERS_LIMIT}"
+    return _safe_get_json(url, "goalie_leaders", force)
 
 
 def get_playoff_bracket(seasonID, force=False):

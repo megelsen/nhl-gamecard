@@ -31,6 +31,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/upcoming_games_card.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/arrow_buttons.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/standings.css') }}">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/league_leaders.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/roster.css') }}">
      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/comparison.css') }}">
 
@@ -68,6 +69,28 @@
                 <div id="goal-leaders-content" style="display: none;"></div>
                 <div id="assist-leaders-content" style="display: none;"></div>    
             </div>                      
+        </div>
+    </div>
+    <!-- LEAGUE LEADERS MODAL -->
+    <div id="leadersPopUp" class="stats-popup">
+        <div class="stats-popup-content card_display leaders-popup-content" style="--standings-accent: {{ team_color }}; --standings-highlight: {{ standings_highlight }};">
+            <span class="close" id="closeBtnLeaders">&times;</span>
+            <h2 class="top_card_header">League leaders</h2>
+            {% for group, lists in league_leaders.modal.items() %}
+            <div class="leaders-chip-group">
+                <span class="leaders-chip-label">{{ group }}</span>
+                {% for label in lists %}
+                <button type="button" class="leaders-chip {% if group == 'Skaters' and loop.index == 4 %}active{% endif %}" data-category="{{ group }}-{{ label }}">{{ label }}</button>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% for group, lists in league_leaders.modal.items() %}
+            {% for label, list_html in lists.items() %}
+            <div class="leaders-list-wrapper" data-category="{{ group }}-{{ label }}" {% if not (group == 'Skaters' and loop.index == 4) %}hidden{% endif %}>
+                {{ list_html | safe }}
+            </div>
+            {% endfor %}
+            {% endfor %}
         </div>
     </div>
     <!-- PLAYER CARD MODAL (filled by playerCard.js) -->
@@ -366,6 +389,21 @@
                     {% endfor %}
                 </div>
             </div>
+            <!-- LEAGUE LEADERS -->
+            <div class="card_display league-leaders-card" style="--standings-accent: {{ team_color }}; --standings-highlight: {{ standings_highlight }};">
+                <h2 class="top_card_header">League leaders</h2>
+                <div class="tabs-container standings-tabs-container">
+                    {% for label in league_leaders.card %}
+                    <div class="standings-tab leaders-tab {% if loop.first %}active{% endif %}" data-category="{{ label }}">{{ label }}</div>
+                    {% endfor %}
+                </div>
+                {% for label, list_html in league_leaders.card.items() %}
+                <div class="leaders-list-wrapper" data-category="{{ label }}" {% if not loop.first %}hidden{% endif %}>
+                    {{ list_html | safe }}
+                </div>
+                {% endfor %}
+                <button type="button" class="primary_button leaders-more-btn" id="moreLeadersBtn">More stats</button>
+            </div>
         </div>  
 <!--- BETA --------------------------------------------------------------->
 <!--- Goalie Card -------------------------------------------------------->
@@ -453,6 +491,7 @@
     <script src="{{ url_for('static', filename='js/upcomingGamesModal.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/leagueLeaders.js') }}"></script>
     <script src="{{ url_for('static', filename='js/rosterModal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/playerCard.js') }}"></script>
     <script src="{{ url_for('static', filename='js/exportPng.js') }}"></script>

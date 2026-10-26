@@ -8,6 +8,7 @@ from .previous_meeting import *
 from .roster import *
 from .player_card import *
 from .compare import *
+from .league_leaders import *
 
 # Explicitly define what gets exposed when `from modules import *` is used
-__all__ = [*generate_records_table.__all__, *generate_team_summary.__all__, *playoffs_race.__all__, *previous_games.__all__,*topscorer.__all__, *upcoming_game.__all__, *previous_meeting.__all__, *roster.__all__, *player_card.__all__, *compare.__all__]
+__all__ = [*generate_records_table.__all__, *generate_team_summary.__all__, *playoffs_race.__all__, *previous_games.__all__,*topscorer.__all__, *upcoming_game.__all__, *previous_meeting.__all__, *roster.__all__, *player_card.__all__, *compare.__all__, *league_leaders.__all__]

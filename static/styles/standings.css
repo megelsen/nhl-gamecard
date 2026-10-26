@@ -22,17 +22,17 @@
     text-align: center;
 }
 
-/* Widest layout (3 columns): the playoff card spans the whole row, the two brackets flank
-   the middle. media_scaling.css.jinja undoes this for 2 and 1 columns. */
+/* Widest layout (3 columns): the playoff card spans two columns (league leaders take the third),
+   the two brackets flank its middle. media_scaling.css.jinja undoes this for 2 and 1 columns. */
 .card_display.playoff-card {
-    grid-column: 1 / -1;
+    grid-column: span 2;
     max-width: none;
 }
 
 .card_display.playoff-card .playoff-conferences {
     grid-template-columns: repeat(2, minmax(0, 300px));
     justify-content: center;
-    column-gap: 64px;
+    column-gap: 48px;
 }
 
 /* West and East side by side (like on a map), stacked when the card is too narrow */

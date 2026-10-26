@@ -11,7 +11,7 @@ const EXPORT_EXCLUDE = [
     ".toggle-spoiler",            // spoiler covers: the scores underneath show
     ".roster_button", "#team_form",
     ".show-top5-btn", ".show-top5-btn-opponent", ".upcoming_games_button",
-    ".standings-tabs-container",
+    ".standings-tabs-container", ".leaders-more-btn",
     "button.arrow-button",
     ".recap-link > .material-symbols-outlined",  // link icons (the record table pills are links too)
     "[hidden]", ".stats-popup",   // the other standings conference, closed modals
@@ -156,10 +156,12 @@ function imagesReady(doc) {
     return Promise.all(images.map(img => img.decode().catch(() => {})));
 }
 
-// Shows the same standings conference and goalies in the iframe as on this page
+// Shows the same standings conference, leaders category and goalies in the iframe as on this page
 function copyViewState(win) {
-    const conference = document.querySelector(".standings-tab.active")?.dataset.conference;
+    const conference = document.querySelector(".standings-tab.active[data-conference]")?.dataset.conference;
     if (conference) win.document.querySelector(`.standings-tab[data-conference="${conference}"]`)?.click();
+    const category = document.querySelector(".leaders-tab.active")?.dataset.category;
+    if (category) win.document.querySelector(`.leaders-tab[data-category="${category}"]`)?.click();
     // goalieCarousel.js keeps the index in top-level lets: readable here, but not from another window
     if (typeof homeGoalieIndex === "number") {
         for (let i = 0; i < homeGoalieIndex; i++) win.nextHomeGoalie?.();
