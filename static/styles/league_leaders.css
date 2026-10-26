@@ -142,8 +142,9 @@
     margin-bottom: 8px;
 }
 
+/* Group name on its own line above its buttons */
 .leaders-chip-label {
-    width: 5.5em;
+    flex-basis: 100%;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;

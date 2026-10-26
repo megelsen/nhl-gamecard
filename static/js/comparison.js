@@ -87,8 +87,9 @@ function renderComparison(container, data) {
     const leftColor = data.leftColor || colors[data.left] || "#555";
     const rightColor = data.rightColor || colors[data.right] || "#bbb";
 
+    // Team tags link to that team's page
     const teamTag = (abbrev, color, side) => abbrev
-        ? `<span class="compare-team ${side}" style="--team-color: ${color};"><img src="${compareLogo(abbrev)}" alt="">${abbrev}</span>`
+        ? `<a class="compare-team ${side}" href="/${abbrev}" title="Open ${abbrev}" style="--team-color: ${color};"><img src="${compareLogo(abbrev)}" alt="">${abbrev}</a>`
         : `<span class="compare-team ${side}"></span>`;
 
     const rows = data.rows.map(row => {

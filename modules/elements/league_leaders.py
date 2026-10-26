@@ -31,11 +31,13 @@ GOALIE_CATEGORIES = [
 ]
 CARD_CATEGORIES = SKATER_CATEGORIES[:3]
 
-# NHL EDGE top 10s: (name in get_edge_skater_leaders, tab label, caption, STAT_INFO key, value key, units)
+# NHL EDGE top 10s: (name in get_edge_skater_leaders, tab label, caption, STAT_INFO key, value key,
+# units, or None for a plain count)
 EDGE_CATEGORIES = [
     ("speed", "Speed", "Top skating speed", "SPEED", "maxSpeed", ("km/h", "mph")),
     ("shot", "Shot", "Hardest shot", "SHOT", "hardestShot", ("km/h", "mph")),
     ("distance", "Distance", "Total distance skated", "DIST", "distanceTotal", ("km", "mi")),
+    ("hdshots", "HD shots", "High-danger shots on goal", "HDSOG", "highDanger", None),
 ]
 MONEYPUCK_SOURCE = '<a href="https://moneypuck.com" target="_blank" rel="noopener">MoneyPuck.com</a>'
 
@@ -104,12 +106,22 @@ def nhl_entry(player, fmt):
 
 def edge_entry(item, key, units):
     player = item.get("player") or {}
-    measure = item.get(key) or {}
-    if measure.get("metric") is None:
-        return None
+    if units:
+        measure = item.get(key) or {}
+        if measure.get("metric") is None:
+            return None
+        metric, imperial = f"{measure['metric']:.1f}", f"{measure['imperial']:.1f}"
+        value = measure["metric"]
+        # userSettings.js swaps the text by the viewer's Units setting
+        display = (f'<span class="unit-value" data-metric="{metric} {units[0]}" data-imperial="{imperial} {units[1]}">'
+                   f'{metric} {units[0]}</span>')
+    else:
+        value = item.get(key)
+        if value is None:
+            return None
+        display = str(value)
     # EDGE lists have no player id field, only the slug ("philip-broberg-8481598")
     slug_id = (player.get("slug") or "").rsplit("-", 1)[-1]
-    metric, imperial = f"{measure['metric']:.1f}", f"{measure['imperial']:.1f}"
     return {
         "id": int(slug_id) if slug_id.isdigit() else None,
         "first": (player.get("firstName") or {}).get("default", ""),
@@ -118,10 +130,8 @@ def edge_entry(item, key, units):
         "team": (player.get("team") or {}).get("abbrev") or "",
         "position": player.get("position") or "",
         "headshot": player.get("headshot") or "",
-        "value": measure["metric"],
-        # userSettings.js swaps the text by the viewer's Units setting
-        "display": (f'<span class="unit-value" data-metric="{metric} {units[0]}" data-imperial="{imperial} {units[1]}">'
-                    f'{metric} {units[0]}</span>'),
+        "value": value,
+        "display": display,
     }
 
 

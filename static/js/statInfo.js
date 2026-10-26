@@ -17,6 +17,8 @@ const STAT_INFO = {
     SHOT: "Hardest shot this season, measured by NHL EDGE puck tracking.",
     SPEED: "Top skating speed reached in a game this season (NHL EDGE player tracking).",
     DIST: "Total distance skated this season (NHL EDGE player tracking).",
+    HDSOG: "High-danger shots on goal: shots from right in front of the net (slot and crease), " +
+           "per NHL EDGE shot locations.",
     "SH%": "Shooting percentage: goals divided by shots on goal.",
     "HDSV%": "Save percentage on high-danger shots, the ones from right in front of the net (slot and crease), " +
              "per NHL EDGE shot locations.",

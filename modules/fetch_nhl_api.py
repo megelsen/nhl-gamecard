@@ -276,6 +276,7 @@ EDGE_LEADER_PATHS = {
     "speed": "skater-speed-top-10/all/max/now",
     "shot": "skater-shot-speed-top-10/all/max/now",
     "distance": "skater-distance-top-10/all/all/total/now",
+    "hdshots": "skater-shot-location-top-10/all/sog/high/now",
 }
 
 
