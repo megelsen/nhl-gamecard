@@ -101,6 +101,19 @@
         </div>
     </div>
 
+    <!-- CARD EXPORT MODAL (cardExport.js): preview and options for a PNG of the open card or comparison -->
+    <div id="cardExportPopUp" class="stats-popup">
+        <div class="stats-popup-content card_display card-export-popup">
+            <span class="close" id="closeBtnCardExport">&times;</span>
+            <h2 class="top_card_header">Export PNG</h2>
+            <div class="card-export-options"></div>
+            <div class="card-export-preview"><div class="card-export-stage"></div></div>
+            <button type="button" class="primary_button card-export-download">
+                <span class="material-symbols-outlined" aria-hidden="true">download</span>&nbsp;Download PNG
+            </button>
+        </div>
+    </div>
+
     <!-- ROSTER MODAL -->
     <div id="rosterPopUp" class="stats-popup">
         <div class="stats-popup-content card_display roster-popup-content">
@@ -492,6 +505,7 @@
     <script src="{{ url_for('static', filename='js/hideSpoiler.js') }}"></script>  
     <script src="{{ url_for('static', filename='js/standingsToggle.js') }}"></script>
     <script src="{{ url_for('static', filename='js/leagueLeaders.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/cardExport.js') }}"></script>
     <script src="{{ url_for('static', filename='js/rosterModal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/playerCard.js') }}"></script>
     <script src="{{ url_for('static', filename='js/exportPng.js') }}"></script>

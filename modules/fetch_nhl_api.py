@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from email.utils import parsedate_to_datetime
 from cache_utils import load_cache, load_latest_cache, save_cache, is_cache_fresh
 
-__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_shot_locations','get_player_season_report','get_player_ranking','get_skater_summary','get_skater_leaders','get_goalie_leaders','get_edge_skater_leaders','EDGE_LEADER_PATHS','track_fetch_failures']
+__all__ = ['get_logo','get_schedule', 'get_current_standings', 'get_team_stats', 'get_season_data','get_player_stats','get_playoff_bracket','get_team_summary','get_game_stats','get_roster','get_boxscore','get_skater_edge','get_goalie_edge','get_player_season_report','get_player_ranking','get_skater_summary','get_skater_leaders','get_goalie_leaders','get_edge_skater_leaders','EDGE_LEADER_PATHS','track_fetch_failures']
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +39,13 @@ def track_fetch_failures():
 
 
 def _fetch_once(url, parse=None):
-    """Single attempt. Returns parsed JSON (or `parse(text)`), or raises on failure/bad response."""
+    """Single attempt. Returns parsed JSON (or `parse(text)`, or `parse(bytes)` for a parser marked
+    `parse.binary = True`, e.g. a zip), or raises on failure/bad response."""
     res = requests.get(url, timeout=10)
     res.raise_for_status()
-    return parse(res.text) if parse else res.json()
+    if parse:
+        return parse(res.content if getattr(parse, "binary", False) else res.text)
+    return res.json()
 
 
 def _retry_after_seconds(response):
@@ -191,13 +194,6 @@ def get_goalie_edge(playerID):
     cache_name = f"edge_goalie_{playerID}"
     url = f"https://api-web.nhle.com/v1/edge/goalie-detail/{playerID}/now"
     return _safe_get_json(url, cache_name)
-
-
-def get_shot_locations(playerID, goalie=False):
-    # NHL EDGE shots (skaters) or shots against (goalies) per offensive-zone area: the card's shot map
-    kind = "goalie" if goalie else "skater"
-    url = f"https://api-web.nhle.com/v1/edge/{kind}-shot-location-detail/{playerID}/now"
-    return _safe_get_json(url, f"edge_shot_locations_{playerID}")
 
 
 def get_player_season_report(playerID, goalie=False):

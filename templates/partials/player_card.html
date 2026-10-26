@@ -22,6 +22,11 @@
     {# Lean captioned icons next to the modal's close cross (static/js/playerCard.js); a click
        anywhere else on the card flips it too: front -> percentiles -> shot map -> front #}
     <div class="hockey-card-icons">
+        <span class="card-icon-button" role="button" tabindex="0" data-card-action="export"
+              title="Export as PNG" aria-label="Export as PNG">
+            <span class="card-icon material-symbols-outlined" aria-hidden="true">download</span>
+            <span class="card-icon-caption">Export</span>
+        </span>
         <span class="card-icon-button" role="button" tabindex="0" data-card-action="compare"
               title="Compare with another player" aria-label="Compare with another player">
             <span class="card-icon material-symbols-outlined" aria-hidden="true">compare_arrows</span>
@@ -110,16 +115,16 @@
 {% endif %}
 {% if card.heatmap %}
 {% set heat = card.heatmap %}
-{# Shot map: EDGE shot locations per offensive-zone area (partials/shot_map.html) #}
+{# Shot map: MoneyPuck shot data as a heat map or per area (partials/shot_map.html) #}
 <div class="hockey-card hockey-card-heat" hidden>
     {{ back_head() }}
-    <div class="shot-map">
-        {{ shot_map.modes(heat) }}
+    <div class="shot-map" {{ shot_map.attrs(heat) }}>
+        {{ shot_map.controls(heat, layouts=True) }}
         {{ shot_map.rink(heat) }}
         {{ shot_map.legend(heat) }}
-        <p class="shot-map-summary">{{ heat.summary }}</p>
+        {{ shot_map.summary(heat.summary) }}
     </div>
-    <p class="hockey-card-source">{{ heat.season }} regular season · Shot locations: NHL EDGE</p>
+    <p class="hockey-card-source">{{ heat.season }} regular season · Shot data: MoneyPuck.com</p>
 </div>
 {% endif %}
 </div>

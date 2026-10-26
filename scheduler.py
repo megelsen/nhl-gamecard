@@ -16,6 +16,8 @@ from modules import (
     get_roster,
     get_moneypuck_skaters,
     get_moneypuck_goalies,
+    get_moneypuck_shots,
+    cached_moneypuck_shots,
     get_player_ranking,
     get_skater_leaders,
     get_goalie_leaders,
@@ -63,6 +65,7 @@ def update_daily_cache():
                 (get_playoff_bracket, season_id),
                 (get_moneypuck_skaters, season_id),
                 (get_moneypuck_goalies, season_id),
+                (get_moneypuck_shots, season_id),
                 (get_player_ranking, season_id),
                 (get_skater_leaders,),
                 (get_goalie_leaders,),
@@ -98,7 +101,8 @@ def start_scheduler():
     logging.info(" Scheduler started (06:00 and 12:00 UTC).")
 
     # Warm the cache at startup in the background so the server can bind its port right away
-    if not is_cache_fresh("season_data"):
+    # (also when the season's shot data was never downloaded: cards read it from the cache only)
+    if not is_cache_fresh("season_data") or cached_moneypuck_shots(get_season_id()) is None:
         logging.info("No cache for today on startup — refreshing in background...")
         threading.Thread(target=update_daily_cache, daemon=True).start()
     else:

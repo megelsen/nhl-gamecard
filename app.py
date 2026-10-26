@@ -63,7 +63,7 @@ def _files_hash(*paths):
 
 PLAYER_CARD_VERSION = _files_hash("templates/partials/player_card.html", "modules/elements/player_card.py",
                                   "templates/partials/shot_map.html", "templates/partials/shot_map_compare.html",
-                                  "modules/elements/shot_heatmap.py")
+                                  "modules/elements/shot_heatmap.py", "modules/rink_zones.py")
 
 @app.url_defaults
 def static_version(endpoint, values):
@@ -365,7 +365,7 @@ def player_card(player_id):
         abort(404)
     card = build_player_card(landing, get_player_season_report(player_id, goalie=landing.get("position") == "G"))
     card["percentiles"] = build_percentiles(landing, get_season_id())
-    card["heatmap"] = build_shot_heatmap(get_shot_locations(player_id, card["is_goalie"]), card["is_goalie"],
+    card["heatmap"] = build_shot_heatmap(cached_moneypuck_shots(get_season_id()), card["is_goalie"],
                                          player_id, get_season_id())
     colors = get_team_color(card["team_name"]) if card["team_name"] else DEFAULT_COLORS
     card["primary_color"] = colors.get("primary") or DEFAULT_COLORS["primary"]
@@ -384,8 +384,7 @@ def player_shot_map_compare(left_id, right_id):
     is_goalie = landings[0].get("position") == "G"
     if (landings[1].get("position") == "G") != is_goalie:
         abort(404)
-    maps = shot_maps([get_shot_locations(left_id, is_goalie), get_shot_locations(right_id, is_goalie)],
-                     is_goalie, [left_id, right_id], get_season_id())
+    maps = shot_maps(cached_moneypuck_shots(get_season_id()), is_goalie, [left_id, right_id], get_season_id())
     if not maps:
         abort(404)
     names = [f"{landing['lastName']['default']} · {landing.get('currentTeamAbbrev', '')}".rstrip(" ·")

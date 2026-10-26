@@ -68,8 +68,10 @@ h1, h2, h3 {
     scrollbar-width: none;
 }
 
-/* ...and the stat labels' dotted "has a definition" underline (statInfo.js) is left out */
-.exporting .content [data-stat-info] {
+/* ...and the stat labels' dotted "has a definition" underline (statInfo.js) is left out, also in
+   the card export (cardExport.js) */
+.exporting .content [data-stat-info],
+.exporting .card-export-stage [data-stat-info] {
     text-decoration: none;
 }
 

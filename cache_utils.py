@@ -20,6 +20,11 @@ def load_cache(name):
             return json.load(f)
     return None
 
+def latest_cache_path(name):
+    """Path of the newest cache file for `name` from any day, or None."""
+    dates = [m.group("date") for m in map(CACHE_FILE_RE.match, os.listdir(CACHE_DIR)) if m and m.group("name") == name]
+    return get_cache_path(name, max(dates)) if dates else None
+
 def load_latest_cache(name):
     """Return the newest cached entry for `name` from any day (today included), or None."""
     dates = []

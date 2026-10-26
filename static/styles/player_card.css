@@ -397,10 +397,150 @@
     padding: 12px 14px 0;
 }
 
+.shot-map-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.shot-map-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 10px;
+}
+
+/* Segmented pills: Heat | Zones and Total | % */
+.shot-map-pill {
+    display: inline-flex;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+.shot-map-pill-option {
+    padding: 2px 10px;
+    background: #f3f3f3;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.shot-map-pill-option + .shot-map-pill-option {
+    border-left: 1px solid #ccc;
+}
+
+.shot-map-pill-option.active {
+    background: var(--card-primary);
+    color: #fff;
+}
+
+.shot-map.unit-off [data-pill="unit"] {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
 .shot-map-modes {
     display: flex;
     gap: 6px;
 }
+
+/* Heat view: the smoothed heat image instead of colored areas (hovering still shows each area's
+   numbers); the neutral-zone strips keep their color and number. The view sits on each rink
+   (applyShotMap), so a grid's vs xG cell can show zones next to heat maps. */
+.shot-map-rink:not([data-view="heat"]) .shot-map-heat {
+    display: none;
+}
+
+.shot-map-rink[data-view="heat"] .shot-map-zone:not(.strip) {
+    fill-opacity: 0;
+    stroke-opacity: 0;
+}
+
+.shot-map-rink[data-view="heat"] .shot-map-value:not(.strip) {
+    display: none;
+}
+
+/* The legend for the container's own view and category (direct children: a grid's cells have their own) */
+.shot-map[data-view="heat"]:not([data-cat="xg"]) > .legend-heat,
+.shot-map[data-view="zones"]:not([data-cat="xg"]) > .legend-count,
+.shot-map[data-cat="xg"] > .legend-xg {
+    display: flex;
+}
+
+/* Two / All layouts on the card: a grid of cells replaces the single map and its legend */
+.shot-map.multi > .shot-map-rink,
+.shot-map.multi[data-view] > .shot-map-legend {
+    display: none;
+}
+
+.shot-map.cats-off .shot-map-modes {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.shot-map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.shot-map-cell {
+    gap: 3px;
+    padding: 0;
+}
+
+.shot-map-cell-label {
+    font-size: 0.72rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
+}
+
+.shot-map-cell-rinks {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.shot-map-cell-rinks .shot-map-rink {
+    max-width: none;
+}
+
+.shot-map-cell-rinks > .shot-map-rink:only-child {
+    max-width: 320px;
+    justify-self: center;
+}
+
+/* Small cells on the card: the strips show only their numbers, the legend is compact */
+.shot-map-grid .shot-map-strip {
+    display: none;
+}
+
+.shot-map-grid .shot-map-value {
+    font-size: 5.4px;
+}
+
+.shot-map-grid .shot-map-value.small {
+    font-size: 4.2px;
+}
+
+.shot-map-grid .shot-map-legend {
+    gap: 3px;
+    font-size: 0.6rem;
+}
+
+.shot-map-grid .shot-map-scale {
+    width: 60px;
+}
+
 
 .shot-map-mode {
     padding: 3px 12px;
@@ -484,7 +624,7 @@
 }
 
 .shot-map-legend {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 6px;
     font-size: 0.7rem;
@@ -497,11 +637,37 @@
     border-radius: 999px;
 }
 
+/* Totals under the map: a row of tiles, number on top, label below */
 .shot-map-summary {
-    margin: 0;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #444;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.shot-map-total {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90px;
+    padding: 4px 2px;
+    border-radius: 6px;
+    background: #f4f5f7;
+    line-height: 1.15;
+}
+
+.shot-map-total b {
+    font-size: 1rem;
+    color: #222;
+    font-variant-numeric: tabular-nums;
+}
+
+.shot-map-total span {
+    font-size: 0.62rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     text-align: center;
 }
 
@@ -563,7 +729,11 @@
 }
 
 .shot-map-side .shot-map-summary {
-    font-size: 0.72rem;
+    gap: 3px;
+}
+
+.shot-map-side .shot-map-total b {
+    font-size: 0.85rem;
 }
 
 @media (max-width: 500px) {
@@ -612,6 +782,10 @@
     margin-left: auto;
     color: white;
     cursor: pointer;
+}
+
+.player-compare-flip-icon + .player-compare-flip-icon {
+    margin-left: 10px;
 }
 
 .player-compare-flip-icon[hidden] {
@@ -781,4 +955,129 @@
 /* "· 6th in NHL" / "· 82nd pctl" after a card-back stat label */
 .hockey-card-rank {
     margin-left: 0.2em;
+}
+
+/* Card export (cardExport.js): options, a preview of exactly what the PNG shows, download. Opens
+   over the player card modal (z-index 200). */
+#cardExportPopUp {
+    z-index: 300;
+}
+
+/* #id: cards.css (loaded later) would otherwise cap it at the cards' 515px; the sheets are 640px
+   wide (narrower windows scroll the preview) */
+#cardExportPopUp .card-export-popup {
+    --card-primary: #444;
+    width: min(720px, 96vw);
+    max-width: none;
+    max-height: 90vh;
+    overflow: auto;
+    text-align: left;
+}
+
+.card-export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.card-export-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-export-label {
+    width: 4.5em;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #666;
+}
+
+.card-export-select {
+    padding: 2px 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.85rem;
+}
+
+.card-export-hint {
+    margin: 0;
+    font-size: 0.72rem;
+    color: #888;
+}
+
+.card-export-preview {
+    overflow: auto;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e9ecef;
+}
+
+.card-export-stage {
+    width: max-content;
+    margin: 0 auto;
+}
+
+.card-export-download {
+    margin: 12px auto 0;
+}
+
+/* What gets captured: no drop shadow (it would be cut off at the image edge) */
+.card-export-face,
+.card-export-sheet {
+    box-shadow: none;
+}
+
+.card-export-sheet {
+    display: flex;
+    flex-direction: column;
+}
+
+/* The card's head leaves room for icons the export doesn't show */
+.card-export-head,
+.card-export-face .hockey-card-back-head {
+    padding-top: 12px;
+}
+
+.card-export-title {
+    padding: 10px 14px 0;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.card-export-columns,
+.card-export-tiles.two-columns,
+.card-export-grid.two-columns {
+    grid-template-columns: 1fr 1fr;
+}
+
+.card-export-columns {
+    display: grid;
+    gap: 12px;
+    padding: 8px 14px 0;
+}
+
+.card-export-column {
+    justify-self: center;
+    padding-bottom: 3px;
+    border-bottom: 3px solid var(--side-color, #888);
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.card-export-grid {
+    display: grid;
+    gap: 14px;
+    padding: 10px 14px 0;
+}
+
+.card-export-tiles {
+    display: grid;
+    gap: 12px;
+    padding: 12px 14px 0;
 }

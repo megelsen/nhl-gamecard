@@ -14,6 +14,152 @@ function escapeHtml(text) {
     return String(text ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
+// --- Shot map (partials/shot_map.html) ----------------------------------------------------
+// The .shot-map container holds view (heat / zones), category and unit (total / pct). Zones swap
+// their color and number from data-* attributes; the heat view paints a smoothed image of the
+// 1-ft shot grid. All maps in one container (a comparison) share each color scale. Top level, since
+// the card export (cardExport.js) draws maps in other views with applyShotMap().
+
+// The categories in this map's own buttons: [[key, label], ...]
+function shotMapCategories(map) {
+    return [...map.querySelectorAll('[data-set="cat"]')].map(b => [b.dataset.value, b.textContent.trim()]);
+}
+
+function setShotMap(button) {
+    const map = button.closest(".shot-map");
+    const { set, value } = button.dataset;
+    if (set === "unit" && map.classList.contains("unit-off")) return;
+    if (set === "cat" && map.dataset.layout === "all") return; // every stat is shown
+    if (set === "cat" && map.dataset.layout === "two") {
+        // Two stats side by side: a third replaces the one picked longer ago
+        const cats = map.dataset.cats.split(",");
+        if (!cats.includes(value)) map.dataset.cats = [cats[1], value].join(",");
+    } else {
+        map.dataset[set] = value;
+    }
+    if (set === "layout" && value === "two" && !map.dataset.cats) {
+        const other = shotMapCategories(map).find(([key]) => key !== map.dataset.cat && key !== "xg");
+        map.dataset.cats = [map.dataset.cat, other[0]].join(",");
+    }
+    // vs xG exists per area only (a single map switches to zones; in a grid only its own cell does)
+    if (set === "cat" && value === "xg" && map.dataset.layout !== "two") map.dataset.view = "zones";
+    if (set === "view" && value === "heat" && map.dataset.cat === "xg" && (map.dataset.layout || "one") === "one") map.dataset.cat = "shots";
+    applyShotMap(map);
+}
+
+// This map's own elements, not those of the cells of a grid inside it
+function ownElements(map, selector) {
+    return [...map.querySelectorAll(selector)].filter(el => el.closest(".shot-map") === map);
+}
+
+function applyShotMap(map) {
+    const { view, cat, unit } = map.dataset;
+    const layout = map.dataset.layout || "one";
+    const cats = layout === "two" ? map.dataset.cats.split(",") : null;
+    const key = cat === "xg" ? "xg" : `${cat}-${unit}`;
+    const rinks = ownElements(map, ".shot-map-rink");
+    ownElements(map, "[data-set]").forEach(b => b.classList.toggle("active",
+        b.dataset.set === "cat" && cats ? cats.includes(b.dataset.value) : map.dataset[b.dataset.set] === b.dataset.value));
+    map.classList.toggle("cats-off", layout === "all");
+    // Total vs. % doesn't apply to vs xG, nor to a heat map on its own scale (same picture, only the
+    // scale's numbers differ); a grid's cells each have their own scale
+    map.classList.toggle("unit-off", (layout === "one" && cat === "xg") || (view === "heat" && (layout !== "one" || rinks.length < 2)));
+    rinks.forEach(rink => { rink.dataset.view = cat === "xg" ? "zones" : view; });
+    ownElements(map, `[data-fill-${key}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-fill-${key}`)));
+    ownElements(map, `[data-ink-${key}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-ink-${key}`)));
+    ownElements(map, `[data-text-${key}]`).forEach(el => { el.textContent = el.getAttribute(`data-text-${key}`); });
+    if (view === "heat" && cat !== "xg") paintHeat(map, rinks, cat, unit === "pct");
+    if (map.classList.contains("shot-map-cell")) return;
+    renderShotMapGrid(map, layout, layout === "two" ? cats : shotMapCategories(map).map(([k]) => k));
+}
+
+// One map in the given category, view and unit, drawn from copies of `rinks` (a comparison's row of
+// two shares one color scale), with its legends; the card's grid and the export (cardExport.js) use it
+function shotMapCell(source, rinks, cat, view, unit, label) {
+    const cell = document.createElement("div");
+    cell.className = "shot-map shot-map-cell";
+    Object.assign(cell.dataset, { view: cat === "xg" ? "zones" : view, cat, unit, stops: source.dataset.stops });
+    if (label) {
+        const title = document.createElement("div");
+        title.className = "shot-map-cell-label";
+        title.textContent = label;
+        cell.append(title);
+    }
+    const row = document.createElement("div");
+    row.className = "shot-map-cell-rinks";
+    rinks.forEach(rink => row.append(rink.cloneNode(true)));
+    cell.append(row, ...ownElements(source, ".shot-map-legend").map(legend => legend.cloneNode(true)));
+    applyShotMap(cell);
+    return cell;
+}
+
+// The card's Two / All layouts: a grid of cells instead of the single map
+function renderShotMapGrid(map, layout, cats) {
+    ownElements(map, ".shot-map-grid").forEach(grid => grid.remove());
+    map.classList.toggle("multi", layout !== "one");
+    if (layout === "one") return;
+    const labels = Object.fromEntries(shotMapCategories(map));
+    const rinks = ownElements(map, ".shot-map-rink");
+    const grid = document.createElement("div");
+    grid.className = "shot-map-grid";
+    cats.forEach(cat => grid.append(shotMapCell(map, rinks, cat, map.dataset.view, map.dataset.unit, labels[cat])));
+    rinks[rinks.length - 1].after(grid);
+}
+
+const HEAT_W = 85, HEAT_H = 75, HEAT_SIGMA = 3.5; // feet: the offensive zone, kernel width
+
+// Smoothed density of [column, row, count] cells (Gaussian kernel); `share` scales to the player's total
+function heatDensity(cells, share) {
+    const grid = new Float32Array(HEAT_W * HEAT_H);
+    const total = cells.reduce((sum, cell) => sum + cell[2], 0) || 1;
+    const radius = Math.ceil(HEAT_SIGMA * 3);
+    for (const [col, row, n] of cells) {
+        const weight = share ? n / total : n;
+        for (let y = Math.max(0, row - radius); y <= Math.min(HEAT_H - 1, row + radius); y++) {
+            for (let x = Math.max(0, col - radius); x <= Math.min(HEAT_W - 1, col + radius); x++) {
+                const d2 = (x - col) ** 2 + (y - row) ** 2;
+                grid[y * HEAT_W + x] += weight * Math.exp(-d2 / (2 * HEAT_SIGMA ** 2));
+            }
+        }
+    }
+    return grid;
+}
+
+function heatRgb(stops, t) {
+    const position = t * (stops.length - 1);
+    const i = Math.min(Math.floor(position), stops.length - 2);
+    const f = position - i;
+    const a = stops[i].match(/\w\w/g).map(h => parseInt(h, 16));
+    const b = stops[i + 1].match(/\w\w/g).map(h => parseInt(h, 16));
+    return a.map((v, k) => Math.round(v + (b[k] - v) * f));
+}
+
+function paintHeat(map, rinks, cat, share) {
+    const stops = JSON.parse(map.dataset.stops);
+    const grids = [...rinks].map(rink => heatDensity((JSON.parse(rink.dataset.heat || "{}")[cat]) || [], share));
+    const max = Math.max(...grids.map(grid => grid.reduce((m, v) => Math.max(m, v), 0))) || 1;
+    const canvas = document.createElement("canvas");
+    canvas.width = HEAT_W;
+    canvas.height = HEAT_H;
+    const context = canvas.getContext("2d");
+    rinks.forEach((rink, index) => {
+        const image = context.createImageData(HEAT_W, HEAT_H);
+        grids[index].forEach((value, i) => {
+            const t = value / max;
+            if (t < 0.03) return; // transparent: the white ice shows
+            const [r, g, b] = heatRgb(stops, Math.sqrt(t));
+            // Fades in from transparent, so a few stray shots stay a light tint
+            image.data.set([r, g, b, Math.round(255 * Math.min(0.92, 0.08 + t * 1.6))], i * 4);
+        });
+        context.putImageData(image, 0, 0);
+        rink.querySelector(".shot-map-heat").setAttribute("href", canvas.toDataURL());
+    });
+}
+
+function initShotMaps(root) {
+    root.querySelectorAll(".shot-map:not(.shot-map-cell)").forEach(applyShotMap);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("playerCardPopUp");
     const content = document.getElementById("playerCardContent");
@@ -46,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cardHtml = html;
         content.innerHTML = html;
         applyUnits(content);
+        initShotMaps(content);
     }
 
     async function openCard(playerId) {
@@ -86,16 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }, reduced ? 0 : FLIP_MS);
     }
 
-    // Shot map: Shots / Goals buttons swap each zone's color and number (data-* from the template)
-    function setShotMapMode(button) {
-        const map = button.closest(".shot-map");
-        const mode = button.dataset.mode;
-        map.querySelectorAll(".shot-map-mode").forEach(b => b.classList.toggle("active", b === button));
-        map.querySelectorAll(`[data-fill-${mode}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-fill-${mode}`)));
-        map.querySelectorAll(`[data-ink-${mode}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-ink-${mode}`)));
-        map.querySelectorAll(`[data-text-${mode}]`).forEach(el => { el.textContent = el.getAttribute(`data-text-${mode}`); });
-    }
-
     // --- Comparison: pick a second player ---------------------------------------------------
 
     // `head`: extra header content (the comparison's flip icon); `classes`: extra classes and attributes
@@ -110,6 +247,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     ${body}
                 </div>`;
     }
+
+    // Exports the comparison's current face (cardExport.js)
+    const compareExportIcon = `<span class="card-icon-button player-compare-flip-icon" role="button" tabindex="0" data-card-action="export"
+                      title="Export as PNG" aria-label="Export as PNG">
+                    <span class="card-icon material-symbols-outlined" aria-hidden="true">download</span>
+                    <span class="card-icon-caption">Export</span>
+                </span>`;
 
     // Flips the comparison between the stat bars and the shot maps
     function compareFlipIcon(caption) {
@@ -255,7 +399,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
                     <div class="compare-mount player-compare-mount"></div>
                     <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>`,
-                    { head: compareFlipIcon("Shot map").replace('role="button"', 'role="button" hidden') })}
+                    { head: compareExportIcon + compareFlipIcon("Shot map").replace('role="button"', 'role="button" hidden') })}
                 </div></div>`;
             renderComparison(content.querySelector(".player-compare-mount"), {
                 left: left.team,
@@ -282,12 +426,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!flipper || content.innerHTML !== view) return; // another view opened meanwhile
             flipper.insertAdjacentHTML("beforeend", compareShell(title,
                 `<div class="player-compare-shotmap">${html}</div>
-                 <p class="hockey-card-source">Shot locations: NHL EDGE</p>`,
-                { head: compareFlipIcon("Stats"), classes: "player-compare-maps" }));
+                 <p class="hockey-card-source">Shot data: MoneyPuck.com</p>`,
+                { head: compareExportIcon + compareFlipIcon("Stats"), classes: "player-compare-maps" }));
             const maps = flipper.lastElementChild;
             maps.hidden = true;
             maps.querySelector(".shot-map-side.left")?.style.setProperty("--side-color", leftColor);
             maps.querySelector(".shot-map-side.right")?.style.setProperty("--side-color", rightColor);
+            initShotMaps(maps);
             flipper.querySelector(".player-compare-flip-icon[hidden]")?.removeAttribute("hidden");
         } catch (e) {
             // the comparison stays without the maps
@@ -302,7 +447,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleAction(target) {
         const action = target.dataset.cardAction;
         if (action === "flip") flip(target.closest(".hockey-card-flip"));
-        else if (action === "shotmode") setShotMapMode(target);
+        else if (action === "shotmap") setShotMap(target);
+        else if (action === "export") openCardExport(target);
         else if (action === "compare") openCompare(target.closest(".hockey-card-flip"));
         else if (action === "change") showPicker();
         else if (action === "back") {

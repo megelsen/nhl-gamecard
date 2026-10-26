@@ -1,23 +1,48 @@
 {# Shot map pieces (modules/elements/shot_heatmap.py), used by the player card's third face and the
-   comparison in the card modal. The mode buttons swap every zone's fill and number from its data-*
-   attributes, for all maps inside the same .shot-map (playerCard.js). #}
-{% macro modes(heat) -%}
-<div class="shot-map-modes">
-    {% for mode in heat.modes %}
-    <span class="shot-map-mode{% if loop.first %} active{% endif %}" role="button" tabindex="0"
-          data-card-action="shotmode" data-mode="{{ mode.key }}">{{ mode.label }}</span>
-    {% endfor %}
+   comparison in the card modal. The .shot-map container holds the view (heat / zones), category and
+   unit; playerCard.js swaps zone fills and numbers from their data-* attributes and paints the heat
+   image, for all maps inside the same .shot-map. #}
+{% macro attrs(heat) -%}
+data-layout="one" data-view="heat" data-cat="shots" data-unit="total" data-stops="{{ heat.stops }}"
+{%- endmacro %}
+
+{% macro pill(set, options, first) -%}
+<span class="shot-map-pill" data-pill="{{ set }}">
+    {%- for option in options -%}
+    <span class="shot-map-pill-option{% if option.key == first %} active{% endif %}" role="button" tabindex="0"
+          data-card-action="shotmap" data-set="{{ set }}" data-value="{{ option.key }}">{{ option.label }}</span>
+    {%- endfor -%}
+</span>
+{%- endmacro %}
+
+{# `layouts`: the One / Two / All pill (the card; a comparison already shows two maps) #}
+{% macro controls(heat, layouts=False) -%}
+<div class="shot-map-controls">
+    <div class="shot-map-pills">
+        {% if layouts %}{{ pill("layout", [{"key": "one", "label": "One"}, {"key": "two", "label": "Two"}, {"key": "all", "label": "All"}], "one") }}{% endif %}
+        {{ pill("view", [{"key": "heat", "label": "Heat"}, {"key": "zones", "label": "Zones"}], "heat") }}
+        {{ pill("unit", heat.units, "total") }}
+    </div>
+    <div class="shot-map-modes">
+        {% for category in heat.categories %}
+        <span class="shot-map-mode{% if loop.first %} active{% endif %}" role="button" tabindex="0"
+              data-card-action="shotmap" data-set="cat" data-value="{{ category.key }}">{{ category.label }}</span>
+        {% endfor %}
+        <span class="shot-map-mode" role="button" tabindex="0" data-card-action="shotmap" data-set="cat" data-value="xg"
+              title="{{ 'Goals saved above expected (MoneyPuck xG) per area' if heat.is_goalie else 'Goals above expected (MoneyPuck xG) per area' }}">vs xG</span>
+    </div>
 </div>
 {%- endmacro %}
 
 {% macro rink(heat) -%}
-{% set first = heat.modes[0].key %}
 {% set outline = "M-42.5 100V20A20 20 0 0 1 -22.5 0H22.5A20 20 0 0 1 42.5 20V100Z" %}
-<svg class="shot-map-rink" viewBox="-43.5 -1 87 102" role="img" aria-label="Shot locations by area">
+<svg class="shot-map-rink" viewBox="-43.5 -1 87 102" role="img" aria-label="Shot locations" data-heat="{{ heat.heat }}">
     <defs><clipPath id="{{ heat.clip_id }}"><path d="{{ outline }}"/></clipPath></defs>
     <g clip-path="url(#{{ heat.clip_id }})">
+        {# Heat image (offensive zone, 1 px per foot, smoothed when scaled up), painted by playerCard.js #}
+        <image class="shot-map-heat" x="-42.5" y="0" width="85" height="75" preserveAspectRatio="none"/>
         {% for zone in heat.zones %}
-        <path class="shot-map-zone" d="{{ zone.path }}" fill="{{ zone.fills[first] }}"
+        <path class="shot-map-zone{% if zone.strip %} strip{% endif %}" d="{{ zone.path }}" fill="{{ zone.fills['shots-total'] }}"
               {% for key, fill in zone.fills.items() %}data-fill-{{ key }}="{{ fill }}" {% endfor %}><title>{{ zone.title }}</title></path>
         {% endfor %}
         <g class="shot-map-lines">
@@ -32,18 +57,31 @@
     </g>
     <path class="shot-map-boards" d="{{ outline }}"/>
     {% for zone in heat.zones %}
-    <text class="shot-map-value{% if zone.small %} small{% endif %}" x="{{ zone.x }}" y="{{ zone.y }}" fill="{{ zone.inks[first] }}"
-          {% for key, ink in zone.inks.items() %}data-ink-{{ key }}="{{ ink }}" {% endfor %}>
+    <text class="shot-map-value{% if zone.small %} small{% endif %}{% if zone.strip %} strip{% endif %}" x="{{ zone.x }}" y="{{ zone.y }}"
+          fill="{{ zone.inks['shots-total'] }}" {% for key, ink in zone.inks.items() %}data-ink-{{ key }}="{{ ink }}" {% endfor %}>
         {%- if zone.name %}<tspan class="shot-map-strip">{{ zone.name }} </tspan>{% endif -%}
-        <tspan {% for key, text in zone.texts.items() %}data-text-{{ key }}="{{ text }}" {% endfor %}>{{ zone.texts[first] }}</tspan></text>
+        <tspan {% for key, text in zone.texts.items() %}data-text-{{ key }}="{{ text }}" {% endfor %}>{{ zone.texts['shots-total'] }}</tspan></text>
     {% endfor %}
 </svg>
 {%- endmacro %}
 
+{# One legend per kind of view; CSS shows the one matching the container's view and category #}
 {% macro legend(heat) -%}
-<div class="shot-map-legend">
-    <span>0</span>
-    <span class="shot-map-scale" style="background: {{ heat.gradient }};"></span>
-    <span {% for mode in heat.modes %}data-text-{{ mode.key }}="{{ mode.max }}" {% endfor %}>{{ heat.modes[0].max }}</span>
+<div class="shot-map-legend legend-heat">
+    <span>fewer</span><span class="shot-map-scale" style="background: {{ heat.gradient }};"></span><span>more</span>
+</div>
+<div class="shot-map-legend legend-count">
+    <span>0</span><span class="shot-map-scale" style="background: {{ heat.gradient }};"></span>
+    <span {% for key, value in heat.maxima.items() %}data-text-{{ key }}="{{ value }}" {% endfor %}>{{ heat.maxima['shots-total'] }}</span>
+</div>
+<div class="shot-map-legend legend-xg">
+    <span>worse −{{ heat.xg_max }}</span><span class="shot-map-scale" style="background: {{ heat.xg_gradient }};"></span><span>+{{ heat.xg_max }} better</span>
+</div>
+{%- endmacro %}
+
+{# Totals under a map: small tiles with the number on top #}
+{% macro summary(tiles) -%}
+<div class="shot-map-summary">
+    {% for value, label in tiles %}<div class="shot-map-total"><b>{{ value }}</b><span>{{ label }}</span></div>{% endfor %}
 </div>
 {%- endmacro %}
