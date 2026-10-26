@@ -1,0 +1,17 @@
+{# Two players' shot maps on one color scale, below the comparison in the card modal (playerCard.js
+   sets each side's --side-color) #}
+{% import "partials/shot_map.html" as shot_map %}
+<div class="shot-map shot-map-compare">
+    <h4 class="shot-map-title">Shot map</h4>
+    {{ shot_map.modes(maps[0]) }}
+    <div class="shot-map-pair">
+        {% for heat in maps %}
+        <figure class="shot-map-side {{ 'left' if loop.first else 'right' }}">
+            <figcaption>{{ names[loop.index0] }}</figcaption>
+            {{ shot_map.rink(heat) }}
+            <p class="shot-map-summary">{{ heat.short_summary }}</p>
+        </figure>
+        {% endfor %}
+    </div>
+    {{ shot_map.legend(maps[0]) }}
+</div>

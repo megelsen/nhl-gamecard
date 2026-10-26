@@ -1,6 +1,6 @@
 // Player card modal: click any headshot with data-player-id (top scorers, goalies, Top 5, roster).
 // One delegated listener, so headshots rendered later (modals, goalie carousel) work too.
-// Icons on the card: flip to the league percentiles, or compare with another player (picked by
+// Icons on the card: flip to the league percentiles and the shot map, or compare with another player (picked by
 // name search or from a team roster), shown with the shared comparison bars (comparison.js).
 const PLAYER_SEARCH_URL = "https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=20&active=true&q=";
 const COMPARE_KEYS = {
@@ -67,33 +67,57 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Both faces are shown while the card turns; afterwards the hidden one gets `hidden` again
+    // Front -> percentiles -> shot map -> front, always turning the same way: every flip adds half a
+    // turn, and the next face is pre-turned to face the viewer when it ends. The current and next
+    // face are shown while the card turns; afterwards the others get `hidden` again.
     function flip(card) {
-        const front = card.querySelector(".hockey-card-front");
-        const back = card.querySelector(".hockey-card-back");
-        if (!front || !back) return;
-        const toBack = !card.classList.contains("flipped");
-        front.hidden = back.hidden = false;
+        const faces = [...card.querySelectorAll(".hockey-card-flipper > .hockey-card")];
+        if (faces.length < 2) return;
+        card.turns = (card.turns || 0) + 1;
+        const next = faces[card.turns % faces.length];
+        next.classList.toggle("face-turned", card.turns % 2 === 1);
+        next.hidden = false;
         void card.offsetWidth; // start the turn from the current position
-        card.classList.toggle("flipped", toBack);
+        card.querySelector(".hockey-card-flipper").style.transform = `rotateY(${card.turns * 180}deg)`;
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         clearTimeout(card.flipTimer);
         card.flipTimer = setTimeout(() => {
-            (toBack ? front : back).hidden = true;
+            faces.forEach(face => { face.hidden = face !== next; });
         }, reduced ? 0 : FLIP_MS);
+    }
+
+    // Shot map: Shots / Goals buttons swap each zone's color and number (data-* from the template)
+    function setShotMapMode(button) {
+        const map = button.closest(".shot-map");
+        const mode = button.dataset.mode;
+        map.querySelectorAll(".shot-map-mode").forEach(b => b.classList.toggle("active", b === button));
+        map.querySelectorAll(`[data-fill-${mode}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-fill-${mode}`)));
+        map.querySelectorAll(`[data-ink-${mode}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-ink-${mode}`)));
+        map.querySelectorAll(`[data-text-${mode}]`).forEach(el => { el.textContent = el.getAttribute(`data-text-${mode}`); });
     }
 
     // --- Comparison: pick a second player ---------------------------------------------------
 
-    function compareShell(title, body) {
-        return `<div class="hockey-card player-compare" style="--card-primary: ${compareLeft.color}; --card-accent: ${compareLeft.accent};">
+    // `head`: extra header content (the comparison's flip icon); `classes`: extra classes and attributes
+    function compareShell(title, body, { head = "", classes = "" } = {}) {
+        return `<div class="hockey-card player-compare ${classes}" style="--card-primary: ${compareLeft.color}; --card-accent: ${compareLeft.accent};">
                     <div class="player-compare-head">
                         <span class="card-icon material-symbols-outlined" role="button" tabindex="0"
                               data-card-action="back" title="Back" aria-label="Back">arrow_back</span>
                         <h3>${title}</h3>
+                        ${head}
                     </div>
                     ${body}
                 </div>`;
+    }
+
+    // Flips the comparison between the stat bars and the shot maps
+    function compareFlipIcon(caption) {
+        return `<span class="card-icon-button player-compare-flip-icon" role="button" tabindex="0" data-card-action="flip"
+                      title="Flip" aria-label="Flip to ${caption}">
+                    <span class="card-icon material-symbols-outlined" aria-hidden="true">cached</span>
+                    <span class="card-icon-caption">${caption}</span>
+                </span>`;
     }
 
     function showPicker() {
@@ -224,10 +248,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const left = await getJson(`/player/${compareLeft.id}/compare.json`);
             const right = await getJson(`/player/${rightId}/compare.json?against=${left.color.slice(1)}`);
             const keys = left.is_goalie ? COMPARE_KEYS.goalie : COMPARE_KEYS.skater;
-            content.innerHTML = compareShell(`${escapeHtml(left.season)} regular season`, `
-                <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
-                <div class="compare-mount player-compare-mount"></div>
-                <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>`);
+            // A flip card: stat bars in front, both players' shot maps behind (added once they load)
+            const title = `${escapeHtml(left.season)} regular season`;
+            content.innerHTML = `<div class="hockey-card-flip player-compare-flip"><div class="hockey-card-flipper">
+                ${compareShell(title, `
+                    <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
+                    <div class="compare-mount player-compare-mount"></div>
+                    <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>`,
+                    { head: compareFlipIcon("Shot map").replace('role="button"', 'role="button" hidden') })}
+                </div></div>`;
             renderComparison(content.querySelector(".player-compare-mount"), {
                 left: left.team,
                 right: right.team,
@@ -235,8 +264,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 rightColor: right.color,
                 rows: keys.map(key => ({ key, left: left.values[key], right: right.values[key] })),
             });
+            showShotMaps(compareLeft.id, rightId, left.color, right.color, title);
         } catch (e) {
             content.innerHTML = compareShell("Compare", '<p class="hockey-card-empty">Comparison unavailable right now.</p>');
+        }
+    }
+
+    // Both players' shot maps on one color scale, as the comparison's back face; no back (and no
+    // flip icon) when neither has data
+    async function showShotMaps(leftId, rightId, leftColor, rightColor, title) {
+        const view = content.innerHTML;
+        try {
+            const res = await fetch(`/player/${leftId}/shot-map/${rightId}?v=${encodeURIComponent(window.playerCardVersion || "")}`);
+            if (!res.ok) return;
+            const html = await res.text();
+            const flipper = content.querySelector(".player-compare-flip .hockey-card-flipper");
+            if (!flipper || content.innerHTML !== view) return; // another view opened meanwhile
+            flipper.insertAdjacentHTML("beforeend", compareShell(title,
+                `<div class="player-compare-shotmap">${html}</div>
+                 <p class="hockey-card-source">Shot locations: NHL EDGE</p>`,
+                { head: compareFlipIcon("Stats"), classes: "player-compare-maps" }));
+            const maps = flipper.lastElementChild;
+            maps.hidden = true;
+            maps.querySelector(".shot-map-side.left")?.style.setProperty("--side-color", leftColor);
+            maps.querySelector(".shot-map-side.right")?.style.setProperty("--side-color", rightColor);
+            flipper.querySelector(".player-compare-flip-icon[hidden]")?.removeAttribute("hidden");
+        } catch (e) {
+            // the comparison stays without the maps
         }
     }
 
@@ -248,6 +302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleAction(target) {
         const action = target.dataset.cardAction;
         if (action === "flip") flip(target.closest(".hockey-card-flip"));
+        else if (action === "shotmode") setShotMapMode(target);
         else if (action === "compare") openCompare(target.closest(".hockey-card-flip"));
         else if (action === "change") showPicker();
         else if (action === "back") {

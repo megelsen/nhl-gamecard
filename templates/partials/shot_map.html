@@ -1,0 +1,49 @@
+{# Shot map pieces (modules/elements/shot_heatmap.py), used by the player card's third face and the
+   comparison in the card modal. The mode buttons swap every zone's fill and number from its data-*
+   attributes, for all maps inside the same .shot-map (playerCard.js). #}
+{% macro modes(heat) -%}
+<div class="shot-map-modes">
+    {% for mode in heat.modes %}
+    <span class="shot-map-mode{% if loop.first %} active{% endif %}" role="button" tabindex="0"
+          data-card-action="shotmode" data-mode="{{ mode.key }}">{{ mode.label }}</span>
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro rink(heat) -%}
+{% set first = heat.modes[0].key %}
+{% set outline = "M-42.5 100V20A20 20 0 0 1 -22.5 0H22.5A20 20 0 0 1 42.5 20V100Z" %}
+<svg class="shot-map-rink" viewBox="-43.5 -1 87 102" role="img" aria-label="Shot locations by area">
+    <defs><clipPath id="{{ heat.clip_id }}"><path d="{{ outline }}"/></clipPath></defs>
+    <g clip-path="url(#{{ heat.clip_id }})">
+        {% for zone in heat.zones %}
+        <path class="shot-map-zone" d="{{ zone.path }}" fill="{{ zone.fills[first] }}"
+              {% for key, fill in zone.fills.items() %}data-fill-{{ key }}="{{ fill }}" {% endfor %}><title>{{ zone.title }}</title></path>
+        {% endfor %}
+        <g class="shot-map-lines">
+            <line class="goal-line" x1="-43" y1="11" x2="43" y2="11"/>
+            <line class="blue-line" x1="-43" y1="75" x2="43" y2="75"/>
+            <line class="red-line" x1="-43" y1="89" x2="43" y2="89"/>
+            <circle cx="-22" cy="31" r="15"/><circle cx="22" cy="31" r="15"/>
+            <circle class="dot" cx="-22" cy="31" r="1"/><circle class="dot" cx="22" cy="31" r="1"/>
+            <path d="M-6 11A6 6 0 0 0 6 11"/>
+            <rect class="net" x="-3" y="7.7" width="6" height="3.3" rx="1"/>
+        </g>
+    </g>
+    <path class="shot-map-boards" d="{{ outline }}"/>
+    {% for zone in heat.zones %}
+    <text class="shot-map-value{% if zone.small %} small{% endif %}" x="{{ zone.x }}" y="{{ zone.y }}" fill="{{ zone.inks[first] }}"
+          {% for key, ink in zone.inks.items() %}data-ink-{{ key }}="{{ ink }}" {% endfor %}>
+        {%- if zone.name %}<tspan class="shot-map-strip">{{ zone.name }} </tspan>{% endif -%}
+        <tspan {% for key, text in zone.texts.items() %}data-text-{{ key }}="{{ text }}" {% endfor %}>{{ zone.texts[first] }}</tspan></text>
+    {% endfor %}
+</svg>
+{%- endmacro %}
+
+{% macro legend(heat) -%}
+<div class="shot-map-legend">
+    <span>0</span>
+    <span class="shot-map-scale" style="background: {{ heat.gradient }};"></span>
+    <span {% for mode in heat.modes %}data-text-{{ mode.key }}="{{ mode.max }}" {% endfor %}>{{ heat.modes[0].max }}</span>
+</div>
+{%- endmacro %}

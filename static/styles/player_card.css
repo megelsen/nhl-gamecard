@@ -216,8 +216,8 @@
     background: white;
 }
 
-/* Flip card: front (bio, career) and back (percentiles) share one grid cell. The hidden face
-   has the `hidden` attribute; playerCard.js shows both while turning and toggles .flipped */
+/* Flip card: front (bio, career), back (percentiles) and shot map share one grid cell. Hidden faces
+   have the `hidden` attribute; playerCard.js shows the current and next face while turning */
 .hockey-card-flip {
     position: relative;
     width: min(400px, 94vw);
@@ -230,21 +230,28 @@
     transition: transform 0.6s ease;
 }
 
-.hockey-card-flip.flipped .hockey-card-flipper {
-    transform: rotateY(180deg);
-}
-
 .hockey-card-flipper > .hockey-card {
     grid-area: 1 / 1;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }
 
+/* A hidden face keeps its place in the shared grid cell, just invisible, so every face is as tall
+   as the tallest one (a goalie's percentiles are shorter than the front). Without this stylesheet
+   `hidden` still removes it. */
 .hockey-card-flipper > .hockey-card[hidden] {
-    display: none;
+    display: block;
+    visibility: hidden;
 }
 
-.hockey-card-back {
+.hockey-card-flipper > .hockey-card-back[hidden],
+.hockey-card-flipper > .hockey-card-heat[hidden],
+.hockey-card-flipper > .player-compare[hidden] {
+    display: flex;
+}
+
+/* The face that shows after an odd number of flips (playerCard.js) */
+.hockey-card-flipper > .hockey-card.face-turned {
     transform: rotateY(180deg);
 }
 
@@ -291,7 +298,7 @@
     outline: none;
 }
 
-.hockey-card-flip:has(.hockey-card-back) .hockey-card-flipper {
+.hockey-card-flip:has(.hockey-card-back, .hockey-card-heat) .hockey-card-flipper {
     cursor: pointer;
 }
 
@@ -311,7 +318,8 @@
 }
 
 /* Back: headshot, name, team and nationality on the team color */
-.hockey-card-back {
+.hockey-card-back,
+.hockey-card-heat {
     display: flex;
     flex-direction: column;
 }
@@ -380,6 +388,184 @@
     color: #666;
 }
 
+/* Shot map face: EDGE shot locations on the offensive zone, net at the top */
+.shot-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 0;
+}
+
+.shot-map-modes {
+    display: flex;
+    gap: 6px;
+}
+
+.shot-map-mode {
+    padding: 3px 12px;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    background: #f3f3f3;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.shot-map-mode.active {
+    background: var(--card-primary);
+    border-color: var(--card-primary);
+    color: #fff;
+}
+
+.shot-map-rink {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+}
+
+.shot-map-zone {
+    stroke: #fff;
+    stroke-width: 0.5;
+    transition: fill 0.25s;
+}
+
+.shot-map-lines {
+    fill: none;
+    stroke: #c8102e;
+    stroke-width: 0.45;
+    stroke-opacity: 0.55;
+    pointer-events: none;
+}
+
+.shot-map-lines .blue-line {
+    stroke: #0b3d91;
+    stroke-width: 1.4;
+}
+
+.shot-map-lines .red-line {
+    stroke-width: 1;
+}
+
+.shot-map-lines .dot {
+    fill: #c8102e;
+    stroke: none;
+}
+
+.shot-map-lines .net {
+    stroke: #555;
+    stroke-opacity: 0.8;
+    fill: rgba(255, 255, 255, 0.6);
+}
+
+.shot-map-boards {
+    fill: none;
+    stroke: #9aa0a8;
+    stroke-width: 0.8;
+    pointer-events: none;
+}
+
+.shot-map-value {
+    font-size: 4.4px;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+.shot-map-value.small {
+    font-size: 3.4px;
+}
+
+.shot-map-strip {
+    font-weight: normal;
+    font-size: 3.4px;
+}
+
+.shot-map-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.shot-map-scale {
+    width: 140px;
+    height: 8px;
+    border-radius: 999px;
+}
+
+.shot-map-summary {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #444;
+    text-align: center;
+}
+
+/* Comparison in the card modal (its back face): both players' maps side by side on one color scale */
+.player-compare-shotmap .shot-map {
+    padding: 14px 14px 0;
+}
+
+.shot-map-title {
+    margin: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
+}
+
+.shot-map-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+}
+
+.shot-map-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+}
+
+.shot-map-side figcaption {
+    max-width: 100%;
+    padding-bottom: 3px;
+    border-bottom: 3px solid var(--side-color, #888);
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shot-map-side .shot-map-rink {
+    max-width: none;
+}
+
+/* Too small to read side by side: the strips show only their numbers */
+.shot-map-side .shot-map-strip {
+    display: none;
+}
+
+.shot-map-side .shot-map-value {
+    font-size: 5.4px;
+}
+
+.shot-map-side .shot-map-value.small {
+    font-size: 4.2px;
+}
+
+.shot-map-side .shot-map-summary {
+    font-size: 0.72rem;
+}
+
 @media (max-width: 500px) {
     .hockey-card-stats {
         font-size: 0.72rem;
@@ -416,6 +602,28 @@
     margin: 0;
     font-size: 1rem;
     font-weight: bold;
+}
+
+/* Comparison flip (stat bars / shot maps): captioned icon at the header's end */
+.player-compare-flip-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: auto;
+    color: white;
+    cursor: pointer;
+}
+
+.player-compare-flip-icon[hidden] {
+    display: none;
+}
+
+.player-compare-flip .card-icon {
+    line-height: 26px;
+}
+
+.player-compare-flip:has(.player-compare-maps) .hockey-card-flipper {
+    cursor: pointer;
 }
 
 .player-compare-picker {

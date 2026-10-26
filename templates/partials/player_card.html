@@ -3,17 +3,31 @@
 {%- if value is mapping -%}<span class="unit-value" data-metric="{{ value.metric }}" data-imperial="{{ value.imperial }}">{{ value.metric }}</span>
 {%- else -%}{{ value }}{%- endif -%}
 {%- endmacro %}
+{% import "partials/shot_map.html" as shot_map %}
+{# Header of the back faces (percentiles, shot map) #}
+{% macro back_head() -%}
+    <div class="hockey-card-back-head">
+        {% if card.headshot %}<img class="hockey-card-headshot" src="{{ card.headshot }}" alt="{{ card.name }}">{% endif %}
+        <div class="hockey-card-back-id">
+            <span class="hockey-card-name"><span class="hockey-card-back-number">#{{ card.number }}</span> {{ card.name }}</span>
+            <span class="hockey-card-team">
+                {% if card.team_logo %}<img src="{{ card.team_logo }}" alt="">{% endif %}{{ card.position }} – {{ card.team_name }}
+            </span>
+            {% if card.flag_url %}<span class="hockey-card-team"><img class="hockey-card-flag-small" src="{{ card.flag_url }}" alt="">{{ card.country }}</span>{% endif %}
+        </div>
+    </div>
+{%- endmacro %}
 <div class="hockey-card-flip" style="--card-primary: {{ card.primary_color }}; --card-accent: {{ card.accent_color }};"
      data-player="{{ card.player_id }}" data-goalie="{{ 'true' if card.is_goalie else 'false' }}" data-color="{{ card.primary_color }}" data-accent="{{ card.accent_color }}">
     {# Lean captioned icons next to the modal's close cross (static/js/playerCard.js); a click
-       anywhere else on the card flips it too #}
+       anywhere else on the card flips it too: front -> percentiles -> shot map -> front #}
     <div class="hockey-card-icons">
         <span class="card-icon-button" role="button" tabindex="0" data-card-action="compare"
               title="Compare with another player" aria-label="Compare with another player">
             <span class="card-icon material-symbols-outlined" aria-hidden="true">compare_arrows</span>
             <span class="card-icon-caption">Compare</span>
         </span>
-        {% if card.percentiles %}
+        {% if card.percentiles or card.heatmap %}
         <span class="card-icon-button" role="button" tabindex="0" data-card-action="flip"
               title="Flip card" aria-label="Flip card">
             <span class="card-icon material-symbols-outlined" aria-hidden="true">cached</span>
@@ -70,16 +84,7 @@
 {% if card.percentiles %}
 {# Hidden until flipped, so it never shows below the front, even without the stylesheet #}
 <div class="hockey-card hockey-card-back" hidden>
-    <div class="hockey-card-back-head">
-        {% if card.headshot %}<img class="hockey-card-headshot" src="{{ card.headshot }}" alt="{{ card.name }}">{% endif %}
-        <div class="hockey-card-back-id">
-            <span class="hockey-card-name"><span class="hockey-card-back-number">#{{ card.number }}</span> {{ card.name }}</span>
-            <span class="hockey-card-team">
-                {% if card.team_logo %}<img src="{{ card.team_logo }}" alt="">{% endif %}{{ card.position }} – {{ card.team_name }}
-            </span>
-            {% if card.flag_url %}<span class="hockey-card-team"><img class="hockey-card-flag-small" src="{{ card.flag_url }}" alt="">{{ card.country }}</span>{% endif %}
-        </div>
-    </div>
+    {{ back_head() }}
     <div class="hockey-card-pct">
         <div class="compare" style="--left-color: var(--card-primary); --right-color: #c8c8c8;">
             <div class="compare-teams">
@@ -101,6 +106,20 @@
         </div>
     </div>
     <p class="hockey-card-source">{{ card.percentiles.season }} regular season · Tracking: NHL EDGE · xG: MoneyPuck.com</p>
+</div>
+{% endif %}
+{% if card.heatmap %}
+{% set heat = card.heatmap %}
+{# Shot map: EDGE shot locations per offensive-zone area (partials/shot_map.html) #}
+<div class="hockey-card hockey-card-heat" hidden>
+    {{ back_head() }}
+    <div class="shot-map">
+        {{ shot_map.modes(heat) }}
+        {{ shot_map.rink(heat) }}
+        {{ shot_map.legend(heat) }}
+        <p class="shot-map-summary">{{ heat.summary }}</p>
+    </div>
+    <p class="hockey-card-source">{{ heat.season }} regular season · Shot locations: NHL EDGE</p>
 </div>
 {% endif %}
 </div>
