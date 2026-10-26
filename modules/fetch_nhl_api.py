@@ -118,12 +118,13 @@ def _get_cached_json(cache_name):
     return cached
 
 
-def _safe_get_json(url, cache_name, force=False, parse=None):
+def _safe_get_json(url, cache_name, force=False, parse=None, final=False):
     """
     Fetch JSON from `url` (using a valid fresh cache entry if one exists, unless `force`),
     retrying a few times on transient failures before falling back to the newest stale
     cache entry from a previous day. Never raises. Returns None only if there is no
     usable data anywhere. `parse` turns a non-JSON body (e.g. CSV) into JSON-serializable data.
+    `final`: the data no longer changes (a finished season), so a cache entry from any day will do.
     """
     if not force:
         cached = _get_cached_json(cache_name)
@@ -131,6 +132,8 @@ def _safe_get_json(url, cache_name, force=False, parse=None):
             return cached
 
     stale = load_latest_cache(cache_name)
+    if final and stale and not force:
+        return stale
 
     # During an outage (or for a URL that doesn't exist yet), don't make every request
     # sit through the retries again.
@@ -182,17 +185,24 @@ def get_roster(team_abbr, force=False):
     return _safe_get_json(url, cache_name, force)
 
 
-def get_skater_edge(playerID):
+def _edge_season(season_id):
+    # EDGE paths end in "now" (current season) or "{season}/2" (that regular season)
+    return (f"{season_id}/2", f"_{season_id}") if season_id else ("now", "")
+
+
+def get_skater_edge(playerID, season_id=None):
     # NHL EDGE tracking: shot speed, skating speed, shots by danger zone (regular season)
-    cache_name = f"edge_skater_{playerID}"
-    url = f"https://api-web.nhle.com/v1/edge/skater-detail/{playerID}/now"
+    path, suffix = _edge_season(season_id)
+    cache_name = f"edge_skater_{playerID}{suffix}"
+    url = f"https://api-web.nhle.com/v1/edge/skater-detail/{playerID}/{path}"
     return _safe_get_json(url, cache_name)
 
 
-def get_goalie_edge(playerID):
+def get_goalie_edge(playerID, season_id=None):
     # NHL EDGE: save % by danger zone (regular season)
-    cache_name = f"edge_goalie_{playerID}"
-    url = f"https://api-web.nhle.com/v1/edge/goalie-detail/{playerID}/now"
+    path, suffix = _edge_season(season_id)
+    cache_name = f"edge_goalie_{playerID}{suffix}"
+    url = f"https://api-web.nhle.com/v1/edge/goalie-detail/{playerID}/{path}"
     return _safe_get_json(url, cache_name)
 
 

@@ -2,9 +2,10 @@ from datetime import date, datetime
 
 from modules.fetch_nhl_api import get_logo, get_skater_edge, get_goalie_edge, get_skater_summary
 from modules.fetch_moneypuck import get_moneypuck_skaters, get_moneypuck_goalies
+from modules.read_schedule import get_season_id
 from modules.elements.compare import skater_edge_stats, skater_xg_stats, goalie_edge_stats
 
-__all__ = ['build_player_card', 'build_percentiles', 'build_compare_player']
+__all__ = ['build_player_card', 'build_percentiles', 'build_compare_player', 'season_name']
 
 POSITIONS = {"C": "C", "L": "LW", "R": "RW", "D": "D", "G": "G"}
 
@@ -345,13 +346,21 @@ def format_value(value, fmt):
     return fmt.format(value)
 
 
-# Player comparison (static/js/playerCard.js): this season's raw numbers per COMPARE_SPECS key
-def build_compare_player(landing, season_id):
+# Player comparison (static/js/playerCard.js): one season's raw numbers per COMPARE_SPECS key
+# (this season or a past one, so a player can also be compared with another of their own seasons)
+def build_compare_player(landing, season_id, season_report=None):
+    """`season_report` (stats API) gives a past season's team abbreviation."""
     player_id = landing.get("playerId")
     is_goalie = landing.get("position") == "G"
+    current = str(season_id) == get_season_id()
+    parts = season_parts(landing, season_id)
     featured = landing.get("featuredStats") or {}
-    current = str(featured.get("season")) == str(season_id)
-    stats = ((featured.get("regularSeason") or {}).get("subSeason") or {}) if current else {}
+    if current:
+        live = str(featured.get("season")) == str(season_id)
+        stats = ((featured.get("regularSeason") or {}).get("subSeason") or {}) if live else {}
+    else:
+        stats = combine_seasons(parts, is_goalie) if parts else {}
+    edge_season = None if current else season_id  # EDGE's "now" is the current season
     if is_goalie:
         mp = (get_moneypuck_goalies(season_id) or {}).get(str(player_id))
         values = {
@@ -360,11 +369,11 @@ def build_compare_player(landing, season_id):
             "GAA": stats.get("goalsAgainstAvg"),
             "SV%": stats.get("savePctg"),
             "SO": stats.get("shutouts"),
-            "HDSV%": goalie_edge_stats(player_id)["hd_save_pct"],
+            "HDSV%": goalie_edge_stats(player_id, edge_season)["hd_save_pct"],
             "GSAX": goals_saved_above_expected(mp),
         }
     else:
-        edge = skater_edge_stats(player_id)
+        edge = skater_edge_stats(player_id, edge_season)
         xg = skater_xg_stats(player_id, get_moneypuck_skaters(season_id))
         values = {
             "GP": stats.get("gamesPlayed"),
@@ -379,26 +388,40 @@ def build_compare_player(landing, season_id):
             "SPEED": edge["skate_speed"],
         }
     card = build_player_card(landing)
+    team, team_name = card["team_abbrev"], card["team_name"]
+    if not current and parts:
+        # The team he finished that season with (its colors too)
+        team_name = (parts[-1].get("teamName") or {}).get("default", "")
+        report = next((row for row in (season_report or {}).get("data", [])
+                       if str(row.get("seasonId")) == str(season_id)), {})
+        team = ((report.get("teamAbbrevs") or "").split(",") or [""])[-1] or team
     return {
         "id": player_id,
         "name": card["name"],
         "number": card["number"],
         "position": card["position"],
         "is_goalie": is_goalie,
-        "team": card["team_abbrev"],
-        "team_name": card["team_name"],
+        "team": team,
+        "team_name": team_name,
         "headshot": card["headshot"],
         "flag_url": card["flag_url"],
         "country": card["country"],
         "season": season_name(season_id),
+        "season_id": str(season_id),
         "values": values,
     }
 
 
-def average_toi(landing, season_id):
-    """Seconds of ice time per game this season (weighted over teams after a trade)."""
+def season_parts(landing, season_id):
+    """A season's NHL regular-season rows from the landing data, one per team, in order."""
     parts = [e for e in landing.get("seasonTotals", [])
              if str(e.get("season")) == str(season_id) and e.get("leagueAbbrev") == "NHL" and e.get("gameTypeId") == 2]
+    return sorted(parts, key=lambda e: e.get("sequence", 0))
+
+
+def average_toi(landing, season_id):
+    """Seconds of ice time per game in a season (weighted over teams after a trade)."""
+    parts = season_parts(landing, season_id)
     games = sum(e.get("gamesPlayed") or 0 for e in parts)
     if not games:
         return None

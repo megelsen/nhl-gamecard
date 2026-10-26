@@ -308,6 +308,7 @@ def team_page(team_abbr):
         "utc_starttime": utc_starttime,
         "max_width_smallest_screen": LAYOUT["max_width_smallest_screen"],
         "player_card_version": PLAYER_CARD_VERSION,
+        "compare_seasons": [{"id": season, "label": season_name(season)} for season in compare_season_ids(current_season_id)],
         "team_color": team_colors['primary'],
         "opponent_color": opponent_colors['primary'],
         "css_color": team_colors['primary'].lstrip('#'),
@@ -374,29 +375,46 @@ def player_card(player_id):
     )
     return render_template("partials/player_card.html", card=card)
 
+def compare_season(value):
+    # A season the comparison can show (this one or one of the last PAST_SEASONS), else this one
+    seasons = compare_season_ids()
+    return value if value in seasons else seasons[0]
+
 @app.route("/player/<int:left_id>/shot-map/<int:right_id>")
 def player_shot_map_compare(left_id, right_id):
     # Both players' shot maps on one color scale, for the comparison in the card modal
-    # (static/js/playerCard.js); a skater next to a goalie gets the stats both have, as shares
+    # (static/js/playerCard.js); a skater next to a goalie gets the stats both have, as shares.
+    # `seasons=20252026,20242025`: each side's season (the same player twice compares two seasons)
     landings = [get_player_stats(left_id), get_player_stats(right_id)]
     if not all(landing and "firstName" in landing for landing in landings):
         abort(404)
+    requested = (request.args.get("seasons", "").split(",") + ["", ""])[:2]
+    seasons = [compare_season(season) for season in requested]
     goalies = [landing.get("position") == "G" for landing in landings]
-    maps = shot_maps(cached_moneypuck_shots(get_season_id()), goalies, [left_id, right_id], get_season_id())
+    maps = shot_maps([cached_moneypuck_shots(season) for season in seasons], goalies, [left_id, right_id], seasons)
     if not maps:
         abort(404)
-    names = [f"{landing['lastName']['default']} · {landing.get('currentTeamAbbrev', '')}".rstrip(" ·")
-             for landing in landings]
+    if seasons[0] != seasons[1]:
+        # The team can differ between seasons, so the caption names the season instead
+        names = [f"{landing['lastName']['default']} · {season_name(season)}" for landing, season in zip(landings, seasons)]
+    else:
+        names = [f"{landing['lastName']['default']} · {landing.get('currentTeamAbbrev', '')}".rstrip(" ·")
+                 for landing in landings]
     return render_template("partials/shot_map_compare.html", maps=maps, names=names)
 
 @app.route("/player/<int:player_id>/compare.json")
 def player_compare(player_id):
     # One side of a player comparison (static/js/playerCard.js). `against` is the other
     # side's color: the team color is swapped for a contrasting one when they're too close.
+    # `season`: one of compare_season_ids() (default: this season)
     landing = get_player_stats(player_id)
     if not landing or "firstName" not in landing:
         abort(404)
-    data = build_compare_player(landing, get_season_id())
+    season = compare_season(request.args.get("season", ""))
+    report = None
+    if season != get_season_id():
+        report = get_player_season_report(player_id, goalie=landing.get("position") == "G")  # that season's team
+    data = build_compare_player(landing, season, report)
     colors = get_team_color(data["team_name"]) if data["team_name"] else DEFAULT_COLORS
     data["color"] = colors.get("primary") or DEFAULT_COLORS["primary"]
     against = request.args.get("against", "")

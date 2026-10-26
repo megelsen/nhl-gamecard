@@ -1,7 +1,7 @@
 from datetime import datetime
 from collections import defaultdict
 
-__all__ = ['get_season_id', 'get_season_start', 'get_season_end', 'get_games_data','sort_games_by_opponent']
+__all__ = ['get_season_id', 'compare_season_ids', 'get_season_start', 'get_season_end', 'get_games_data','sort_games_by_opponent']
 
 def get_season_id():
     current_year = datetime.now().year
@@ -15,6 +15,15 @@ def get_season_id():
         end_year = current_year
     season_id = str(start_year) + str(end_year)
     return season_id
+
+
+PAST_SEASONS = 2  # finished seasons a comparison can pick, besides the current one
+
+
+def compare_season_ids(season_id=None):
+    """The current season and the PAST_SEASONS before it, newest first: ["20262027", "20252026", ...]"""
+    start = int(str(season_id or get_season_id())[:4])
+    return [f"{year}{year + 1}" for year in range(start, start - PAST_SEASONS - 1, -1)]
 
 def get_season_start(season_data,current_season_id):
     seasons = (season_data or {}).get("seasons") or []

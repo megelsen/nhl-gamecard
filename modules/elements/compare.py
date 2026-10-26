@@ -10,9 +10,10 @@ SKATER_ROWS = ["GP", "G", "A", "P", "XGF60", "SPEED", "TOI"]
 GAME_ROWS = ["Score", "SOG", "SV%", "FO%", "PP", "Hits"]
 
 
-def skater_edge_stats(player_id):
-    """Top shot speed and max skating speed from NHL EDGE (None when missing)."""
-    edge = get_skater_edge(player_id) or {}
+def skater_edge_stats(player_id, season_id=None):
+    """Top shot speed and max skating speed from NHL EDGE (None when missing); `season_id`: a past
+    season instead of the current one."""
+    edge = get_skater_edge(player_id, season_id) or {}
     return {
         "shot_speed": (edge.get("topShotSpeed") or {}).get("metric"),
         "skate_speed": ((edge.get("skatingSpeed") or {}).get("speedMax") or {}).get("metric"),
@@ -27,8 +28,8 @@ def skater_xg_stats(player_id, moneypuck):
     return {"xgf_60": per_60(row.get("xgf")), "xga_60": per_60(row.get("xga"))}
 
 
-def goalie_edge_stats(player_id):
-    edge = get_goalie_edge(player_id) or {}
+def goalie_edge_stats(player_id, season_id=None):
+    edge = get_goalie_edge(player_id, season_id) or {}
     high = next((s for s in edge.get("shotLocationSummary", []) if s.get("locationCode") == "high"), {})
     return {"hd_save_pct": high.get("savePctg")}
 

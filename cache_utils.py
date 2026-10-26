@@ -62,13 +62,16 @@ def is_cache_fresh(name):
     path = get_cache_path(name)
     return os.path.exists(path)
 
-def prune_cache(keep_days=3):
-    """Delete cache files older than `keep_days`, keeping recent ones as stale fallbacks."""
+def prune_cache(keep_days=3, keep=()):
+    """Delete cache files older than `keep_days`, keeping recent ones as stale fallbacks.
+    Of the names in `keep` (data of finished seasons, fetched once) the newest file always stays."""
     cutoff = (datetime.now() - timedelta(days=keep_days)).strftime(DATE_FORMAT)
+    newest = {name: latest_cache_path(name) for name in keep}
     for filename in os.listdir(CACHE_DIR):
         match = CACHE_FILE_RE.match(filename)
-        if match and match.group("date") < cutoff:
+        path = os.path.join(CACHE_DIR, filename)
+        if match and match.group("date") < cutoff and newest.get(match.group("name")) != path:
             try:
-                os.remove(os.path.join(CACHE_DIR, filename))
+                os.remove(path)
             except OSError:
                 pass

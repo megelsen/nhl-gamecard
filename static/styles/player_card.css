@@ -833,7 +833,8 @@
 }
 
 .picker-tab,
-.picker-team-select {
+.picker-team-select,
+.picker-season-select {
     padding: 4px 10px;
     font: inherit;
     font-size: 0.85rem;
@@ -848,6 +849,17 @@
     background: var(--card-primary);
     border-color: var(--card-primary);
     color: white;
+}
+
+/* Each side's season; "Own seasons" compares the player with another season of their own */
+.player-compare-seasons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 6px;
+    font-size: 0.85rem;
+    color: #666;
 }
 
 .player-compare-results {
@@ -936,6 +948,11 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+}
+
+.player-compare-season {
+    font-weight: bold;
+    color: var(--team-color);
 }
 
 .player-compare-flag {

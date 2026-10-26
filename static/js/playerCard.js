@@ -1,7 +1,8 @@
 // Player card modal: click any headshot with data-player-id (top scorers, goalies, Top 5, roster).
 // One delegated listener, so headshots rendered later (modals, goalie carousel) work too.
 // Icons on the card: flip to the league percentiles and the shot map, or compare with another player (picked by
-// name search or from a team roster), shown with the shared comparison bars (comparison.js).
+// name search or from a team roster), shown with the shared comparison bars (comparison.js). Each side can be
+// this season or a past one (window.compareSeasons), also the same player in two seasons.
 const PLAYER_SEARCH_URL = "https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=20&active=true&q=";
 const COMPARE_KEYS = {
     // Same order as the Top scorers and Goalies cards, then the extra rows
@@ -171,6 +172,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const jsonCache = new Map();
     let cardHtml = "";     // the open card, to return to from the comparison
     let compareLeft = null; // {id, goalie, color, accent} of the open card's player
+    const seasonOptions = window.compareSeasons || []; // [{id, label}], this season first
+    let seasons = {};       // {left, right}: each side's season id ("" = this season)
     let searchToken = 0;   // drops search/roster answers that arrive after a newer request
 
     const spinner = '<div class="player-card-loading"><div class="spinner"></div></div>';
@@ -280,9 +283,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${others.map(team => `<option value="${team}">${team}</option>`).join("")}
                     </select>
                 </div>
+                ${seasonPicker()}
                 <ul class="player-compare-results"></ul>
             </div>`);
         content.dataset.view = "picker";
+        content.querySelectorAll(".picker-season-select").forEach(select => select.addEventListener("change", () => {
+            seasons[select.dataset.side] = select.value;
+        }));
         const input = content.querySelector(".player-compare-search");
         let debounce;
         input.addEventListener("input", () => {
@@ -297,6 +304,29 @@ document.addEventListener("DOMContentLoaded", function () {
         // Start with the next opponent's roster (or the team's own in the off-season)
         showRoster(teams.right || teams.left || others[0]);
         input.focus();
+    }
+
+    // Each side's season, and a button to compare the player with another of their own seasons
+    function seasonPicker() {
+        if (seasonOptions.length < 2) return "";
+        const select = side => `<select class="picker-season-select" data-side="${side}"
+                    aria-label="${side === "left" ? "This player's season" : "Other player's season"}">
+                ${seasonOptions.map(s => `<option value="${escapeHtml(s.id)}"${s.id === seasons[side] ? " selected" : ""}>${escapeHtml(s.label)}</option>`).join("")}
+            </select>`;
+        return `<div class="player-compare-seasons">
+                    <span>Season</span>${select("left")}<span>vs</span>${select("right")}
+                    <button type="button" class="picker-tab" data-card-action="self">Own seasons</button>
+                </div>`;
+    }
+
+    // The open card's player against another season of their own (the other side's season, or the
+    // one before when both sides are on the same)
+    function compareOwnSeasons() {
+        if (seasons.left === seasons.right) {
+            const index = seasonOptions.findIndex(s => s.id === seasons.left);
+            seasons.right = seasonOptions[(index + 1) % seasonOptions.length].id;
+        }
+        showComparison(compareLeft.id);
     }
 
     function setActiveSource(team) {
@@ -375,7 +405,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- Comparison: both players side by side -----------------------------------------------
 
-    function playerSide(player, changeable = false) {
+    // `showSeason`: the sides are from different seasons
+    function playerSide(player, changeable = false, showSeason = false) {
         return `<div class="player-compare-side" style="--team-color: ${player.color};">
                     <img class="player-compare-headshot" src="${escapeHtml(player.headshot)}" alt="${escapeHtml(player.name)}"
                          data-player-id="${escapeHtml(player.id)}" title="Open player card">
@@ -385,6 +416,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${player.flag_url ? `<img class="player-compare-flag" src="${escapeHtml(player.flag_url)}" alt="" title="${escapeHtml(player.country)}">` : ""}
                         ${escapeHtml(player.team)}
                     </span>
+                    ${showSeason ? `<span class="option-meta player-compare-season">${escapeHtml(player.season)}</span>` : ""}
                     ${changeable ? `<span class="player-compare-change material-symbols-outlined" role="button" tabindex="0"
                           data-card-action="change" title="Change player" aria-label="Change player">compare_arrows</span>` : ""}
                 </div>`;
@@ -394,15 +426,15 @@ document.addEventListener("DOMContentLoaded", function () {
         content.innerHTML = spinner;
         content.dataset.view = "comparison";
         try {
-            const left = await getJson(`/player/${compareLeft.id}/compare.json`);
-            const right = await getJson(`/player/${rightId}/compare.json?against=${left.color.slice(1)}`);
+            const left = await getJson(`/player/${compareLeft.id}/compare.json?season=${seasons.left}`);
+            const right = await getJson(`/player/${rightId}/compare.json?season=${seasons.right}&against=${left.color.slice(1)}`);
             if (left.is_goalie !== right.is_goalie) return showCrossComparison(left, right, rightId);
             const keys = left.is_goalie ? COMPARE_KEYS.goalie : COMPARE_KEYS.skater;
             // A flip card: stat bars in front, both players' shot maps behind (added once they load)
-            const title = `${escapeHtml(left.season)} regular season`;
+            const title = compareTitle(left, right);
             content.innerHTML = `<div class="hockey-card-flip player-compare-flip"><div class="hockey-card-flipper">
                 ${compareShell(title, `
-                    <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
+                    <div class="player-compare-players">${compareSides(left, right)}</div>
                     <div class="compare-mount player-compare-mount"></div>
                     <p class="hockey-card-source">Tracking: NHL EDGE · xG: MoneyPuck.com</p>`,
                     { head: compareExportIcon + compareFlipIcon("Shot map").replace('role="button"', 'role="button" hidden') })}
@@ -420,9 +452,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Both players' shot maps (HTML), or null without data
+    // "2025-26 regular season", or with two seasons only "Regular season" (each side shows its own)
+    function compareTitle(left, right) {
+        return left.season === right.season ? `${escapeHtml(left.season)} regular season` : "Regular season";
+    }
+
+    function compareSides(left, right) {
+        const twoSeasons = left.season !== right.season;
+        return playerSide(left, false, twoSeasons) + playerSide(right, true, twoSeasons);
+    }
+
+    // Both players' shot maps (HTML) in the comparison's seasons, or null without data
     async function fetchShotMaps(leftId, rightId) {
-        const res = await fetch(`/player/${leftId}/shot-map/${rightId}?v=${encodeURIComponent(window.playerCardVersion || "")}`);
+        const query = `seasons=${seasons.left},${seasons.right}&v=${encodeURIComponent(window.playerCardVersion || "")}`;
+        const res = await fetch(`/player/${leftId}/shot-map/${rightId}?${query}`);
         return res.ok ? res.text() : null;
     }
 
@@ -435,8 +478,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // A skater next to a goalie: their stats don't compare, so only the shot maps, with no flip
     async function showCrossComparison(left, right, rightId) {
         content.innerHTML = `<div class="hockey-card-flip player-compare-flip"><div class="hockey-card-flipper">
-            ${compareShell(`${escapeHtml(left.season)} regular season`, `
-                <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
+            ${compareShell(compareTitle(left, right), `
+                <div class="player-compare-players">${compareSides(left, right)}</div>
                 <div class="player-compare-shotmap">${spinner}</div>
                 <p class="hockey-card-source">Shot data: MoneyPuck.com</p>`,
                 { head: compareExportIcon, classes: "player-compare-maps" })}
@@ -482,6 +525,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openCompare(card) {
         compareLeft = { id: card.dataset.player, goalie: card.dataset.goalie === "true", color: card.dataset.color, accent: card.dataset.accent };
+        const current = seasonOptions[0]?.id || "";
+        seasons = { left: current, right: current };
         showPicker();
     }
 
@@ -492,6 +537,7 @@ document.addEventListener("DOMContentLoaded", function () {
         else if (action === "export") openCardExport(target);
         else if (action === "compare") openCompare(target.closest(".hockey-card-flip"));
         else if (action === "change") showPicker();
+        else if (action === "self") compareOwnSeasons();
         else if (action === "back") {
             // Comparison -> picker -> card
             if (content.dataset.view === "comparison") showPicker();

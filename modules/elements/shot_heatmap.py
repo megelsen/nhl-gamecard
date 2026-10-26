@@ -31,17 +31,24 @@ def build_shot_heatmap(shots, is_goalie, player_id, season_id):
     return maps[0] if maps else None
 
 
+def per_player(value, count):
+    # One value for everyone, or a list/tuple with one per player
+    return list(value) if isinstance(value, (list, tuple)) else [value] * count
+
+
 def shot_maps(shots, is_goalie, player_ids, season_id):
     """One shot map per player, all on the same color scales (a comparison's colors mean the same
     on both sides); [] when nobody has a shot. `is_goalie`: one flag, or one per player (a skater
-    next to a goalie gets CROSS_CATEGORIES, as shares only: "unit_fixed"). Each map: {"clip_id", "season", "is_goalie", "cross", "unit_fixed",
+    next to a goalie gets CROSS_CATEGORIES, as shares only: "unit_fixed"). `shots` and `season_id`:
+    one season for everyone, or one per player (a player next to another season of their own). Each map: {"clip_id", "season", "is_goalie", "cross", "unit_fixed",
     "categories", "units", "stops", "gradient", "xg_gradient", "xg_max", "maxima", "summary" and
     "short_summary" ([(value, label)] tiles under the map), "heat" (JSON for playerCard.js), "zones": [{path, x, y, name, small, strip,
     title, fills, inks, texts}]}. Fills, text colors and texts are per mode key ("shots-total",
     "goals-pct", "xg", ...), swapped by playerCard.js."""
-    goalies = list(is_goalie) if isinstance(is_goalie, (list, tuple)) else [is_goalie] * len(player_ids)
-    players = [((shots or {}).get("goalies" if goalie else "skaters") or {}).get(str(player_id)) or {}
-               for goalie, player_id in zip(goalies, player_ids)]
+    goalies = per_player(is_goalie, len(player_ids))
+    seasons = per_player(season_id, len(player_ids))
+    players = [((season_shots or {}).get("goalies" if goalie else "skaters") or {}).get(str(player_id)) or {}
+               for season_shots, goalie, player_id in zip(per_player(shots, len(player_ids)), goalies, player_ids)]
     if not any(player.get("z") for player in players):
         return []
     cross = len(set(goalies)) > 1
@@ -52,7 +59,7 @@ def shot_maps(shots, is_goalie, player_ids, season_id):
     maxima = {key: max(abs(v[zone][key]) for v in values for zone in ZONES) for key in keys}
 
     maps = []
-    for player_id, goalie, player, player_values in zip(player_ids, goalies, players, values):
+    for player_id, season, goalie, player, player_values in zip(player_ids, seasons, goalies, players, values):
         zones = []
         for name, (_, path, (x, y)) in ZONES.items():
             fills, inks, texts = {}, {}, {}
@@ -69,8 +76,8 @@ def shot_maps(shots, is_goalie, player_ids, season_id):
                           "fills": fills, "inks": inks, "texts": texts})
         totals = [sum(counts[i] for counts in (player.get("z") or {}).values()) for i in range(4)]
         maps.append({
-            "clip_id": f"shot-map-clip-{player_id}",
-            "season": season_name(season_id),
+            "clip_id": f"shot-map-clip-{player_id}-{season}",  # unique also for one player in two seasons
+            "season": season_name(season),
             "is_goalie": goalie,
             "cross": cross,
             "unit_fixed": "pct" if cross else "",

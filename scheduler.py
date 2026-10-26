@@ -13,11 +13,13 @@ from modules import (
     get_playoff_bracket,
     get_team_summary,
     get_season_id,
+    compare_season_ids,
     get_roster,
     get_moneypuck_skaters,
     get_moneypuck_goalies,
     get_moneypuck_shots,
-    cached_moneypuck_shots,
+    has_moneypuck_shots,
+    moneypuck_cache_names,
     get_player_ranking,
     get_skater_leaders,
     get_goalie_leaders,
@@ -71,6 +73,10 @@ def update_daily_cache():
                 (get_goalie_leaders,),
             ]
             jobs += [(get_edge_skater_leaders, name) for name in EDGE_LEADER_PATHS]
+            # Past seasons for the player comparison: downloaded once (only what's missing), then kept
+            for past in compare_season_ids(season_id)[1:]:
+                if not has_moneypuck_shots(past):
+                    jobs += [(get_moneypuck_skaters, past), (get_moneypuck_goalies, past), (get_moneypuck_shots, past)]
             for team in TEAM_LIST:
                 jobs += [(get_schedule, team), (get_team_stats, team), (get_roster, team)]
 
@@ -78,7 +84,7 @@ def update_daily_cache():
                 time.sleep(REQUEST_PAUSE_SECONDS)
                 fetch(*args, force=True)
 
-        prune_cache()
+        prune_cache(keep=moneypuck_cache_names(compare_season_ids(season_id)))
         total = len(jobs) + 1  # + season data
         elapsed = time.time() - started
         if failed:
@@ -101,8 +107,8 @@ def start_scheduler():
     logging.info(" Scheduler started (06:00 and 12:00 UTC).")
 
     # Warm the cache at startup in the background so the server can bind its port right away
-    # (also when the season's shot data was never downloaded: cards read it from the cache only)
-    if not is_cache_fresh("season_data") or cached_moneypuck_shots(get_season_id()) is None:
+    # (also when a season's shot data was never downloaded: cards read it from the cache only)
+    if not is_cache_fresh("season_data") or not all(map(has_moneypuck_shots, compare_season_ids())):
         logging.info("No cache for today on startup — refreshing in background...")
         threading.Thread(target=update_daily_cache, daemon=True).start()
     else:
