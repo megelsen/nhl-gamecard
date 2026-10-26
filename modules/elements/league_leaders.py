@@ -197,10 +197,13 @@ def leader_row(entry, rank, team_abbr, colors):
     return (
         f'<li class="leader-row{own}" style="--leader-color: {colors.get(team, "#888888")};">'
         f'<span class="leader-rank">{rank}</span>'
+        # Team logo sits on the headshot's edge, lower right (league_leaders.css)
+        f'<span class="leader-photo">'
         f'<img class="leader-headshot" src="{escape(entry["headshot"])}" alt=""{player_id} loading="lazy">'
+        f'<a href="javascript:void(0);" class="team-link"><img class="leader-logo" src="{get_logo(team)}" alt="{escape(team)}"></a>'
+        f'</span>'
         f'<span class="leader-name" title="{escape(f"{first} {last}")}">{escape(name)}'
         f'<small>{escape(" · ".join(d for d in details if d))}</small></span>'
-        f'<a href="javascript:void(0);" class="team-link"><img class="leader-logo" src="{get_logo(team)}" alt="{escape(team)}"></a>'
         f'<span class="leader-value">{entry["display"]}</span>'
         f'</li>'
     )

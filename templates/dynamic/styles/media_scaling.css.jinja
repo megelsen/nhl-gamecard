@@ -1,15 +1,15 @@
 
 @media (max-width: {{max_width_medium_screen}}px) {
 
-    /* Playoff card: a normal card again (spans all 3 columns only in the widest layout, standings.css) */
+    /* Playoff card: spans both columns below League leaders, which moves up next to
+       Record vs (opposite conference). The brackets keep their 3-column layout (standings.css). */
     .card_display.playoff-card {
-        grid-column: auto;
-        max-width: {{ min_width_team_summary }}px;
+        grid-column: 1 / -1;
+        order: 1;
     }
-    .card_display.playoff-card .playoff-conferences {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        justify-content: normal;
-        column-gap: 8px;
+    /* Next to a taller card: keep "More stats" under the list, not at the card's bottom */
+    .league-leaders-card .leaders-more-btn {
+        margin-top: 0;
     }
 
     .title_card {
@@ -43,6 +43,18 @@
     
     .container {
         grid-template-columns: 1fr;
+    }
+
+    /* Playoff card: a normal card again, before League leaders, brackets stacked when narrow */
+    .card_display.playoff-card {
+        grid-column: auto;
+        order: 0;
+        max-width: {{ min_width_team_summary }}px;
+    }
+    .card_display.playoff-card .playoff-conferences {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        justify-content: normal;
+        column-gap: 8px;
     }
 
     .upcoming_game{

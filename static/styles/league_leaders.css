@@ -5,6 +5,14 @@
     align-items: stretch;
 }
 
+/* In wider cards (2 and 1 columns) the list keeps a compact width instead of stretching */
+.league-leaders-card > .tabs-container,
+.league-leaders-card > .leaders-list-wrapper {
+    width: 100%;
+    max-width: 380px;
+    align-self: center;
+}
+
 .league-leaders-card .leaders-more-btn {
     align-self: center;
     margin-top: auto;
@@ -33,7 +41,7 @@
 
 .leader-row {
     display: grid;
-    grid-template-columns: 1.6em 34px minmax(0, 1fr) 26px auto;
+    grid-template-columns: 1.6em 40px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
     padding: 2px 10px 2px 12px;
@@ -54,9 +62,19 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* Headshot with the team logo centred on its edge at 45° lower right (circle radius 18px:
+   the point is 18 + 18·cos 45° ≈ 31px from the top left; the 18px logo is centred there) */
+.leader-photo {
+    position: relative;
+    width: 36px;
+    height: 36px;
+}
+
 .leader-headshot {
-    width: 34px;
-    height: 34px;
+    display: block;
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 1px solid #d1d1d1;
     background: #fff;
@@ -82,10 +100,23 @@
     letter-spacing: 0.03em;
 }
 
+.leader-photo .team-link {
+    position: absolute;
+    left: 21px;
+    top: 21px;
+    line-height: 0;
+}
+
+/* On a small white disc, so the logo stays readable on any jersey */
 .leader-logo {
     display: block;
-    width: 26px;
-    height: 26px;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    padding: 2px;
+    border-radius: 50%;
+    border: 1px solid #d1d1d1;
+    background: #fff;
 }
 
 .leader-value {
