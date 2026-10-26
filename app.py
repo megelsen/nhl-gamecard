@@ -376,15 +376,13 @@ def player_card(player_id):
 
 @app.route("/player/<int:left_id>/shot-map/<int:right_id>")
 def player_shot_map_compare(left_id, right_id):
-    # Both players' shot maps on one color scale, below the comparison in the card modal
-    # (static/js/playerCard.js); skaters vs. skaters or goalies vs. goalies
+    # Both players' shot maps on one color scale, for the comparison in the card modal
+    # (static/js/playerCard.js); a skater next to a goalie gets the stats both have, as shares
     landings = [get_player_stats(left_id), get_player_stats(right_id)]
     if not all(landing and "firstName" in landing for landing in landings):
         abort(404)
-    is_goalie = landings[0].get("position") == "G"
-    if (landings[1].get("position") == "G") != is_goalie:
-        abort(404)
-    maps = shot_maps(cached_moneypuck_shots(get_season_id()), is_goalie, [left_id, right_id], get_season_id())
+    goalies = [landing.get("position") == "G" for landing in landings]
+    maps = shot_maps(cached_moneypuck_shots(get_season_id()), goalies, [left_id, right_id], get_season_id())
     if not maps:
         abort(404)
     names = [f"{landing['lastName']['default']} · {landing.get('currentTeamAbbrev', '')}".rstrip(" ·")

@@ -796,8 +796,19 @@
     line-height: 26px;
 }
 
-.player-compare-flip:has(.player-compare-maps) .hockey-card-flipper {
+/* Only when there's something to flip to (a skater next to a goalie has the maps face alone) */
+.player-compare-flip:has(.player-compare-maps):has(.player-compare:not(.player-compare-maps)) .hockey-card-flipper {
     cursor: pointer;
+}
+
+/* Picker: heading before the players of the other kind (skaters / goalies) */
+.player-compare-group {
+    padding: 10px 4px 4px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
 }
 
 .player-compare-picker {

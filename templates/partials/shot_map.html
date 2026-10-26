@@ -3,7 +3,8 @@
    unit; playerCard.js swaps zone fills and numbers from their data-* attributes and paints the heat
    image, for all maps inside the same .shot-map. #}
 {% macro attrs(heat) -%}
-data-layout="one" data-view="heat" data-cat="shots" data-unit="total" data-stops="{{ heat.stops }}"
+data-layout="one" data-view="heat" data-cat="shots" data-unit="{{ heat.unit_fixed or 'total' }}" data-stops="{{ heat.stops }}"
+{%- if heat.unit_fixed %} data-unit-fixed="{{ heat.unit_fixed }}"{% endif %}
 {%- endmacro %}
 
 {% macro pill(set, options, first) -%}
@@ -21,7 +22,7 @@ data-layout="one" data-view="heat" data-cat="shots" data-unit="total" data-stops
     <div class="shot-map-pills">
         {% if layouts %}{{ pill("layout", [{"key": "one", "label": "One"}, {"key": "two", "label": "Two"}, {"key": "all", "label": "All"}], "one") }}{% endif %}
         {{ pill("view", [{"key": "heat", "label": "Heat"}, {"key": "zones", "label": "Zones"}], "heat") }}
-        {{ pill("unit", heat.units, "total") }}
+        {{ pill("unit", heat.units, heat.unit_fixed or "total") }}
     </div>
     <div class="shot-map-modes">
         {% for category in heat.categories %}
@@ -29,7 +30,8 @@ data-layout="one" data-view="heat" data-cat="shots" data-unit="total" data-stops
               data-card-action="shotmap" data-set="cat" data-value="{{ category.key }}">{{ category.label }}</span>
         {% endfor %}
         <span class="shot-map-mode" role="button" tabindex="0" data-card-action="shotmap" data-set="cat" data-value="xg"
-              title="{{ 'Goals saved above expected (MoneyPuck xG) per area' if heat.is_goalie else 'Goals above expected (MoneyPuck xG) per area' }}">vs xG</span>
+              title="{{ 'Goals above expected (skater) and goals saved above expected (goalie), MoneyPuck xG, per area' if heat.cross
+                       else 'Goals saved above expected (MoneyPuck xG) per area' if heat.is_goalie else 'Goals above expected (MoneyPuck xG) per area' }}">vs xG</span>
     </div>
 </div>
 {%- endmacro %}

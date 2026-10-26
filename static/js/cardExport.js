@@ -3,7 +3,7 @@
 // export the face as shown, without the icons. Shot maps get a sheet built from copies of the open
 // maps: a) the current view, b) two stats side by side, c) all stats in a 2x2 grid (a comparison:
 // one row per stat, one column per player), each in Heat or Zones (vs xG always as zones) and Total
-// or %, with the stat tiles below. Capturing reuses exportPng.js (library, /img-proxy for NHL images).
+// or % (a skater next to a goalie: % only), with the stat tiles below. Capturing reuses exportPng.js (library, /img-proxy for NHL images).
 const CARD_EXPORT_SCALE = 2;
 const CARD_EXPORT_WIDE = 640; // px: sheets with two maps side by side
 const CARD_EXPORT_LAYOUTS = [["current", "Current view"], ["two", "Two stats"], ["all", "All stats"]];
@@ -55,7 +55,7 @@ function openCardExport(button) {
             categories,
             layout,
             view: map.dataset.view,
-            unit: map.dataset.unit,
+            unit: map.dataset.unitFixed || map.dataset.unit,
             cats: layout === "two" ? map.dataset.cats.split(",")
                 : [map.dataset.cat === "xg" ? categories[0][0] : map.dataset.cat,
                    categories.find(([key]) => key !== map.dataset.cat)?.[0] || categories[1][0]],
@@ -92,7 +92,7 @@ function renderExportOptions() {
         ${layout === "two" ? `<div class="card-export-row"><span class="card-export-label">Stats</span>${exportSelect(0, cats[0])}
             <span class="card-export-and">&amp;</span>${exportSelect(1, cats[1])}</div>` : ""}
         ${layout !== "current" ? `<div class="card-export-row"><span class="card-export-label">View</span>${exportPill("view", CARD_EXPORT_VIEWS, view)}
-            ${exportPill("unit", CARD_EXPORT_UNITS, unit)}</div>
+            ${cardExport.map.dataset.unitFixed ? "" : exportPill("unit", CARD_EXPORT_UNITS, unit)}</div>
             <p class="card-export-hint">vs xG is shown per area (Zones) in either view.</p>` : ""}`;
 }
 

@@ -63,7 +63,8 @@ function applyShotMap(map) {
     map.classList.toggle("cats-off", layout === "all");
     // Total vs. % doesn't apply to vs xG, nor to a heat map on its own scale (same picture, only the
     // scale's numbers differ); a grid's cells each have their own scale
-    map.classList.toggle("unit-off", (layout === "one" && cat === "xg") || (view === "heat" && (layout !== "one" || rinks.length < 2)));
+    map.classList.toggle("unit-off", Boolean(map.dataset.unitFixed) || (layout === "one" && cat === "xg")
+        || (view === "heat" && (layout !== "one" || rinks.length < 2)));
     rinks.forEach(rink => { rink.dataset.view = cat === "xg" ? "zones" : view; });
     ownElements(map, `[data-fill-${key}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-fill-${key}`)));
     ownElements(map, `[data-ink-${key}]`).forEach(el => el.setAttribute("fill", el.getAttribute(`data-ink-${key}`)));
@@ -268,11 +269,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const teams = window.compareTeams || {};
         const quick = [teams.left, teams.right].filter(Boolean);
         const others = (window.teamList || []).filter(team => !quick.includes(team));
-        const kind = compareLeft.goalie ? "goalies" : "skaters";
         content.innerHTML = compareShell("Compare with…", `
             <div class="player-compare-picker">
-                <input type="search" class="player-compare-search" placeholder="Search NHL ${kind} by name"
-                       aria-label="Search NHL ${kind} by name" autocomplete="off">
+                <input type="search" class="player-compare-search" placeholder="Search NHL players by name"
+                       aria-label="Search NHL players by name" autocomplete="off">
                 <div class="player-compare-sources">
                     ${quick.map(team => `<button type="button" class="picker-tab" data-team="${team}">${team}</button>`).join("")}
                     <select class="picker-team-select" aria-label="Other team's roster">
@@ -343,8 +343,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return getJson("/players/ranking.json").catch(() => ({}));
     }
 
-    // null = loading; only players of the same kind (skaters or goalies) can be compared.
-    // Best first: most points, or for goalies most games (the sort keeps the order on ties).
+    // null = loading. Players of the same kind (skaters or goalies) first, then the other kind, which
+    // compares shot maps only. Best first: most points, or for goalies most games (stable on ties).
     async function renderResults(players, emptyText = "No players.") {
         const list = content.querySelector(".player-compare-results");
         if (!list) return;
@@ -356,15 +356,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const ranking = await loadRanking();
         if (token !== searchToken) return;
         const rank = p => ranking[p.id] ?? -1;
-        const matching = players
-            .filter(p => String(p.id) !== String(compareLeft.id) && (p.position === "G") === compareLeft.goalie)
-            .sort((a, b) => rank(b) - rank(a));
-        list.innerHTML = matching.length ? matching.map(p => `
+        const candidates = players.filter(p => String(p.id) !== String(compareLeft.id)).sort((a, b) => rank(b) - rank(a));
+        const sameKind = p => (p.position === "G") === compareLeft.goalie;
+        const same = candidates.filter(sameKind);
+        const other = candidates.filter(p => !sameKind(p));
+        const option = p => `
             <li><button type="button" class="player-compare-option" data-pick="${escapeHtml(p.id)}">
                 <img src="${escapeHtml(p.headshot)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
                 <span class="option-name">${escapeHtml(p.name)}</span>
                 <span class="option-meta">${p.number ? "#" + escapeHtml(p.number) + " " : ""}${escapeHtml(p.position)} · ${escapeHtml(p.team || "")}</span>
-            </button></li>`).join("")
+            </button></li>`;
+        list.innerHTML = candidates.length
+            ? same.map(option).join("") + (other.length
+                ? `<li class="player-compare-group">${compareLeft.goalie ? "Skaters" : "Goalies"} · shot maps only</li>${other.map(option).join("")}`
+                : "")
             : `<li class="player-compare-note">${emptyText}</li>`;
     }
 
@@ -391,6 +396,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const left = await getJson(`/player/${compareLeft.id}/compare.json`);
             const right = await getJson(`/player/${rightId}/compare.json?against=${left.color.slice(1)}`);
+            if (left.is_goalie !== right.is_goalie) return showCrossComparison(left, right, rightId);
             const keys = left.is_goalie ? COMPARE_KEYS.goalie : COMPARE_KEYS.skater;
             // A flip card: stat bars in front, both players' shot maps behind (added once they load)
             const title = `${escapeHtml(left.season)} regular season`;
@@ -414,14 +420,51 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Both players' shot maps (HTML), or null without data
+    async function fetchShotMaps(leftId, rightId) {
+        const res = await fetch(`/player/${leftId}/shot-map/${rightId}?v=${encodeURIComponent(window.playerCardVersion || "")}`);
+        return res.ok ? res.text() : null;
+    }
+
+    function colorShotMapSides(root, leftColor, rightColor) {
+        root.querySelector(".shot-map-side.left")?.style.setProperty("--side-color", leftColor);
+        root.querySelector(".shot-map-side.right")?.style.setProperty("--side-color", rightColor);
+        initShotMaps(root);
+    }
+
+    // A skater next to a goalie: their stats don't compare, so only the shot maps, with no flip
+    async function showCrossComparison(left, right, rightId) {
+        content.innerHTML = `<div class="hockey-card-flip player-compare-flip"><div class="hockey-card-flipper">
+            ${compareShell(`${escapeHtml(left.season)} regular season`, `
+                <div class="player-compare-players">${playerSide(left)}${playerSide(right, true)}</div>
+                <div class="player-compare-shotmap">${spinner}</div>
+                <p class="hockey-card-source">Shot data: MoneyPuck.com</p>`,
+                { head: compareExportIcon, classes: "player-compare-maps" })}
+            </div></div>`;
+        const view = content.innerHTML;
+        let html = null;
+        try {
+            html = await fetchShotMaps(compareLeft.id, rightId);
+        } catch (e) {
+            // shown as unavailable below
+        }
+        const mount = content.querySelector(".player-compare-shotmap");
+        if (!mount || content.innerHTML !== view) return; // another view opened meanwhile
+        if (!html) {
+            mount.innerHTML = '<p class="hockey-card-empty">No shot maps for these players yet.</p>';
+            return;
+        }
+        mount.innerHTML = html;
+        colorShotMapSides(mount, left.color, right.color);
+    }
+
     // Both players' shot maps on one color scale, as the comparison's back face; no back (and no
     // flip icon) when neither has data
     async function showShotMaps(leftId, rightId, leftColor, rightColor, title) {
         const view = content.innerHTML;
         try {
-            const res = await fetch(`/player/${leftId}/shot-map/${rightId}?v=${encodeURIComponent(window.playerCardVersion || "")}`);
-            if (!res.ok) return;
-            const html = await res.text();
+            const html = await fetchShotMaps(leftId, rightId);
+            if (!html) return;
             const flipper = content.querySelector(".player-compare-flip .hockey-card-flipper");
             if (!flipper || content.innerHTML !== view) return; // another view opened meanwhile
             flipper.insertAdjacentHTML("beforeend", compareShell(title,
@@ -430,9 +473,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { head: compareExportIcon + compareFlipIcon("Stats"), classes: "player-compare-maps" }));
             const maps = flipper.lastElementChild;
             maps.hidden = true;
-            maps.querySelector(".shot-map-side.left")?.style.setProperty("--side-color", leftColor);
-            maps.querySelector(".shot-map-side.right")?.style.setProperty("--side-color", rightColor);
-            initShotMaps(maps);
+            colorShotMapSides(maps, leftColor, rightColor);
             flipper.querySelector(".player-compare-flip-icon[hidden]")?.removeAttribute("hidden");
         } catch (e) {
             // the comparison stays without the maps

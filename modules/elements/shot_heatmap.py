@@ -19,6 +19,9 @@ XG_NEUTRAL, XG_ABOVE, XG_BELOW = "#f4f4f4", "#1a9850", "#d7301f"
 # (key, button label, index in the cached per-area counts)
 SKATER_CATEGORIES = [("shots", "Shots", 0), ("misses", "Misses", 1), ("goals", "Goals", 2)]
 GOALIE_CATEGORIES = [("shots", "Shots", 0), ("saves", "Saves", 1), ("goals", "Goals", 2)]
+# A skater next to a goalie: what both have (shots on goal / against, goals / goals against), always as
+# shares on one scale, since a goalie faces several times the shots a skater takes
+CROSS_CATEGORIES = [("shots", "Shots", 0), ("goals", "Goals", 2)]
 UNITS = [("total", "Total"), ("pct", "%")]
 
 
@@ -30,23 +33,26 @@ def build_shot_heatmap(shots, is_goalie, player_id, season_id):
 
 def shot_maps(shots, is_goalie, player_ids, season_id):
     """One shot map per player, all on the same color scales (a comparison's colors mean the same
-    on both sides); [] when nobody has a shot. Each map: {"clip_id", "season", "is_goalie",
+    on both sides); [] when nobody has a shot. `is_goalie`: one flag, or one per player (a skater
+    next to a goalie gets CROSS_CATEGORIES, as shares only: "unit_fixed"). Each map: {"clip_id", "season", "is_goalie", "cross", "unit_fixed",
     "categories", "units", "stops", "gradient", "xg_gradient", "xg_max", "maxima", "summary" and
     "short_summary" ([(value, label)] tiles under the map), "heat" (JSON for playerCard.js), "zones": [{path, x, y, name, small, strip,
     title, fills, inks, texts}]}. Fills, text colors and texts are per mode key ("shots-total",
     "goals-pct", "xg", ...), swapped by playerCard.js."""
-    group = (shots or {}).get("goalies" if is_goalie else "skaters") or {}
-    players = [group.get(str(player_id)) or {} for player_id in player_ids]
+    goalies = list(is_goalie) if isinstance(is_goalie, (list, tuple)) else [is_goalie] * len(player_ids)
+    players = [((shots or {}).get("goalies" if goalie else "skaters") or {}).get(str(player_id)) or {}
+               for goalie, player_id in zip(goalies, player_ids)]
     if not any(player.get("z") for player in players):
         return []
-    categories = GOALIE_CATEGORIES if is_goalie else SKATER_CATEGORIES
+    cross = len(set(goalies)) > 1
+    categories = CROSS_CATEGORIES if cross else GOALIE_CATEGORIES if goalies[0] else SKATER_CATEGORIES
 
-    values = [zone_values(player.get("z") or {}, categories, is_goalie) for player in players]
+    values = [zone_values(player.get("z") or {}, categories, goalie) for goalie, player in zip(goalies, players)]
     keys = values[0][next(iter(ZONES))].keys()
     maxima = {key: max(abs(v[zone][key]) for v in values for zone in ZONES) for key in keys}
 
     maps = []
-    for player_id, player, player_values in zip(player_ids, players, values):
+    for player_id, goalie, player, player_values in zip(player_ids, goalies, players, values):
         zones = []
         for name, (_, path, (x, y)) in ZONES.items():
             fills, inks, texts = {}, {}, {}
@@ -59,13 +65,15 @@ def shot_maps(shots, is_goalie, player_ids, season_id):
                 texts[key] = format_value(key, value)
             zones.append({"path": path, "x": x, "y": y, "name": STRIP_LABELS.get(name, ""),
                           "small": name == "Crease", "strip": name in STRIP_LABELS,
-                          "title": zone_title(name, (player.get("z") or {}).get(name), is_goalie),
+                          "title": zone_title(name, (player.get("z") or {}).get(name), goalie),
                           "fills": fills, "inks": inks, "texts": texts})
         totals = [sum(counts[i] for counts in (player.get("z") or {}).values()) for i in range(4)]
         maps.append({
             "clip_id": f"shot-map-clip-{player_id}",
             "season": season_name(season_id),
-            "is_goalie": is_goalie,
+            "is_goalie": goalie,
+            "cross": cross,
+            "unit_fixed": "pct" if cross else "",
             "categories": [{"key": key, "label": label} for key, label, _ in categories],
             "units": [{"key": key, "label": label} for key, label in UNITS],
             "stops": json.dumps(HEAT_STOPS),
@@ -73,8 +81,8 @@ def shot_maps(shots, is_goalie, player_ids, season_id):
             "xg_gradient": f"linear-gradient(to right, {XG_BELOW}, {XG_NEUTRAL}, {XG_ABOVE})",
             "xg_max": f"{maxima['xg']:.1f}",
             "maxima": {key: format_value(key, value) for key, value in maxima.items() if key != "xg"},
-            "summary": summary(totals, is_goalie),
-            "short_summary": summary(totals, is_goalie, short=True),
+            "summary": summary(totals, goalie),
+            "short_summary": summary(totals, goalie, short=True),
             "heat": json.dumps(player.get("h") or {}, separators=(",", ":")),
             "zones": zones,
         })
