@@ -24,6 +24,7 @@ const EXPORT_SCALE = 2;
 const EXPORT_MAX_PIXELS = 16_000_000; // iOS Safari won't draw canvases larger than ~16.7M pixels
 const EXPORT_SETTLE_MS = 1000;        // eventListeners.js syncs widths 700 ms after DOMContentLoaded
 const EXPORT_FRAME_TIMEOUT_MS = 30000; // iframes fire no error event, so a page that never loads would hang the button
+const EXPORT_IMAGE_TIMEOUT_MS = 10000; // an image that never loads is captured blank rather than hanging the button
 
 let exportLibraryPromise = null;
 
@@ -53,11 +54,23 @@ async function proxyImages(root) {
         if (!src) return;
         const url = new URL(src, location.href);
         if (!EXPORT_PROXY_HOSTS.includes(url.hostname)) return;
-        swapped.push([img, img.getAttribute("src")]);
+        swapped.push([img, img.getAttribute("src"), img.loading]);
         img.src = `/img-proxy?url=${encodeURIComponent(url.href)}`;
     });
-    await Promise.all(swapped.map(([img]) => img.decode().catch(() => {})));
-    return () => swapped.forEach(([img, src]) => img.setAttribute("src", src));
+    await Promise.all(swapped.map(([img]) => imageReady(img)));
+    return () => swapped.forEach(([img, src, loading]) => {
+        img.setAttribute("src", src);
+        img.loading = loading;
+    });
+}
+
+// Resolves once img has loaded or failed, or after EXPORT_IMAGE_TIMEOUT_MS. A lazy image off screen
+// (the leaders card on a phone) or in a hidden element never loads, and its decode() never settles,
+// so it is switched to eager first
+function imageReady(img) {
+    img.loading = "eager";
+    const timeout = new Promise(resolve => setTimeout(resolve, EXPORT_IMAGE_TIMEOUT_MS));
+    return Promise.race([img.decode().catch(() => {}), timeout]);
 }
 
 // .content spans the window and centers the card rows, so a wide window leaves wide side margins.
@@ -153,7 +166,7 @@ function loadLayoutFrame(width) {
 // Waits for the images in doc's .content (after copyViewState, which may swap the goalie photos)
 function imagesReady(doc) {
     const images = [...doc.querySelectorAll(".content img")];
-    return Promise.all(images.map(img => img.decode().catch(() => {})));
+    return Promise.all(images.map(imageReady));
 }
 
 // Shows the same standings conference, leaders category and goalies in the iframe as on this page
