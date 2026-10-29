@@ -3,7 +3,7 @@
 // export the face as shown, without the icons. Shot maps get a sheet built from copies of the open
 // maps: a) the current view, b) two stats side by side, c) all stats in a 2x2 grid (a comparison:
 // one row per stat, one column per player), each in Heat or Zones (vs xG always as zones) and Total
-// or % (a skater next to a goalie: % only), with the stat tiles below. Capturing reuses exportPng.js (library, /img-proxy for NHL images).
+// or % (a skater next to a goalie: % only), with the stat tiles below. Capturing reuses exportPng.js (library, /img-proxy for NHL images, renderPng).
 const CARD_EXPORT_SCALE = 2;
 const CARD_EXPORT_WIDE = 640; // px: sheets with two maps side by side
 const CARD_EXPORT_LAYOUTS = [["current", "Current view"], ["two", "Two stats"], ["all", "All stats"]];
@@ -182,7 +182,7 @@ async function downloadCardExport(button) {
     try {
         await loadExportLibrary();
         restoreImages = await proxyImages(target);
-        const dataUrl = await window.modernScreenshot.domToPng(target, { scale: CARD_EXPORT_SCALE });
+        const dataUrl = await renderPng(window, target, { scale: CARD_EXPORT_SCALE });
         const link = document.createElement("a");
         link.download = `${cardExport.name}-${cardExport.kind}-${new Date().toISOString().slice(0, 10)}.png`;
         link.href = dataUrl;

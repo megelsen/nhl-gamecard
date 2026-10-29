@@ -25,6 +25,7 @@ const EXPORT_MAX_PIXELS = 16_000_000; // iOS Safari won't draw canvases larger t
 const EXPORT_SETTLE_MS = 1000;        // eventListeners.js syncs widths 700 ms after DOMContentLoaded
 const EXPORT_FRAME_TIMEOUT_MS = 30000; // iframes fire no error event, so a page that never loads would hang the button
 const EXPORT_IMAGE_TIMEOUT_MS = 10000; // an image that never loads is captured blank rather than hanging the button
+const EXPORT_REDRAWS = 5; // at most this many extra canvas redraws on Firefox / Safari, see renderPng()
 
 let exportLibraryPromise = null;
 
@@ -116,7 +117,7 @@ async function capture(win) {
         // Same frame above the title card as beside and below the cards (padding is safe on the copy)
         const height = root.offsetHeight + EXPORT_FRAME;
         const pixels = root.offsetWidth * height;
-        return await win.modernScreenshot.domToPng(root, {
+        return await renderPng(win, root, {
             scale: Math.min(EXPORT_SCALE, Math.sqrt(EXPORT_MAX_PIXELS / pixels)),
             height,
             style: { paddingTop: `${EXPORT_FRAME}px` },
@@ -127,6 +128,27 @@ async function capture(win) {
         restoreImages();
         root.style.width = root.style.marginInline = "";
         doc.body.classList.remove("exporting");
+    }
+}
+
+// domToPng() in win, with the redraws capped: on Firefox and Safari modern-screenshot redraws the
+// whole capture once per embedded image and CSS image (its fixSvgXmlDecode workaround, waiting
+// longer before each one). For the dashboard that's hundreds of full-page redraws, minutes on a phone,
+// which left the button stuck on "Exporting…". A few redraws are enough for the images to show up.
+async function renderPng(win, node, options) {
+    const library = win.modernScreenshot;
+    let context = null;
+    context = await library.createContext(node, {
+        ...options,
+        // Runs after every image is embedded, right before the canvas is drawn
+        onCreateForeignObjectSvg: () => {
+            context.drawImageCount = Math.min(context.drawImageCount, EXPORT_REDRAWS);
+        },
+    });
+    try {
+        return await library.domToPng(context);
+    } finally {
+        library.destroyContext(context);
     }
 }
 
