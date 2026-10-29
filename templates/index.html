@@ -412,6 +412,7 @@
                 </div>
                 {% for label, list_html in league_leaders.card.items() %}
                 <div class="leaders-list-wrapper" data-category="{{ label }}" {% if not loop.first %}hidden{% endif %}>
+                    <p class="leaders-export-subtitle">{{ label }}</p>
                     {{ list_html | safe }}
                 </div>
                 {% endfor %}

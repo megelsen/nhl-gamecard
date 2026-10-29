@@ -24,6 +24,18 @@
     margin-bottom: 8px;
 }
 
+/* The PNG export (exportPng.js) leaves out the tabs, so it names the category shown above the list instead */
+.leaders-export-subtitle {
+    display: none;
+    margin: 0 0 8px 0;
+    color: #666;
+    text-align: center;
+}
+
+.exporting .leaders-export-subtitle {
+    display: block;
+}
+
 /* Compact tabs, so five rows fit the playoff bracket's height */
 .league-leaders-card .standings-tab {
     padding: 5px 14px;
