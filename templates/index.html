@@ -43,9 +43,13 @@
     <link rel="stylesheet" type="text/css" href="/team_dropdown.css?color={{ css_color }}">
     <link rel="stylesheet" type="text/css" href="/title_card.css">    
     <link rel="stylesheet" type="text/css" href="/media_scaling.css">
+    {% if team_theme %}
+    <!-- Team design (TEAM_THEMES in app.py), screen only; switched by themeToggle.js -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=team_theme.stylesheet) }}">
+    {% endif %}
 
 </head>
-<body>
+<body{% if team_theme %} class="{{ team_theme.css_class }}"{% endif %}>
     {% import "macros/rank_circle.html" as circles %}
     <div id="loading-wheel">
         <div class="spinner"></div>
@@ -152,6 +156,13 @@
                     {{team_info['team_name']}}
                 </h1>
                 <div class="title_actions">
+                    {% if team_theme %}
+                    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="true"
+                            data-theme-class="{{ team_theme.css_class }}" data-theme-name="{{ team_theme.name }}"
+                            data-theme-logo="{{ url_for('static', filename=team_theme.logo) if team_theme.logo else '' }}">
+                        <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+                    </button>
+                    {% endif %}
                     <button type="button" class="primary_button roster_button" id="rosterBtn">Roster</button>
                     <form class="dropdown_wrapper" id="team_form" method="POST">
                         <select class="team-dropdown" id="team_abbr" name="team_abbr" onchange="handleTeamChange()">
@@ -161,6 +172,10 @@
                 </div>
             </div>
         </div>
+        {% if team_theme %}
+        <!-- Runs before the cards below are parsed, so a viewer who switched the design off never sees it -->
+        <script src="{{ url_for('static', filename='js/themeToggle.js') }}"></script>
+        {% endif %}
   <!--  TEAM SUMMARY ------------------------------------------------------------------------>
         <div class="container" id="widthSourceElement">
             <div class="top_row_element card_display" id="statsCard">

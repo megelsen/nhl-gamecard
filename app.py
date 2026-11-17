@@ -43,6 +43,17 @@ LAYOUT["max_width_smallest_screen"] = LAYOUT["min_width_team_summary"] + 2*LAYOU
 
 HEX_COLOR = re.compile(r"[0-9a-fA-F]{6}")
 
+# Optional per-team designs, switchable with a small button in the title row (static/js/themeToggle.js).
+# The stylesheet scopes everything under body.<css_class>; logo replaces the title card logo while it's on.
+TEAM_THEMES = {
+    "MIN": {
+        "name": "Dark mode",
+        "css_class": "theme-min",
+        "stylesheet": "styles/themes/min.css",
+        "logo": "images/min_htr_dark.png",
+    },
+}
+
 def css_team_color():
     # Validated so the query string can't inject anything into the stylesheet
     color = request.args.get("color", "")
@@ -279,6 +290,7 @@ def team_page(team_abbr):
     
     vars = {
         "team_info": team_info,  # Pass it directly
+        "team_theme": TEAM_THEMES.get(team_abbr),
         "dropdown_html": dropdown_html,
         "top_scorer": top_scorer,
         "html_team_summary": html_team_summary,

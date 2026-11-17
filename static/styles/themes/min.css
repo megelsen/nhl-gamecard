@@ -1,0 +1,412 @@
+/* Minnesota Wild "Dark mode" design (TEAM_THEMES in app.py), after the club's Dark mode game-day look:
+   black jersey panels, neon-green glow and mist, a faint moon, the North Star with the Big and Little
+   Dipper and Cassiopeia, and a glowing pine treeline. Colors only: no font or layout changes.
+   Everything is scoped to body.theme-min (themeToggle.js switches it) and to screens: Print / Save as
+   PDF keeps the light design. The PNG export captures .content on the body's background-color, so that
+   stays a solid color here (the sky is background-image). */
+@media screen {
+
+body.theme-min {
+    --mn-neon: #4dff8f;
+    --mn-neon-soft: rgba(77, 255, 143, 0.14);
+    --mn-line: rgba(80, 255, 140, 0.14);
+    --mn-card: rgba(4, 7, 6, 0.8);
+    --mn-card-top: rgba(9, 14, 11, 0.84);
+    --mn-raised: rgba(255, 255, 255, 0.045);   /* table stripes, pills, tabs */
+    --mn-raised-2: rgba(255, 255, 255, 0.08);
+    --mn-text: #e9f2ec;
+    --mn-muted: #8fa89a;
+    --mn-track: #1b2420;
+    --own-team-color: var(--mn-neon);          /* comparison bars and team tags (comparison.js) */
+    color: var(--mn-text);
+    background:
+        /* constellations: Big Dipper pointing to Polaris + Little Dipper, and Cassiopeia */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 250'%3E%3Cg fill='none' stroke='%234dff8f' stroke-opacity='.28' stroke-width='.9'%3E%3Cpath d='M20 200L70 175L108 170L140 180L148 218L198 228L205 182L140 180'/%3E%3Cpath d='M228 30L262 44L288 66L302 92L318 120L352 113L338 86L302 92'/%3E%3C/g%3E%3Cpath d='M198 228L228 30' fill='none' stroke='%234dff8f' stroke-opacity='.18' stroke-width='.8' stroke-dasharray='3 5'/%3E%3Cg fill='%23eafff1'%3E%3Ccircle cx='20' cy='200' r='2.2'/%3E%3Ccircle cx='70' cy='175' r='2.2'/%3E%3Ccircle cx='108' cy='170' r='2.2'/%3E%3Ccircle cx='140' cy='180' r='2.2'/%3E%3Ccircle cx='148' cy='218' r='2.2'/%3E%3Ccircle cx='198' cy='228' r='2.2'/%3E%3Ccircle cx='205' cy='182' r='2.2'/%3E%3Ccircle cx='262' cy='44' r='1.7'/%3E%3Ccircle cx='288' cy='66' r='1.7'/%3E%3Ccircle cx='302' cy='92' r='1.7'/%3E%3Ccircle cx='318' cy='120' r='1.7'/%3E%3Ccircle cx='352' cy='113' r='1.7'/%3E%3Ccircle cx='338' cy='86' r='1.7'/%3E%3C/g%3E%3Cg transform='translate(228 30)'%3E%3Cpath fill='%23eafff1' d='M0-13L2.6-2.6L13 0L2.6 2.6L0 13L-2.6 2.6L-13 0L-2.6-2.6Z'/%3E%3Ccircle r='9' fill='%234dff8f' opacity='.25'/%3E%3C/g%3E%3C/svg%3E") right 4% top 6% / min(44vw, 520px) auto no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'%3E%3Cpath d='M10 30L48 62L80 40L118 74L150 20' fill='none' stroke='%234dff8f' stroke-opacity='.25' stroke-width='.8'/%3E%3Cg fill='%23eafff1'%3E%3Ccircle cx='10' cy='30' r='2'/%3E%3Ccircle cx='48' cy='62' r='2'/%3E%3Ccircle cx='80' cy='40' r='2'/%3E%3Ccircle cx='118' cy='74' r='2'/%3E%3Ccircle cx='150' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E") left 3% top 38% / min(22vw, 240px) auto no-repeat,
+        /* scattered stars */
+        radial-gradient(2px 2px at 8% 14%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 19% 31%, #cfe 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 33% 9%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 47% 24%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 58% 41%, #cfe 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 69% 7%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 91% 53%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 4% 68%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 27% 72%, #cfe 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 74% 64%, #fff 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 52% 86%, #fff 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 14% 52%, #9cb 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 38% 46%, #9cb 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 63% 77%, #9cb 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 86% 82%, #9cb 50%, transparent 51%),
+        /* moon: faint green disc, low right */
+        radial-gradient(circle at 90% 78%, rgba(170, 215, 185, 0.09) 0 100px, rgba(130, 200, 160, 0.04) 112px, transparent 210px),
+        linear-gradient(180deg, #010202 0%, #020504 60%, #040b07 100%) #020403;
+    background-attachment: fixed;
+}
+
+/* Drifting green mist */
+body.theme-min::before {
+    content: "";
+    position: fixed;
+    inset: -15%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(35% 28% at 18% 30%, rgba(40, 220, 110, 0.09), transparent 70%),
+        radial-gradient(30% 25% at 72% 55%, rgba(30, 200, 100, 0.07), transparent 70%),
+        radial-gradient(40% 30% at 40% 85%, rgba(60, 255, 140, 0.08), transparent 70%),
+        radial-gradient(25% 20% at 90% 20%, rgba(80, 230, 150, 0.05), transparent 70%);
+    filter: blur(30px);
+    will-change: transform;
+    animation: mn-mist 22s ease-in-out infinite alternate;
+}
+
+@keyframes mn-mist {
+    from { transform: translate(-2%, 1%) scale(1); }
+    to   { transform: translate(2%, -2%) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.theme-min::before { animation: none; }
+}
+
+/* Glowing pine treeline along the bottom of the window */
+body.theme-min::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 110px;
+    z-index: -1;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 60' preserveAspectRatio='none'%3E%3Cpath fill='%23010201' d='M1.3 45.6L3.1 33.8L5.0 45.6ZM0.3 52.7L3.1 41.1L6.0 52.7ZM-0.6 60.0L3.1 48.5L6.9 60.0ZM6.0 39.6L7.5 23.0L9.1 39.6ZM5.2 49.6L7.5 33.4L9.9 49.6ZM4.4 60.0L7.5 43.7L10.7 60.0ZM9.5 40.1L11.1 23.8L12.7 40.1ZM8.7 49.9L11.1 33.9L13.5 49.9ZM8.0 60.0L11.1 44.1L14.2 60.0ZM12.8 46.8L14.8 36.0L16.8 46.8ZM11.8 53.3L14.8 42.8L17.8 53.3ZM10.8 60.0L14.8 49.5L18.8 60.0ZM16.7 35.2L18.7 14.8L20.7 35.2ZM15.7 47.4L18.7 27.5L21.7 47.4ZM14.7 60.0L18.7 40.1L22.7 60.0ZM20.5 38.2L22.3 20.4L24.0 38.2ZM19.6 48.9L22.3 31.5L24.9 48.9ZM18.7 60.0L22.3 42.6L25.8 60.0ZM26.0 41.8L28.2 26.9L30.4 41.8ZM24.9 50.7L28.2 36.2L31.5 50.7ZM23.8 60.0L28.2 45.4L32.6 60.0ZM32.1 34.7L33.6 14.0L35.2 34.7ZM31.3 47.1L33.6 26.9L36.0 47.1ZM30.5 60.0L33.6 39.7L36.7 60.0ZM35.5 46.1L37.2 34.7L38.9 46.1ZM34.7 52.9L37.2 41.8L39.7 52.9ZM33.9 60.0L37.2 48.9L40.5 60.0ZM39.7 45.1L42.2 32.9L44.7 45.1ZM38.5 52.4L42.2 40.5L45.9 52.4ZM37.3 60.0L42.2 48.1L47.2 60.0ZM45.8 42.2L48.1 27.6L50.4 42.2ZM44.7 50.9L48.1 36.7L51.5 50.9ZM43.6 60.0L48.1 45.7L52.6 60.0ZM51.0 47.0L52.5 36.3L54.1 47.0ZM50.2 53.4L52.5 43.0L54.9 53.4ZM49.4 60.0L52.5 49.6L55.7 60.0ZM54.7 41.3L57.0 26.0L59.4 41.3ZM53.6 50.5L57.0 35.5L60.5 50.5ZM52.4 60.0L57.0 45.1L61.7 60.0ZM59.7 40.9L61.9 25.3L64.1 40.9ZM58.6 50.3L61.9 35.0L65.3 50.3ZM57.5 60.0L61.9 44.7L66.4 60.0ZM64.7 37.1L67.2 18.4L69.6 37.1ZM63.5 48.4L67.2 30.1L70.9 48.4ZM62.3 60.0L67.2 41.7L72.1 60.0ZM69.7 39.8L71.9 23.3L74.1 39.8ZM68.6 49.7L71.9 33.6L75.2 49.7ZM67.6 60.0L71.9 43.8L76.3 60.0ZM76.1 43.5L78.5 29.9L80.9 43.5ZM74.9 51.6L78.5 38.4L82.1 51.6ZM73.7 60.0L78.5 46.8L83.2 60.0ZM82.7 41.5L84.3 26.3L86.0 41.5ZM81.9 50.6L84.3 35.7L86.8 50.6ZM81.1 60.0L84.3 45.2L87.6 60.0ZM87.2 40.4L88.9 24.3L90.5 40.4ZM86.3 50.0L88.9 34.3L91.4 50.0ZM85.5 60.0L88.9 44.3L92.2 60.0ZM90.8 36.1L93.1 16.6L95.4 36.1ZM89.6 47.8L93.1 28.7L96.5 47.8ZM88.5 60.0L93.1 40.9L97.7 60.0ZM96.7 43.1L99.2 29.2L101.8 43.1ZM95.4 51.4L99.2 37.8L103.1 51.4ZM94.1 60.0L99.2 46.5L104.3 60.0ZM103.2 39.0L105.4 21.8L107.6 39.0ZM102.1 49.3L105.4 32.5L108.7 49.3ZM101.0 60.0L105.4 43.2L109.8 60.0ZM108.6 33.4L111.1 11.5L113.6 33.4ZM107.4 46.4L111.1 25.1L114.9 46.4ZM106.1 60.0L111.1 38.7L116.2 60.0ZM114.5 47.0L116.8 36.3L119.1 47.0ZM113.3 53.4L116.8 42.9L120.2 53.4ZM112.2 60.0L116.8 49.6L121.4 60.0ZM120.6 32.6L122.8 10.2L125.1 32.6ZM119.4 46.1L122.8 24.1L126.2 46.1ZM118.3 60.0L122.8 38.1L127.4 60.0ZM126.6 42.0L128.5 27.2L130.3 42.0ZM125.7 50.8L128.5 36.4L131.2 50.8ZM124.8 60.0L128.5 45.6L132.1 60.0ZM131.2 40.8L132.8 25.1L134.3 40.8ZM130.5 50.2L132.8 34.9L135.0 50.2ZM129.7 60.0L132.8 44.6L135.8 60.0ZM134.4 47.0L136.0 36.3L137.7 47.0ZM133.6 53.4L136.0 43.0L138.5 53.4ZM132.8 60.0L136.0 49.6L139.3 60.0ZM138.9 44.1L140.5 31.1L142.2 44.1ZM138.1 51.9L140.5 39.2L143.0 51.9ZM137.2 60.0L140.5 47.3L143.9 60.0ZM143.3 46.7L145.8 35.7L148.4 46.7ZM142.0 53.2L145.8 42.5L149.6 53.2ZM140.7 60.0L145.8 49.3L150.9 60.0ZM149.0 34.3L151.2 13.3L153.3 34.3ZM147.9 46.9L151.2 26.4L154.4 46.9ZM146.9 60.0L151.2 39.4L155.5 60.0ZM155.3 43.6L157.8 30.2L160.4 43.6ZM154.0 51.7L157.8 38.5L161.6 51.7ZM152.8 60.0L157.8 46.9L162.9 60.0ZM160.8 34.3L162.7 13.2L164.6 34.3ZM159.8 46.9L162.7 26.3L165.6 46.9ZM158.8 60.0L162.7 39.4L166.6 60.0ZM166.3 45.2L168.0 33.1L169.7 45.2ZM165.5 52.5L168.0 40.6L170.5 52.5ZM164.6 60.0L168.0 48.1L171.3 60.0ZM169.9 40.4L171.7 24.4L173.5 40.4ZM169.0 50.0L171.7 34.4L174.3 50.0ZM168.1 60.0L171.7 44.3L175.2 60.0ZM174.4 47.8L176.2 37.9L178.0 47.8ZM173.5 53.8L176.2 44.1L178.9 53.8ZM172.6 60.0L176.2 50.3L179.9 60.0ZM178.7 39.2L180.7 22.1L182.6 39.2ZM177.7 49.4L180.7 32.7L183.6 49.4ZM176.8 60.0L180.7 43.3L184.5 60.0ZM184.7 40.0L187.0 23.6L189.3 40.0ZM183.5 49.8L187.0 33.8L190.5 49.8ZM182.4 60.0L187.0 44.0L191.7 60.0ZM190.6 47.1L192.9 36.5L195.2 47.1ZM189.5 53.4L192.9 43.1L196.4 53.4ZM188.3 60.0L192.9 49.7L197.6 60.0ZM197.4 34.4L199.8 13.5L202.2 34.4ZM196.2 47.0L199.8 26.5L203.5 47.0ZM194.9 60.0L199.8 39.5L204.7 60.0ZM203.8 41.8L205.8 26.8L207.7 41.8ZM202.8 50.7L205.8 36.1L208.7 50.7ZM201.8 60.0L205.8 45.4L209.7 60.0ZM207.8 46.9L210.1 36.3L212.4 46.9ZM206.7 53.4L210.1 42.9L213.5 53.4ZM205.6 60.0L210.1 49.6L214.6 60.0ZM211.8 45.4L213.6 33.5L215.3 45.4ZM210.9 52.6L213.6 40.9L216.2 52.6ZM210.1 60.0L213.6 48.3L217.1 60.0ZM215.6 47.9L217.2 38.0L218.7 47.9ZM214.8 53.8L217.2 44.2L219.5 53.8ZM214.0 60.0L217.2 50.3L220.3 60.0ZM218.8 42.3L220.4 27.8L222.0 42.3ZM218.0 51.0L220.4 36.8L222.8 51.0ZM217.2 60.0L220.4 45.8L223.6 60.0ZM222.4 38.4L225.0 20.8L227.5 38.4ZM221.1 49.0L225.0 31.8L228.8 49.0ZM219.9 60.0L225.0 42.8L230.1 60.0ZM227.0 42.6L228.8 28.3L230.6 42.6ZM226.1 51.1L228.8 37.2L231.5 51.1ZM225.2 60.0L228.8 46.0L232.4 60.0ZM231.0 34.8L232.7 14.2L234.3 34.8ZM230.2 47.2L232.7 27.0L235.1 47.2ZM229.4 60.0L232.7 39.9L235.9 60.0ZM236.2 40.4L238.3 24.5L240.3 40.4ZM235.2 50.0L238.3 34.4L241.4 50.0ZM234.1 60.0L238.3 44.4L242.4 60.0ZM239.9 42.6L241.5 28.4L243.1 42.6ZM239.1 51.2L241.5 37.3L244.0 51.2ZM238.3 60.0L241.5 46.1L244.8 60.0ZM0 52H240V60H0Z'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+    filter: drop-shadow(0 -1px 2px rgba(77, 255, 143, 0.45)) drop-shadow(0 -4px 10px rgba(77, 255, 143, 0.18));
+}
+
+@media (max-width: 539px) {
+    body.theme-min::after { height: 70px; }
+}
+
+/* ---- Cards and modals: black jersey panels with a neon stripe on top ------------------------- */
+body.theme-min .card_display,
+body.theme-min .title_card_display {
+    position: relative;
+    background: linear-gradient(160deg, var(--mn-card-top), var(--mn-card));
+    /* the outline is an inset shadow, not a border, so the cards keep their size */
+    box-shadow: inset 0 0 0 1px var(--mn-line), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 26px rgba(40, 220, 110, 0.08);
+    color: var(--mn-text);
+}
+
+body.theme-min .card_display::before,
+body.theme-min .title_card_display::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12px;
+    right: 12px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: linear-gradient(90deg, transparent, var(--mn-neon) 20%, var(--mn-neon) 80%, transparent);
+    box-shadow: 0 0 12px var(--mn-neon);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+/* Modals sit on an overlay, not the sky: make them solid */
+body.theme-min .stats-popup-content.card_display {
+    background: linear-gradient(160deg, #0a100d, #050806);
+}
+
+body.theme-min .stats-popup {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* While exporting a PNG the cards sit on the plain background color: make them solid too */
+body.theme-min.exporting .card_display,
+body.theme-min.exporting .title_card_display {
+    background: #080d0a;
+}
+
+body.theme-min .title_card_display {
+    background:
+        radial-gradient(45% 120% at 8% 50%, rgba(60, 255, 140, 0.16), transparent 60%),
+        linear-gradient(120deg, #060a08, #020303);
+    box-shadow: inset 0 0 0 1px rgba(77, 255, 143, 0.35), 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 26px rgba(40, 220, 110, 0.1);
+}
+
+/* The HTR logo is square; keep the standard logo's 3:2 box so the title card keeps its height */
+body.theme-min .title_card > img {
+    aspect-ratio: 3 / 2;
+    object-fit: contain;
+    filter: drop-shadow(0 0 18px rgba(77, 255, 143, 0.75)) drop-shadow(0 0 4px rgba(77, 255, 143, 0.9));
+}
+
+body.theme-min h1,
+body.theme-min h2 {
+    color: #fff;
+}
+
+body.theme-min h2 {
+    text-shadow: 0 0 10px rgba(77, 255, 143, 0.45);
+}
+
+/* Team logos are drawn for light backgrounds: a faint light edge keeps black ones visible */
+body.theme-min .content img[src*="_light.svg"],
+body.theme-min .stats-popup-content img[src*="_light.svg"] {
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55));
+}
+
+/* ---- Buttons, selects, tabs ----------------------------------------------------------------- */
+body.theme-min .primary_button,
+body.theme-min .leaders-chip,
+body.theme-min .settings-export {
+    background: transparent;
+    color: var(--mn-neon);
+    border: 1px solid var(--mn-neon);
+    box-shadow: 0 0 10px rgba(77, 255, 143, 0.25), inset 0 0 10px rgba(77, 255, 143, 0.1);
+}
+
+body.theme-min .primary_button:hover,
+body.theme-min .leaders-chip:hover,
+body.theme-min .settings-export:hover,
+body.theme-min .leaders-chip.active {
+    background: var(--mn-neon);
+    color: #04120a;
+    border-color: var(--mn-neon);
+}
+
+body.theme-min .team-dropdown,
+body.theme-min .settings-bar select {
+    background-color: #0c1310;
+    color: var(--mn-text);
+    border-color: var(--mn-line);
+}
+
+body.theme-min .team-dropdown:hover,
+body.theme-min .team-dropdown:focus {
+    background-color: #111a15;
+}
+
+body.theme-min .tabs-container {
+    border-bottom-color: var(--mn-line);
+}
+
+body.theme-min .tab,
+body.theme-min .standings-tab,
+body.theme-min .roster-tab {
+    background: #0e1612;
+    color: var(--mn-muted);
+    border-color: var(--mn-line);
+}
+
+body.theme-min .tab:hover,
+body.theme-min .standings-tab:hover,
+body.theme-min .roster-tab:hover {
+    background: #16211b;
+}
+
+body.theme-min .tab.active,
+body.theme-min .standings-tab.active,
+body.theme-min .roster-tab.active {
+    background: #050806;
+    color: var(--mn-neon);
+    border-color: rgba(77, 255, 143, 0.5);
+    box-shadow: 0 -2px 10px rgba(77, 255, 143, 0.2);
+}
+
+body.theme-min .arrow-button,
+body.theme-min .arrow-button span {
+    background-color: transparent;
+    color: var(--mn-neon);
+}
+
+body.theme-min .close {
+    color: var(--mn-muted);
+}
+
+body.theme-min .close:hover {
+    color: #fff;
+}
+
+/* ---- Tables --------------------------------------------------------------------------------- */
+body.theme-min th {
+    background-color: transparent;
+    color: var(--mn-neon);
+}
+
+body.theme-min tr:nth-child(odd) {
+    background-color: var(--mn-raised);
+}
+
+body.theme-min tr:nth-child(even) {
+    background-color: transparent;
+}
+
+/* Own team rows (standings, bracket, leaders) and accents read these variables, set inline per card */
+body.theme-min [style*="--standings-accent"] {
+    --standings-accent: var(--mn-neon) !important;
+    --standings-highlight: var(--mn-neon-soft) !important;
+}
+
+body.theme-min .standings-table tr.own-team td {
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(77, 255, 143, 0.5), inset 0 -1px 0 rgba(77, 255, 143, 0.5);
+}
+
+body.theme-min .standings-table tr.own-team td:first-child {
+    box-shadow: inset 4px 0 0 var(--mn-neon), inset 0 1px 0 rgba(77, 255, 143, 0.5), inset 0 -1px 0 rgba(77, 255, 143, 0.5);
+}
+
+body.theme-min .standings-table tr.cut-line td {
+    border-bottom-color: rgba(233, 242, 236, 0.35);
+}
+
+/* ---- Summary circles: neon ring for the own team, opponent's color lightened for the dark ------ */
+body.theme-min .special-teams-circle {
+    background: #0b110e;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+body.theme-min .special-teams-circle circle:first-of-type {
+    stroke: var(--mn-track);
+}
+
+body.theme-min .special-teams-circle circle:nth-of-type(2) {
+    stroke: color-mix(in srgb, var(--ring-color) 70%, white);
+}
+
+body.theme-min #statsCard .special-teams-circle {
+    --ring-color: var(--mn-neon) !important;
+    filter: drop-shadow(0 0 6px rgba(77, 255, 143, 0.35));
+}
+
+body.theme-min #statsCard .special-teams-circle circle:nth-of-type(2) {
+    stroke: var(--mn-neon);
+}
+
+body.theme-min .special-teams-circle text {
+    fill: var(--mn-text);
+}
+
+/* Grey pills under the circles and behind headshots */
+body.theme-min .team-summary .dataframe td,
+body.theme-min .headshot-img > img,
+body.theme-min .headshot-img-opponent > img,
+body.theme-min .roster-headshot,
+body.theme-min .leader-headshot {
+    border-color: rgba(77, 255, 143, 0.3);
+    background-color: #111a15;
+}
+
+/* ---- Comparisons (Top scorers, Goalies, Last meeting) --------------------------------------- */
+body.theme-min .content .compare-team,
+body.theme-min .content .compare-value {
+    color: var(--mn-text);
+}
+
+body.theme-min .content .compare-label {
+    color: var(--mn-muted);
+}
+
+body.theme-min .content .compare-bar .bar-left {
+    background: color-mix(in srgb, var(--left-color) 75%, white);
+}
+
+body.theme-min .content .compare-bar .bar-right {
+    background: color-mix(in srgb, var(--right-color) 75%, white);
+}
+
+body.theme-min .content .compare-bar.even .bar-left,
+body.theme-min .content .compare-bar.even .bar-right {
+    background: #2a332e;
+}
+
+/* ---- Standings, playoff bracket, league leaders, roster -------------------------------------- */
+body.theme-min .playoff-subtitle,
+body.theme-min .playoff-conference-title,
+body.theme-min .bracket-seed,
+body.theme-min .bracket-value small,
+body.theme-min .bracket-status,
+body.theme-min .leader-rank,
+body.theme-min .leader-name small,
+body.theme-min .leaders-chip-label,
+body.theme-min .leaders-caption,
+body.theme-min .leaders-empty,
+body.theme-min .roster-position,
+body.theme-min .headshot-caption,
+body.theme-min .game-date,
+body.theme-min .game-venue {
+    color: var(--mn-muted);
+}
+
+body.theme-min .bracket {
+    --line: rgba(77, 255, 143, 0.35);
+}
+
+body.theme-min .bracket-series {
+    background: #070b09;
+    border-color: var(--mn-line);
+    box-shadow: 0 0 10px rgba(77, 255, 143, 0.06);
+}
+
+body.theme-min .bracket-team + .bracket-team,
+body.theme-min .bracket-status {
+    border-top-color: rgba(255, 255, 255, 0.07);
+}
+
+body.theme-min .leader-row {
+    background: var(--mn-raised);
+}
+
+body.theme-min .leader-row.own-team {
+    background: var(--mn-neon-soft);
+}
+
+/* ---- Page furniture: footer, loading wheel --------------------------------------------------- */
+body.theme-min .disclaimer {
+    color: var(--mn-muted);
+    border-top-color: var(--mn-line);
+}
+
+body.theme-min #loading-wheel {
+    background: rgba(2, 4, 3, 0.85);
+}
+
+body.theme-min .spinner {
+    border-color: #1b2420;
+    border-top-color: var(--mn-neon);
+}
+
+/* ---- The design switch (title row; never in the PNG export) ----------------------------------- */
+body.theme-min .theme-toggle {
+    color: var(--mn-neon);
+    border-color: rgba(77, 255, 143, 0.5);
+    background: transparent;
+}
+
+} /* @media screen */
+
+/* The switch itself, in both designs */
+.theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #d1d1d1;
+    border-radius: 50%;
+    background: #f7f7f7;
+    color: #333;
+    cursor: pointer;
+    flex: none;
+}
+
+.theme-toggle .material-symbols-outlined {
+    font-size: 18px;
+}
+
+@media print {
+    .theme-toggle { display: none; }
+}

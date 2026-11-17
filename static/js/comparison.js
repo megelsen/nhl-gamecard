@@ -84,8 +84,12 @@ function renderComparison(container, data) {
     if (!container || !data) return;
     container.compareData = data; // re-rendered when the units change
     const colors = window.compareColors || {};
-    const leftColor = data.leftColor || colors[data.left] || "#555";
-    const rightColor = data.rightColor || colors[data.right] || "#bbb";
+    // The page's own team reads --own-team-color first, so a team design (themes/*.css) can recolor it
+    const ownTeam = window.compareTeams?.left;
+    const teamColor = (abbrev, fallback) => abbrev && abbrev === ownTeam
+        ? `var(--own-team-color, ${colors[abbrev] || fallback})` : colors[abbrev] || fallback;
+    const leftColor = data.leftColor || teamColor(data.left, "#555");
+    const rightColor = data.rightColor || teamColor(data.right, "#bbb");
 
     // Team tags link to that team's page
     const teamTag = (abbrev, color, side) => abbrev

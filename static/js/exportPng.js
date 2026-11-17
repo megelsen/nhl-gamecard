@@ -9,7 +9,7 @@ const EXPORT_LIBRARY = "https://cdn.jsdelivr.net/npm/modern-screenshot@4.6.8/dis
 const EXPORT_PROXY_HOSTS = ["assets.nhle.com"];
 const EXPORT_EXCLUDE = [
     ".toggle-spoiler",            // spoiler covers: the scores underneath show
-    ".roster_button", "#team_form",
+    ".roster_button", "#team_form", ".theme-toggle",
     ".show-top5-btn", ".show-top5-btn-opponent", ".upcoming_games_button",
     ".standings-tabs-container", ".leaders-more-btn",
     "button.arrow-button",
